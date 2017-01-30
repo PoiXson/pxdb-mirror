@@ -14,10 +14,7 @@ use pxn\phpUtils\Strings;
 use pxn\phpUtils\System;
 use pxn\phpUtils\Defines;
 
-use pxn\phpUtils\pxdb\commands\dbCommand_List;
-use pxn\phpUtils\pxdb\commands\dbCommand_Update;
-use pxn\phpUtils\pxdb\commands\dbCommand_Import;
-use pxn\phpUtils\pxdb\commands\dbCommand_Export;
+use pxn\pxdb\dbPool;
 
 
 abstract class dbCommands {
@@ -26,16 +23,28 @@ abstract class dbCommands {
 
 
 
-	public static function run() {
+	public function __construct($dry) {
+		System::RequireShell();
+		$this->dry = $dry;
+	}
+
+
+
+	public abstract function execute($pool, $table);
+
+
+
+	public static function RunShellCommand() {
 		System::RequireShell();
 
-		// empty command argument
+		// get command argument
 		$cmd = ShellTools::getArg(1);
 		$cmd = \mb_strtolower($cmd);
 		if (empty($cmd)) {
 			self::DisplayHelp();
 			ExitNow(Defines::EXIT_CODE_GENERAL);
 		}
+
 		// -h or --help
 		if (ShellTools::isHelp()) {
 			self::DisplayHelp($cmd);
@@ -61,33 +70,25 @@ abstract class dbCommands {
 			}
 		}
 
-		// list / update / import / export
+		// commands: list, update, import, export
 
 		// --pool/--table flags
 		{
 			$poolFlag  = ShellTools::getFlag('-p', '--pool');
 			$tableFlag = ShellTools::getFlag('-t', '--table');
 			if (!empty($poolFlag) || !empty($tableFlag)) {
-				if (empty($poolFlag) || $poolFlag == '*' || \mb_strtolower($poolFlag) == 'all') {
-					$poolFlag = '*';
-				} else {
-					$poolFlag = San::AlphaNumUnderscore($poolFlag);
-					if (empty($poolFlag)) {
-						fail('Invalid pool name provided!',
-							Defines::EXIT_CODE_INVALID_ARGUMENT);
-					}
+				$poolFlag  = self::ValidatePoolTableArg($poolFlag);
+				$tableFlag = self::ValidatePoolTableArg($tableFlag);
+				if (empty($poolFlag)) {
+					fail('Invalid pool name provided!',
+						Defines::EXIT_CODE_INVALID_ARGUMENT);
 				}
-				if (empty($tableFlag) || $tableFlag == '*' || \mb_strtolower($tableFlag) == 'all') {
-					$tableFlag = '*';
-				} else {
-					$tableFlag = San::AlphaNumUnderscore($tableFlag);
-					if (empty($tableFlag)) {
-						fail('Invalid table name provided!',
-							Defines::EXIT_CODE_INVALID_ARGUMENT);
-					}
+				if (empty($tableFlag)) {
+					fail('Invalid table name provided!',
+						Defines::EXIT_CODE_INVALID_ARGUMENT);
 				}
 				// perform the command
-				$result = self::runCommand(
+				$result = self::doRunCommand(
 					$cmd,
 					$poolFlag,
 					$tableFlag,
@@ -95,6 +96,7 @@ abstract class dbCommands {
 				);
 				return $result;
 			}
+			unset ($poolFlag, $tableFlag);
 		}
 
 		// pool:table arguments
@@ -104,11 +106,11 @@ abstract class dbCommands {
 			\array_shift($args);
 			if (\count($args) > 0) {
 				// split pool:table arguments
-				$entries = self::splitPoolTable($args);
+				$entries = self::SplitPoolTable($args);
 				// perform the command
 				$count = 0;
 				foreach ($entries as $entry) {
-					$result = self::runCommand(
+					$result = self::doRunCommand(
 						$cmd,
 						$entry['pool'],
 						$entry['table'],
@@ -125,9 +127,9 @@ abstract class dbCommands {
 			}
 		}
 
-		// no argument - default to: list all
+		// no argument (default to: list all)
 		if ($cmd == 'list') {
-			$result = self::runCommand(
+			$result = self::doRunCommand(
 				$cmd,
 				'*',
 				'*',
@@ -140,7 +142,7 @@ abstract class dbCommands {
 		self::DisplayHelp($cmd);
 		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 	}
-	public static function runCommand($cmd, $pool, $table, $dry) {
+	private static function doRunCommand($cmd, $pool, $table, $dry) {
 		if ($dry) {
 			echo " [Dry Mode] \n";
 		}
@@ -152,7 +154,7 @@ abstract class dbCommands {
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				$tables = $poolEntry->getUsingTables();
 				foreach ($tables as $tableEntryName => $tableEntry) {
-					$result = self::runCommandOnce(
+					$result = self::doRunCommandOnce(
 						$cmd,
 						$poolEntry,
 						$tableEntryName,
@@ -177,7 +179,7 @@ abstract class dbCommands {
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				if ($poolEntry->hasTable($table)) {
-					$result = self::runCommandOnce(
+					$result = self::doRunCommandOnce(
 						$cmd,
 						$poolEntry,
 						$table,
@@ -207,7 +209,7 @@ abstract class dbCommands {
 			$tables = $poolEntry->getUsingTables();
 			$count = 0;
 			foreach ($tables as $tableEntryName => $tableEntry) {
-				$result = self::runCommandOnce(
+				$result = self::doRunCommandOnce(
 					$cmd,
 					$poolEntry,
 					$tableEntryName,
@@ -226,7 +228,7 @@ abstract class dbCommands {
 		} else {
 			$poolName = dbPool::castPoolName($pool);
 			echo " Cmd: $cmd  Pool: $poolName  Table: $table\n\n";
-			$result = self::runCommandOnce(
+			$result = self::doRunCommandOnce(
 				$cmd,
 				$pool,
 				$table,
@@ -236,7 +238,7 @@ abstract class dbCommands {
 		}
 		return FALSE;
 	}
-	public static function runCommandOnce($cmd, $pool, $table, $dry) {
+	private static function doRunCommandOnce($cmd, $pool, $table, $dry) {
 		$poolName = dbPool::castPoolName($pool);
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {
@@ -275,18 +277,19 @@ abstract class dbCommands {
 		);
 		return $result;
 	}
-	public abstract function execute($pool, $table);
 
 
 
-	public function __construct($dry) {
-		System::RequireShell();
-		$this->dry = $dry;
+	private static function ValidatePoolTableArg($arg) {
+		if (empty($arg)) {
+			return '';
+		}
+		if ($arg == '*' || \mb_strtolower($arg) == 'all') {
+			return '*';
+		}
+		return San::AlphaNumUnderscore($arg);
 	}
-
-
-
-	private static function splitPoolTable($args) {
+	private static function SplitPoolTable(\array $args) {
 		$entries = [];
 		foreach ($args as $arg) {
 			$poolName  = NULL;
