@@ -156,7 +156,7 @@ class dbPool {
 		if (\is_string($pool)) {
 			return (string) $pool;
 		}
-		if ($pool instanceof \pxn\phpUtils\pxdb\dbPool) {
+		if ($pool instanceof \pxn\pxdb\dbPool) {
 			return $pool->getName();
 		}
 		return NULL;
@@ -317,7 +317,7 @@ class dbPool {
 					Defines::EXIT_CODE_INVALID_FORMAT);
 			}
 			$schema = new $schemaClass();
-			if (! $schema instanceof \pxn\phpUtils\pxdb\dbSchema) {
+			if (! $schema instanceof \pxn\pxdb\dbSchema) {
 				fail("Invalid db schema class for table: $schemaClass",
 					Defines::EXIT_CODE_INTERNAL_ERROR);
 			}
