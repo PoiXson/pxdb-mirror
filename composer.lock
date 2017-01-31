@@ -4,27 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a387332fd3fba744a496a55471051f69",
+    "content-hash": "7df31df67a6b36bad1f81c4c9d52a2c9",
     "packages": [
         {
             "name": "pxn/phputils",
-            "version": "0.1.26",
+            "version": "0.1.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PoiXson/phpUtils.git",
-                "reference": "b6016c9923e74fa0068718201522750497156bd3"
+                "reference": "2c329b80722564bd3d8b66d8d38b09cc0644279f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PoiXson/phpUtils/zipball/b6016c9923e74fa0068718201522750497156bd3",
-                "reference": "b6016c9923e74fa0068718201522750497156bd3",
+                "url": "https://api.github.com/repos/PoiXson/phpUtils/zipball/2c329b80722564bd3d8b66d8d38b09cc0644279f",
+                "reference": "2c329b80722564bd3d8b66d8d38b09cc0644279f",
                 "shasum": ""
             },
             "require-dev": {
                 "51systems/doctrine-encrypt": "v5.0.*",
                 "ext-mbstring": "*",
-                "ext-pdo": "*",
-                "ext-pdo_mysql": "*",
                 "filp/whoops": "2.1.*",
                 "phpunit/phpunit": "5.*"
             },
@@ -53,7 +51,7 @@
                 "framework",
                 "utilities"
             ],
-            "time": "2016-12-15T02:48:02+00:00"
+            "time": "2017-01-31T11:39:24+00:00"
         }
     ],
     "packages-dev": [
@@ -668,16 +666,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.7.8",
+            "version": "5.7.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "bee7755d964f8e56d6ecb79046480fd0320b686d"
+                "reference": "69f832b87c731d5cacad7f91948778fe98335fdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/bee7755d964f8e56d6ecb79046480fd0320b686d",
-                "reference": "bee7755d964f8e56d6ecb79046480fd0320b686d",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/69f832b87c731d5cacad7f91948778fe98335fdd",
+                "reference": "69f832b87c731d5cacad7f91948778fe98335fdd",
                 "shasum": ""
             },
             "require": {
@@ -746,7 +744,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2017-01-26T15:28:51+00:00"
+            "time": "2017-01-28T06:14:33+00:00"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -854,16 +852,16 @@
         },
         {
             "name": "sebastian/comparator",
-            "version": "1.2.2",
+            "version": "1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/comparator.git",
-                "reference": "6a1ed12e8b2409076ab22e3897126211ff8b1f7f"
+                "reference": "2b7424b55f5047b47ac6e5ccb20b2aea4011d9be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/6a1ed12e8b2409076ab22e3897126211ff8b1f7f",
-                "reference": "6a1ed12e8b2409076ab22e3897126211ff8b1f7f",
+                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/2b7424b55f5047b47ac6e5ccb20b2aea4011d9be",
+                "reference": "2b7424b55f5047b47ac6e5ccb20b2aea4011d9be",
                 "shasum": ""
             },
             "require": {
@@ -914,7 +912,7 @@
                 "compare",
                 "equality"
             ],
-            "time": "2016-11-19T09:18:40+00:00"
+            "time": "2017-01-29T09:50:25+00:00"
         },
         {
             "name": "sebastian/diff",
