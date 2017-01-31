@@ -1,0 +1,8 @@
+pxdb 0.1.x - PHP Database Utilities Library
+
+
+2017-01-31 pxdb 0.1.1
+=====================
+* initial release - moved class files from phpUtils
+* connection and query classes are working
+* shell tool classes are unfinished and not yet added
