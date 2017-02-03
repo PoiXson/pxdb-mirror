@@ -30,8 +30,7 @@ class dbPool {
 	protected $existingTables = NULL;
 	protected $existingTableFields = [];
 
-//TODO: is this populated with table schemas when in production mode?
-//	protected $usingTables = [];
+	protected $usingTables = [];
 
 
 

@@ -167,10 +167,10 @@ abstract class dbCommands {
 					$count++;
 				}
 			}
-			if ($count > 0) {
+//			if ($count > 0) {
 				echo "\n Ran $cmd on $count tables";
 				return TRUE;
-			}
+//			}
 		} else
 		// all pools
 		if ($pool == '*') {
@@ -192,10 +192,10 @@ abstract class dbCommands {
 					continue;
 				}
 			}
-			if ($count > 0) {
+//			if ($count > 0) {
 				echo "\n Ran $cmd on $count tables";
 				return TRUE;
-			}
+//			}
 		} else
 		// all tables
 		if ($table == '*') {
@@ -220,10 +220,10 @@ abstract class dbCommands {
 				}
 				$count++;
 			}
-			if ($count > 0) {
+//			if ($count > 0) {
 				echo "\n Ran $cmd on $count tables";
 				return TRUE;
-			}
+//			}
 		// one pool/table
 		} else {
 			$poolName = dbPool::castPoolName($pool);
@@ -289,7 +289,7 @@ abstract class dbCommands {
 		}
 		return San::AlphaNumUnderscore($arg);
 	}
-	private static function SplitPoolTable(\array $args) {
+	private static function SplitPoolTable(array $args) {
 		$entries = [];
 		foreach ($args as $arg) {
 			$poolName  = NULL;
