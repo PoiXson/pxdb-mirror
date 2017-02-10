@@ -9,11 +9,10 @@
 namespace pxn\pxdb;
 
 use pxn\phpUtils\Strings;
-use pxn\phpUtils\San;
 use pxn\phpUtils\Defines;
 
 
-final class dbTablesExisting {
+final class dbTablesExisting extends dbTables {
 	private function __construct() {}
 
 	// pools/tables/fields cache
@@ -181,53 +180,6 @@ final class dbTablesExisting {
 		self::LoadPoolTables($pool);
 		self::LoadTableFields($pool, $tableName);
 		return \array_key_exists($fieldName, self::$cache[$poolName][$tableName]);
-	}
-
-
-
-	private static function ValidatePool($pool) {
-		if ($pool == NULL) {
-			fail('Invalid or unknown pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$pool = dbPool::getPool($pool);
-		if ($pool == NULL) {
-			fail('Invalid or unknown pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		return $pool;
-	}
-	private static function ValidateTableName($tableName) {
-		if (empty($tableName)) {
-			fail('Invalid or unknown table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$tableName = San::AlphaNumUnderscore($tableName);
-		if (empty($tableName)) {
-			fail('Invalid or unknown table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($tableName, '_')) {
-			fail("Table name cannot start with _ underscore: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		return $tableName;
-	}
-	private static function ValidateFieldName($fieldName) {
-		if (empty($fieldName)) {
-			fail('Invalid or unknown field name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$fieldName = San::AlphaNumUnderscore($fieldName);
-		if (empty($fieldName)) {
-			fail('Invalid or unknown field name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($fieldName, '_')) {
-			fail("Field name cannot start with _ underscore: $fieldName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		return $fieldName;
 	}
 
 
