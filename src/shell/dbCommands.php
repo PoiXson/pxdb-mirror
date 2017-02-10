@@ -88,7 +88,7 @@ abstract class dbCommands {
 						Defines::EXIT_CODE_INVALID_ARGUMENT);
 				}
 				// perform the command
-				$result = self::doRunCommand(
+				$result = self::_doRunCommand(
 					$cmd,
 					$poolFlag,
 					$tableFlag,
@@ -110,7 +110,7 @@ abstract class dbCommands {
 				// perform the command
 				$count = 0;
 				foreach ($entries as $entry) {
-					$result = self::doRunCommand(
+					$result = self::_doRunCommand(
 						$cmd,
 						$entry['pool'],
 						$entry['table'],
@@ -129,7 +129,7 @@ abstract class dbCommands {
 
 		// no argument (default to: list all)
 		if ($cmd == 'list') {
-			$result = self::doRunCommand(
+			$result = self::_doRunCommand(
 				$cmd,
 				'*',
 				'*',
@@ -142,7 +142,7 @@ abstract class dbCommands {
 		self::DisplayHelp($cmd);
 		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 	}
-	private static function doRunCommand($cmd, $pool, $table, $dry) {
+	private static function _doRunCommand($cmd, $pool, $table, $dry) {
 		if ($dry) {
 			echo " [Dry Mode] \n";
 		}
@@ -154,7 +154,7 @@ abstract class dbCommands {
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				$tables = $poolEntry->getUsingTables();
 				foreach ($tables as $tableEntryName => $tableEntry) {
-					$result = self::doRunCommandOnce(
+					$result = self::_doRunCommandOnce(
 						$cmd,
 						$poolEntry,
 						$tableEntryName,
@@ -179,7 +179,7 @@ abstract class dbCommands {
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				if ($poolEntry->hasTable($table)) {
-					$result = self::doRunCommandOnce(
+					$result = self::_doRunCommandOnce(
 						$cmd,
 						$poolEntry,
 						$table,
@@ -209,7 +209,7 @@ abstract class dbCommands {
 			$tables = $poolEntry->getUsingTables();
 			$count = 0;
 			foreach ($tables as $tableEntryName => $tableEntry) {
-				$result = self::doRunCommandOnce(
+				$result = self::_doRunCommandOnce(
 					$cmd,
 					$poolEntry,
 					$tableEntryName,
@@ -238,7 +238,7 @@ abstract class dbCommands {
 		}
 		return FALSE;
 	}
-	private static function doRunCommandOnce($cmd, $pool, $table, $dry) {
+	private static function _doRunCommandOnce($cmd, $pool, $table, $dry) {
 		$poolName = dbPool::castPoolName($pool);
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {
