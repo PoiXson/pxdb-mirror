@@ -9,6 +9,7 @@
 namespace pxn\pxdb\shell;
 
 use pxn\pxdb\dbPool;
+use pxn\pxdb\dbExistingTables;
 
 use pxn\phpUtils\Strings;
 
@@ -19,14 +20,14 @@ class dbCommand_List extends dbCommands {
 
 	public function execute($pool, $table) {
 		$poolName = dbPool::castPoolName($pool);
-		$tableExists = $pool->hasTable($table);
+		$tableExists = dbExistingTables::hasTable($pool, $tableName);
 		// found table
 		if ($tableExists) {
 			$msg = "Found:   {$poolName}:{$table}";
 			$msg = Strings::PadLeft($msg, 30, ' ');
-			$fields = $pool->getTableFields($table);
 			$count = count($fields);
 			$msg .= "[$count]";
+			$fields = dbExistingTables::getFields($pool, $tableName);
 			// list the fields
 			if ($count > 0) {
 				$msg .= ' ';
