@@ -13,7 +13,7 @@ use pxn\phpUtils\San;
 use pxn\phpUtils\Defines;
 
 
-final class dbExistingTables {
+final class dbTablesExisting {
 	private function __construct() {}
 
 	// pools/tables/fields cache

@@ -9,7 +9,7 @@
 namespace pxn\pxdb\shell;
 
 use pxn\pxdb\dbPool;
-use pxn\pxdb\dbExistingTables;
+use pxn\pxdb\dbTablesExisting;
 
 use pxn\phpUtils\Strings;
 
@@ -22,11 +22,11 @@ class dbCommand_List extends dbCommands {
 	public function execute($pool, $tableName) {
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getPoolName();
-		$tableExists = dbExistingTables::hasTable($pool, $tableName);
+		$tableExists = dbTablesExisting::hasTable($pool, $tableName);
 		// found table
 		if ($tableExists) {
 			$msg = "{$poolName}:{$tableName} <found>";
-			$fields = dbExistingTables::getFields($pool, $tableName);
+			$fields = dbTablesExisting::getFields($pool, $tableName);
 			$fieldCount = count($fields);
 			$msg .= "\n  Fields: {$fieldCount}";
 			// list the fields
