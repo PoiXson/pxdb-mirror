@@ -42,7 +42,7 @@ final class dbExistingTables {
 		}
 		$db->Execute(
 			"SHOW TABLES",
-			'getExistingTables()'
+			'LoadPoolTables()'
 		);
 		$databaseName = $db->getDatabaseName();
 		$tables = [];
@@ -79,7 +79,7 @@ final class dbExistingTables {
 		$db = $pool->getDB();
 		$db->Execute(
 			"DESCRIBE `__TABLE__{$tableName}`;",
-			'getTableFields()'
+			'LoadTableFields()'
 		);
 		$fields = [];
 		while ($db->hasNext()) {

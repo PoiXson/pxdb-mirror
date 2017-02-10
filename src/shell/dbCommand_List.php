@@ -46,8 +46,6 @@ class dbCommand_List extends dbCommands {
 		// missing table
 		} else {
 			$msg = "<MISSING> {$poolName}:{$tableName}";
-//			$msg = Strings::PadLeft($msg, 30, ' ');
-//			$msg .= '[-]';
 			echo "$msg\n";
 		}
 		return TRUE;
