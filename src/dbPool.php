@@ -26,8 +26,6 @@ class dbPool {
 	// conns[index]
 	protected $conns   = [];
 
-	protected $usingTables = [];
-
 
 
 	public static function configure(
@@ -161,43 +159,6 @@ class dbPool {
 
 	public function getConnCount() {
 		return \count($this->conns);
-	}
-
-
-
-	#########################
-	## get tables / fields ##
-	#########################
-
-
-
-	// format: [ 'table_name' => 'path\\to\\schema\\class', .. ]
-	public function addUsingTables(array $tables) {
-		$this->usingTables = \array_merge(
-			$this->usingTables,
-			$tables
-		);
-	}
-	public function getUsingTables() {
-		$result = [];
-		foreach ($this->usingTables as $tableName => $schemaClass) {
-			$name = San::AlphaNumUnderscore($tableName);
-			if (empty($name)) {
-				fail('Invalid or missing table name!',
-					Defines::EXIT_CODE_INVALID_FORMAT);
-			}
-			if (Strings::StartsWith($tableName, '_')) {
-				fail("Invalid table name, cannot start with _ underscore: $tableName",
-					Defines::EXIT_CODE_INVALID_FORMAT);
-			}
-			$schema = new $schemaClass();
-			if (! $schema instanceof \pxn\pxdb\dbSchema) {
-				fail("Invalid db schema class for table: $schemaClass",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
-			$result[$name] = $schema;
-		}
-		return $result;
 	}
 
 
