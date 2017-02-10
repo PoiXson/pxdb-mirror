@@ -26,10 +26,6 @@ class dbPool {
 	// conns[index]
 	protected $conns   = [];
 
-	// cache existing db schema
-	protected $existingTables = NULL;
-	protected $existingTableFields = [];
-
 	protected $usingTables = [];
 
 
@@ -172,127 +168,6 @@ class dbPool {
 	#########################
 	## get tables / fields ##
 	#########################
-
-
-
-	public function getExistingTables() {
-		// cached table list
-		if (\is_array($this->existingTables)) {
-			return $this->existingTables;
-		}
-		// get existing tables
-		$db = $this->getDB();
-		if ($db == NULL) {
-			return NULL;
-		}
-		$db->Execute(
-			"SHOW TABLES",
-			'getExistingTables()'
-		);
-		$database = $db->getDatabaseName();
-		$this->existingTables = [];
-		while ($db->hasNext()) {
-			$tableName = $db->getString("Tables_in_{$database}");
-			if (Strings::StartsWith($tableName, '_'))
-				continue;
-			$this->existingTables[] = $tableName;
-		}
-		$db->release();
-		return $this->existingTables;
-	}
-	public function hasTable($tableName) {
-		$tableName = San::AlphaNumUnderscore($tableName);
-		if (empty($tableName)) {
-			return NULL;
-		}
-		$tables = $this->getExistingTables();
-		if ($tables == NULL) {
-			return NULL;
-		}
-		return \in_array(
-			$tableName,
-			$tables
-		);
-	}
-
-
-
-	public function getTableFields($tableName) {
-		$tableName = San::AlphaNumUnderscore($tableName);
-		// table not found
-		if (!$this->hasTable($tableName)) {
-			return NULL;
-		}
-		// cached fields list
-		if (isset($this->existingTableFields[$tableName])) {
-			return $this->existingTableFields[$tableName];
-		}
-		// get fields
-		$db = $this->getDB();
-		$db->Execute(
-			"DESCRIBE `__TABLE__{$tableName}`;",
-			'getTableFields()'
-		);
-		$fields = [];
-		while ($db->hasNext()) {
-			$row = $db->getRow();
-			// field name
-			$name = $db->getString('Field');
-			if (Strings::StartsWith($name, '_'))
-				continue;
-			$field = [];
-			// field name
-			$field['name'] = $name;
-			// type
-			$field['type'] = $db->getString('Type');
-			// size
-			$pos = \mb_strpos($field['type'], '(');
-			if ($pos !== FALSE) {
-				$field['size'] = Strings::Trim(
-					\mb_substr($field['type'], $pos),
-					'(', ')'
-				);
-				$field['type'] = \mb_substr($field['type'], 0, $pos);
-			}
-			// null / not null
-			$nullable = $db->getString('Null');
-			$field['nullable'] = (\mb_strtoupper($nullable) == 'YES');
-			// default value
-			if (isset($row['default'])) {
-				$default = (
-					$row['default'] === NULL
-					? NULL
-					: $db->getString('Default')
-				);
-			}
-			// primary key
-			$primary = $db->getString('Key');
-			if (\mb_strtoupper($primary) == 'PRI') {
-				$field['primary'] = TRUE;
-			}
-			// auto increment
-			$extra = $db->getString('Extra');
-			if (\mb_strpos(\mb_strtolower($extra), 'auto_increment') !== FALSE) {
-				$field['increment'] = TRUE;
-			}
-			$fields[$name] = $field;
-		}
-		$db->release();
-		$this->existingTableFields[$tableName] = $fields;
-		return $this->existingTableFields[$tableName];
-	}
-	public function hasTableField($tableName, $fieldName) {
-		$tableName = San::AlphaNumUnderscore($tableName);
-		$fieldName = San::AlphaNumUnderscore($fieldName);
-		if (empty($tableName) || empty($fieldName)) {
-			return NULL;
-		}
-		$tableFields = $this->getTableFields($tableName);
-		if (!isset($tableFields[$fieldName])) {
-			return FALSE;
-		}
-		return TRUE;
-	}
 
 
 
