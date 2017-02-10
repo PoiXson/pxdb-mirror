@@ -94,7 +94,7 @@ abstract class dbCommands {
 					$tableFlag,
 					$dry
 				);
-				return $result;
+				return ($result !== FALSE);
 			}
 			unset ($poolFlag, $tableFlag);
 		}
@@ -116,7 +116,7 @@ abstract class dbCommands {
 						$entry['table'],
 						$dry
 					);
-					if ($result != TRUE) {
+					if ($result === FALSE) {
 						return FALSE;
 					}
 					$count++;
@@ -127,7 +127,7 @@ abstract class dbCommands {
 			}
 		}
 
-		// no argument (default to: list all)
+		// no argument (default to all pools/tables)
 		if ($cmd == 'list') {
 			$result = self::_doRunCommand(
 				$cmd,
@@ -135,7 +135,7 @@ abstract class dbCommands {
 				'*',
 				$dry
 			);
-			return $result;
+			return ($result !== FALSE);
 		}
 
 		// command not handled
@@ -146,6 +146,7 @@ abstract class dbCommands {
 		if ($dry) {
 			echo " [Dry Mode] \n";
 		}
+
 		// all pools and tables
 		if ($pool == '*' && $table == '*') {
 			echo " Cmd: $cmd  Pool: -all-  Table: -all-\n\n";
@@ -160,18 +161,17 @@ abstract class dbCommands {
 						$tableEntryName,
 						$dry
 					);
-					if ($result != TRUE) {
+					if ($result === FALSE) {
 						echo "\n Ran $cmd on $count tables, then failed!";
 						return FALSE;
 					}
 					$count++;
 				}
 			}
-//			if ($count > 0) {
-				echo "\n Ran $cmd on $count tables";
-				return TRUE;
-//			}
-		} else
+			echo "\n Ran $cmd on $count tables";
+			return TRUE;
+		}
+
 		// all pools
 		if ($pool == '*') {
 			echo " Cmd: $cmd  Pool: -all-  Table: $table\n\n";
@@ -185,18 +185,18 @@ abstract class dbCommands {
 						$table,
 						$dry
 					);
-					if ($result != TRUE) {
+					if ($result === FALSE) {
+						echo "\n Ran $cmd on $count tables, then failed!";
 						return FALSE;
 					}
 					$count++;
 					continue;
 				}
 			}
-//			if ($count > 0) {
-				echo "\n Ran $cmd on $count tables";
-				return TRUE;
-//			}
-		} else
+			echo "\n Ran $cmd on $count tables";
+			return TRUE;
+		}
+
 		// all tables
 		if ($table == '*') {
 			$poolName = dbPool::castPoolName($pool);
@@ -215,28 +215,27 @@ abstract class dbCommands {
 					$tableEntryName,
 					$dry
 				);
-				if ($result != TRUE) {
+				if ($result === FALSE) {
+					echo "\n Ran $cmd on $count tables";
 					return FALSE;
 				}
 				$count++;
 			}
-//			if ($count > 0) {
-				echo "\n Ran $cmd on $count tables";
-				return TRUE;
-//			}
-		// one pool/table
-		} else {
-			$poolName = dbPool::castPoolName($pool);
-			echo " Cmd: $cmd  Pool: $poolName  Table: $table\n\n";
-			$result = self::doRunCommandOnce(
-				$cmd,
-				$pool,
-				$table,
-				$dry
-			);
-			return $result;
+			echo "\n Ran $cmd on $count tables";
+			return TRUE;
 		}
-		return FALSE;
+
+		// one pool/table
+		$poolName = dbPool::castPoolName($pool);
+		echo " Cmd: $cmd  Pool: $poolName  Table: $table\n\n";
+		$result = self::_doRunCommandOnce(
+			$cmd,
+			$pool,
+			$table,
+			$dry
+		);
+
+		return $result;
 	}
 	private static function _doRunCommandOnce($cmd, $pool, $table, $dry) {
 		$poolName = dbPool::castPoolName($pool);
@@ -345,14 +344,17 @@ abstract class dbCommands {
 		echo "\n";
 		echo "Usage:\n";
 		switch ($cmd) {
+		case 'list':
+			echo "  db list [options]\n";
+			break;
 		case 'update':
 			echo "  db update [options] [[pool:]table] ..\n";
 			break;
 		case 'import':
-			echo "  db import [options] <filename>\n";
+			echo "  db import [options] --file <filename> [[pool:]table] ..\n";
 			break;
 		case 'export':
-			echo "  db export [options] <filename> [[pool:]table] ..\n";
+			echo "  db export [options] --file <filename> [[pool:]table] ..\n";
 			break;
 		default:
 			echo "  db <command> [options]\n";

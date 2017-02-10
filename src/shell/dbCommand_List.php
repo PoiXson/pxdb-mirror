@@ -18,39 +18,36 @@ class dbCommand_List extends dbCommands {
 
 
 
-	public function execute($pool, $table) {
-		$poolName = dbPool::castPoolName($pool);
+	// returns true if successful
+	public function execute($pool, $tableName) {
+		$pool = dbPool::getPool($pool);
+		$poolName = $pool->getPoolName();
 		$tableExists = dbExistingTables::hasTable($pool, $tableName);
 		// found table
 		if ($tableExists) {
-			$msg = "Found:   {$poolName}:{$table}";
-			$msg = Strings::PadLeft($msg, 30, ' ');
-			$count = count($fields);
-			$msg .= "[$count]";
+			$msg = "{$poolName}:{$tableName} <found>";
 			$fields = dbExistingTables::getFields($pool, $tableName);
+			$fieldCount = count($fields);
+			$msg .= "\n  Fields: {$fieldCount}";
 			// list the fields
-			if ($count > 0) {
+			if ($fieldCount > 0) {
 				$msg .= ' ';
-				$index = 0;
 				foreach ($fields as $fieldName => $field) {
-					if ($index++ > 0) {
-						$msg .= ', ';
-					}
 					$fieldType = $field['type'];
 					$fieldTypeStr = (
 						isset($field['size']) && !empty($field['size'])
-						? $fieldType.'|'.$field['size']
+						? "{$fieldType}|".$field['size']
 						: $fieldType
 					);
-					$msg .= "[{$fieldTypeStr}]{$fieldName}";
+					$msg .= "\n  [{$fieldTypeStr}]{$fieldName}";
 				}
 			}
 			echo "$msg\n";
 		// missing table
 		} else {
-			$msg = "Missing: {$poolName}:{$table}";
-			$msg = Strings::PadLeft($msg, 30, ' ');
-			$msg .= '[-]';
+			$msg = "<MISSING> {$poolName}:{$tableName}";
+//			$msg = Strings::PadLeft($msg, 30, ' ');
+//			$msg .= '[-]';
 			echo "$msg\n";
 		}
 		return TRUE;
