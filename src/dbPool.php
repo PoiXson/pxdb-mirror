@@ -163,4 +163,21 @@ class dbPool {
 
 
 
+	// add table schema
+	public function addUsingTable($tableName, $schemaClass) {
+		dbTablesUsing::addTable($this, $tableName, $schemaClass);
+	}
+	public function addUsingTables(array $tables) {
+		dbTablesUsing::addTables($this, $tables);
+	}
+	// get table schema
+	public function getUsingTable($tableName) {
+		return dbTablesUsing::getTable($this, $tableName);
+	}
+	public function getUsingTables() {
+		return dbTablesUsing::getTables($this);
+	}
+
+
+
 }
