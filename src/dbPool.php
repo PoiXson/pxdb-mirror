@@ -135,7 +135,7 @@ class dbPool {
 
 
 
-	public static function getPoolName($pool=NULL) {
+	public static function GetNameByPool($pool=NULL) {
 		$p = dbPool::getPool($pool);
 		if ($p == NULL) {
 			return NULL;
