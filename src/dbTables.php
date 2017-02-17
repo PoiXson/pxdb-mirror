@@ -65,6 +65,52 @@ abstract class dbTables {
 
 
 
+	public static function ValidateSchemaClass($clss) {
+		if (empty($clss)) {
+			return NULL;
+		}
+		$classPath = '';
+		if (\is_string($clss)) {
+			$classPath = (string) $clss;
+		} else {
+			// invalid class type
+			if (! ($clss instanceof \pxn\pxdb\dbSchema) ) {
+				fail("Invalid db schema class for table: $classPath",
+					Defines::EXIT_CODE_INTERNAL_ERROR);
+			}
+			$classPath = \get_class($clss);
+		}
+		$classPath = Strings::ForceStartsWith($classPath, '\\');
+		if (!\class_exists($classPath)) {
+			fail("Schema class not found: $classPath",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		return $classPath;
+	}
+	public static function GetSchemaClass($clss) {
+		if ($clss instanceof \pxn\pxdb\dbSchema) {
+			return $clss;
+		}
+		if (!\is_string($clss)) {
+			fail("Invalid schema class: $clss",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$classPath = (string) $clss;
+		$classPath = Strings::ForceStartsWith($classPath, '\\');
+		if (!\class_exists($classPath)) {
+			fail("Schema class not found: $classPath",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$clss = new $classPath();
+		if (! ($clss instanceof \pxn\pxdb\dbSchema) ) {
+			fail("Invalid db schema class for table: $classPath",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		return $clss;
+	}
+
+
+
 	public static function CreateTable($tableName, array $firstField, $dry=FALSE) {
 		if (empty($tableName)) {
 			fail('tableName argument is required!',
