@@ -21,7 +21,7 @@ class dbCommand_List extends dbCommands {
 	// returns true if successful
 	public function execute($pool, $tableName) {
 		$pool = dbPool::getPool($pool);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		$tableExists = dbTablesExisting::hasTable($pool, $tableName);
 		// found table
 		if ($tableExists) {

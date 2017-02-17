@@ -26,7 +26,7 @@ final class dbTablesExisting extends dbTables {
 			fail('Invalid or unknown pool!',
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		// tables already cached
 		if (\array_key_exists($poolName, self::$cache)) {
 			if (\is_array(self::$cache[$poolName])) {
@@ -59,7 +59,7 @@ final class dbTablesExisting extends dbTables {
 	private static function LoadTableFields($pool, $tableName) {
 		$pool      = self::ValidatePool($pool);
 		$tableName = self::ValidateTableName($tableName);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		if (Strings::StartsWith($tableName, '_')) {
 			fail("Table name cannot start with _ underscore: {$poolName}:{$tableName}",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
@@ -134,7 +134,7 @@ final class dbTablesExisting extends dbTables {
 	// returns a list of table keys (field values may not yet be cached)
 	public static function getTables($pool) {
 		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		self::LoadPoolTables($pool);
 		if (\array_key_exists($poolName, self::$cache)) {
 			return self::$cache[$poolName];
@@ -144,7 +144,7 @@ final class dbTablesExisting extends dbTables {
 	public static function getFields($pool, $tableName) {
 		$pool      = self::ValidatePool($pool);
 		$tableName = self::ValidateTableName($tableName);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		if (Strings::StartsWith($tableName, '_')) {
 			fail("Table name cannot start with _ underscore: {$poolName}:{$tableName}",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
@@ -168,7 +168,7 @@ final class dbTablesExisting extends dbTables {
 	public static function hasTable($pool, $tableName) {
 		$pool      = self::ValidatePool($pool);
 		$tableName = self::ValidateTableName($tableName);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		self::LoadPoolTables($pool);
 		return \array_key_exists($tableName, self::$cache[$poolName]);
 	}
@@ -176,7 +176,7 @@ final class dbTablesExisting extends dbTables {
 		$pool      = self::ValidatePool($pool);
 		$tableName = self::ValidateTableName($tableName);
 		$fieldName = self::ValidateFieldName($fieldName);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		self::LoadPoolTables($pool);
 		self::LoadTableFields($pool, $tableName);
 		return \array_key_exists($fieldName, self::$cache[$poolName][$tableName]);

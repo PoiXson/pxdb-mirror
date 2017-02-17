@@ -21,7 +21,7 @@ final class dbTablesUsing extends dbTables {
 
 	public static function addTable($pool, $tableName, $schema) {
 		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		if (!\array_key_exists($poolName, self::$usingTables)) {
 			self::$usingTables[$poolName] = [];
 		}
@@ -51,7 +51,7 @@ final class dbTablesUsing extends dbTables {
 	}
 	public static function getTable($pool, $tableName) {
 		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		// unknown pool
 		if (!\array_key_exists($poolName, self::$usingTables)) {
 			return NULL;
@@ -70,7 +70,7 @@ final class dbTablesUsing extends dbTables {
 	}
 	public static function getTables($pool) {
 		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getPoolName();
+		$poolName = $pool->getName();
 		if (!\array_key_exists($poolName, self::$usingTables)) {
 			return NULL;
 		}
