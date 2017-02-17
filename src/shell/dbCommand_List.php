@@ -39,7 +39,8 @@ class dbCommand_List extends dbCommands {
 						? "{$fieldType}|".$field['size']
 						: $fieldType
 					);
-					$msg .= "\n  [{$fieldTypeStr}]{$fieldName}";
+					$tmp = Strings::PadLeft("  [{$fieldTypeStr}] ", 11);
+					$msg .= "\n{$tmp}$fieldName";
 				}
 			}
 			echo "$msg\n";
