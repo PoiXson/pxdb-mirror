@@ -15,37 +15,66 @@ use pxn\phpUtils\Defines;
 final class dbTablesUsing extends dbTables {
 	private function __construct() {}
 
-	protected $usingTables = [];
+	protected static $usingTables = [];
 
 
 
-	// format: [ 'table_name' => 'path\\to\\schema\\class', .. ]
-	public function addUsingTables(array $tables) {
-		$this->usingTables = \array_merge(
-			$this->usingTables,
-			$tables
-		);
-	}
-	public function getUsingTables() {
-		$result = [];
-		foreach ($this->usingTables as $tableName => $schemaClass) {
-			$name = San::AlphaNumUnderscore($tableName);
-			if (empty($name)) {
-				fail('Invalid or missing table name!',
-					Defines::EXIT_CODE_INVALID_FORMAT);
-			}
-			if (Strings::StartsWith($tableName, '_')) {
-				fail("Invalid table name, cannot start with _ underscore: $tableName",
-					Defines::EXIT_CODE_INVALID_FORMAT);
-			}
-			$schema = new $schemaClass();
-			if (! $schema instanceof \pxn\pxdb\dbSchema) {
-				fail("Invalid db schema class for table: $schemaClass",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
-			$result[$name] = $schema;
+	public static function addTable($pool, $tableName, $schema) {
+		$pool = self::ValidatePool($pool);
+		$poolName = $pool->getPoolName();
+		if (!\array_key_exists($poolName, self::$usingTables)) {
+			self::$usingTables[$poolName] = [];
 		}
-		return $result;
+		// ensure safe table name
+		$tableName = self::ValidateTableName($tableName);
+		if (\is_string($schema)) {
+			self::$usingTables[$poolName][$tableName] =
+				self::ValidateSchemaClass($schema);
+		} else {
+			self::$usingTables[$poolName][$tableName] =
+				self::GetSchemaClass($schema);
+		}
+		return TRUE;
+	}
+	// format: [ 'table_name' => 'path\\to\\schema\\class', .. ]
+	public static function addTables($pool, array $tables) {
+		if (count($tables) == 0) {
+			return FALSE;
+		}
+		$pool = self::ValidatePool($pool);
+		$count = 0;
+		foreach ($tables as $entryName => $entry) {
+			self::addTable($pool, $entryName, $entry);
+			$count++;
+		}
+		return $count;
+	}
+	public static function getTable($pool, $tableName) {
+		$pool = self::ValidatePool($pool);
+		$poolName = $pool->getPoolName();
+		// unknown pool
+		if (!\array_key_exists($poolName, self::$usingTables)) {
+			return NULL;
+		}
+		$tableName = self::ValidateTableName($tableName);
+		if (empty($tableName)) {
+			fail('Unknown or invalid table name!',
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		// unknown table
+		if (!\array_key_exists($tableName, self::$usingTables[$poolName])) {
+			fail("Unknown table schema: $tableName",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		return self::$usingTables[$poolName][$tableName];
+	}
+	public static function getTables($pool) {
+		$pool = self::ValidatePool($pool);
+		$poolName = $pool->getPoolName();
+		if (!\array_key_exists($poolName, self::$usingTables)) {
+			return NULL;
+		}
+		return self::$usingTables[$poolName];
 	}
 
 
