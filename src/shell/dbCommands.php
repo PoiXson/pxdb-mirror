@@ -70,7 +70,7 @@ abstract class dbCommands {
 			}
 		}
 
-		// commands: list, update, import, export
+		// commands: list, check, update, import, export
 
 		// --pool/--table flags
 		{
@@ -128,7 +128,7 @@ abstract class dbCommands {
 		}
 
 		// no argument (default to all pools/tables)
-		if ($cmd == 'list') {
+		if ($cmd == 'list' || $cmd == 'check') {
 			$result = self::_doRunCommand(
 				$cmd,
 				'*',
@@ -254,6 +254,10 @@ abstract class dbCommands {
 		case 'list':
 			$cmdObj = new dbCommand_List($dry);
 			break;
+		// check for needed updates
+		case 'check':
+			$cmdObj = new dbCommand_Check($dry);
+			break;
 		// update db schema
 		case 'update':
 			$cmdObj = new dbCommand_Update($dry);
@@ -347,6 +351,9 @@ abstract class dbCommands {
 		case 'list':
 			echo "  db list [options]\n";
 			break;
+		case 'check':
+			echo "  db check [options] [[pool:]table] ..\n";
+			break;
 		case 'update':
 			echo "  db update [options] [[pool:]table] ..\n";
 			break;
@@ -363,13 +370,14 @@ abstract class dbCommands {
 		echo "\n";
 		echo "Commands:\n";
 		echo "  list    List the existing database pools/tables\n";
+		echo "  check   Check for needed updates to table schemas.\n";
 		echo "  update  Update the database tables to the current schema, and create tables as needed.\n";
 		echo "  import  Import data from a stored backup.\n";
 		echo "  export  Export data to a backup stored in the filesystem.\n";
 		echo "\n";
 		echo "Options:\n";
 		echo "  -D, --dry    Run the operation without making changes. (default for some operations)\n";
-		if ($cmd == 'update' || $cmd == 'import') {
+		if ($cmd == 'check' || $cmd == 'update' || $cmd == 'import') {
 			echo "  --confirm    Confirm the changes to be made (overrides the --dry flag)\n";
 		}
 		echo "  -p, --pool   Database pool name to use for the operation.\n";
