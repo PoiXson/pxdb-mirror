@@ -151,6 +151,10 @@ abstract class dbCommands {
 		if ($pool == '*' && $table == '*') {
 			echo " Cmd: $cmd  Pool: -all-  Table: -all-\n\n";
 			$pools = dbPool::getPools();
+			if ($pools === NULL || count($pools) == 0) {
+				fail('No database pools configured!',
+					Defines::EXIT_CODE_CONFIG_ERROR);
+			}
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				$tables = $poolEntry->getUsingTables();
@@ -176,6 +180,10 @@ abstract class dbCommands {
 		if ($pool == '*') {
 			echo " Cmd: $cmd  Pool: -all-  Table: $table\n\n";
 			$pools = dbPool::getPools();
+			if ($pools === NULL || count($pools) == 0) {
+				fail('No database pools configured!',
+					Defines::EXIT_CODE_CONFIG_ERROR);
+			}
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				if ($poolEntry->hasTable($table)) {
