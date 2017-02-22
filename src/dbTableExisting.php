@@ -12,7 +12,7 @@ use pxn\phpUtils\Strings;
 use pxn\phpUtils\Defines;
 
 
-final class dbTablesExisting extends dbTables {
+class dbTableExisting extends dbTable {
 	private function __construct() {}
 
 	// pools/tables/fields cache

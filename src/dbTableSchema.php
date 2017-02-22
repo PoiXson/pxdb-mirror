@@ -12,7 +12,7 @@ use pxn\phpUtils\Strings;
 use pxn\phpUtils\Defines;
 
 
-final class dbTablesUsing extends dbTables {
+class dbTableSchema extends dbTable {
 	private function __construct() {}
 
 	protected static $usingTables = [];
