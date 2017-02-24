@@ -13,74 +13,25 @@ use pxn\phpUtils\Defines;
 
 
 class dbTableExisting extends dbTable {
-	private function __construct() {}
-
-	// pools/tables/fields cache
-	public static $cache = [];
 
 
 
-	private static function LoadPoolTables($pool) {
-		$pool = self::ValidatePool($pool);
-		if ($pool == NULL) {
-			fail('Invalid or unknown pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$poolName = $pool->getName();
-		// tables already cached
-		if (\array_key_exists($poolName, self::$cache)) {
-			if (\is_array(self::$cache[$poolName])) {
-				return FALSE;
-			}
-		}
-		// load tables in pool
-		$db = $pool->getDB();
-		if ($db == NULL) {
-			fail('Failed to get db connection for tables list!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$db->Execute(
-			"SHOW TABLES",
-			'LoadPoolTables()'
-		);
-		$databaseName = $db->getDatabaseName();
-		$tables = [];
-		while ($db->hasNext()) {
-			$tableName = $db->getString("Tables_in_{$databaseName}");
-			if (Strings::StartsWith($tableName, '_')) {
-				continue;
-			}
-			$tables[$tableName] = NULL;
-		}
-		$db->release();
-		self::$cache[$poolName] = $tables;
-		return TRUE;
-	}
-	private static function LoadTableFields($pool, $tableName) {
-		$pool      = self::ValidatePool($pool);
-		$tableName = self::ValidateTableName($tableName);
-		$poolName = $pool->getName();
-		if (Strings::StartsWith($tableName, '_')) {
+	public function initFields() {
+		$this->inited = TRUE;
+		$tableName = $this->tableName;
+		if (Strings::StartsWith($this->tableName, '_')) {
+			$poolName  = $this->pool->getPoolName();
+			$tableName = $this->tableName;
 			fail("Table name cannot start with _ underscore: {$poolName}:{$tableName}",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-		self::LoadPoolTables($pool);
-		// table not found
-		if (!\array_key_exists($tableName, self::$cache[$poolName])) {
-			fail("Unable to find table: {$poolName}:{$tableName}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		// fields already cached
-		if (\is_array(self::$cache[$poolName][$tableName])) {
-			return FALSE;
-		}
 		// load fields in table
-		$db = $pool->getDB();
+		$db = $this->pool->getDB();
 		$db->Execute(
 			"DESCRIBE `__TABLE__{$tableName}`;",
 			'LoadTableFields()'
 		);
-		$fields = [];
+		$this->fields = [];
 		while ($db->hasNext()) {
 			$row = $db->getRow();
 			// field name
@@ -122,15 +73,15 @@ class dbTableExisting extends dbTable {
 			if (\mb_strpos(\mb_strtolower($extra), 'auto_increment') !== FALSE) {
 				$field['increment'] = TRUE;
 			}
-			$fields[$fieldName] = $field;
+			$this->fields[$fieldName] = $field;
 		}
 		$db->release();
-		self::$cache[$poolName][$tableName] = $fields;
-		return TRUE;
+		return \count($this->fields);
 	}
 
 
 
+/*
 	// returns a list of table keys (field values may not yet be cached)
 	public static function getTables($pool) {
 		$pool = self::ValidatePool($pool);
@@ -162,25 +113,7 @@ class dbTableExisting extends dbTable {
 		}
 		return self::$cache[$poolName][$tableName];
 	}
-
-
-
-	public static function hasTable($pool, $tableName) {
-		$pool      = self::ValidatePool($pool);
-		$tableName = self::ValidateTableName($tableName);
-		$poolName = $pool->getName();
-		self::LoadPoolTables($pool);
-		return \array_key_exists($tableName, self::$cache[$poolName]);
-	}
-	public static function hasField($pool, $tableName, $fieldName) {
-		$pool      = self::ValidatePool($pool);
-		$tableName = self::ValidateTableName($tableName);
-		$fieldName = self::ValidateFieldName($fieldName);
-		$poolName = $pool->getName();
-		self::LoadPoolTables($pool);
-		self::LoadTableFields($pool, $tableName);
-		return \array_key_exists($fieldName, self::$cache[$poolName][$tableName]);
-	}
+*/
 
 
 

@@ -8,11 +8,15 @@
  */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\Defines;
+//use pxn\phpUtils\Strings;
+//use pxn\phpUtils\Defines;
 
 
-class dbTableSchema extends dbTable {
+abstract class dbTableSchema extends dbTable {
+
+
+
+/*
 	private function __construct() {}
 
 	protected static $usingTables = [];
@@ -76,6 +80,7 @@ class dbTableSchema extends dbTable {
 		}
 		return self::$usingTables[$poolName];
 	}
+*/
 
 
 

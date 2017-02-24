@@ -171,7 +171,7 @@ abstract class dbCommands {
 			}
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
-				$tables = $poolEntry->getUsingTables();
+				$tables = $poolEntry->getTableSchemas();
 				foreach ($tables as $tableEntryName => $tableEntry) {
 					$result = self::_doRunCommandOnce(
 						$cmd,
