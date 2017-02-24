@@ -63,9 +63,9 @@ class dbTableExisting extends dbTable {
 				$field->setNullable(TRUE);
 			}
 			// default value
-			if (\array_key_exists('default', $row)) {
+			if (\array_key_exists('Default', $row)) {
 				$default = (
-					$row['default'] === NULL
+					$row['Default'] === NULL
 					? NULL
 					: $db->getString('Default')
 				);

@@ -34,7 +34,7 @@ class dbField {
 				Defines::EXIT_CODE_USAGE_ERROR);
 		}
 		if (Strings::StartsWith($name, '_')) {
-			fail("Field name cannot start with _ underscore: $name"
+			fail("Field name cannot start with _ underscore: $name",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
 		$this->name = $name;

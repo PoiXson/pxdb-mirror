@@ -267,7 +267,12 @@ class dbPool {
 		if (!\array_key_exists($tableName, $this->schemas)) {
 			return NULL;
 		}
-		return dbTable::GetSchemaTable( $this->schemas[$tableName] );
+		$clss = dbTable::GetSchemaClass(
+			$this->schemas[$tableName],
+			$this,
+			$tableName
+		);
+		return $clss;
 	}
 
 
