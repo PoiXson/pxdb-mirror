@@ -27,6 +27,7 @@ class dbField {
 
 	public function __construct($name, $type, $size=NULL) {
 		$name = San::AlphaNumUnderscore($name);
+		$this->name = $name;
 		$type = San::AlphaNumUnderscore(\mb_strtolower($type));
 		if (empty($name)) {
 			fail('Invalid or missing db field name!',
