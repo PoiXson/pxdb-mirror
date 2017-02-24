@@ -24,27 +24,38 @@ class dbCommand_ListCheck extends dbCommands {
 
 	// returns true if successful
 	public function execute($pool, $tableName) {
-		$pool = dbPool::getPool($pool);
+		$pool     = dbPool::getPool($pool);
 		$poolName = $pool->getName();
-		$tableExists = dbTablesExisting::hasTable($pool, $tableName);
+		$tableExists = $pool->hasExistingTable($tableName);
 		// found table
 		if ($tableExists) {
-			$msg = "{$poolName}:{$tableName} <found>";
-			$fields = dbTablesExisting::getFields($pool, $tableName);
+			$table = $pool->getExistingTable($tableName);
+			$fields = $table->getFields();
 			$fieldCount = count($fields);
-			$msg .= "\n  Fields: {$fieldCount}";
-			// list the fields
-			if ($fieldCount > 0) {
-				$msg .= ' ';
-				foreach ($fields as $fieldName => $field) {
-					$fieldType = $field['type'];
-					$fieldTypeStr = (
-						isset($field['size']) && !empty($field['size'])
-						? "{$fieldType}|".$field['size']
-						: $fieldType
-					);
-					$tmp = Strings::PadLeft("  [{$fieldTypeStr}] ", 11);
-					$msg .= "\n{$tmp}$fieldName";
+			$msg = "<found> {$poolName}:{$tableName}";
+			if ($this->flagShowFields) {
+				$msg .= "\n Fields: {$fieldCount}\n";
+				// list the fields
+				if ($fieldCount > 0) {
+					$maxLength = 11;
+					$strings = [];
+					foreach ($fields as $fieldName => $field) {
+						$fieldType = $field['type'];
+						$fieldTypeStr = (
+							isset($field['size']) && !empty($field['size'])
+							? "{$fieldType}|".$field['size']
+							: $fieldType
+						);
+						$tmp = "  [{$fieldTypeStr}] ";
+						$strings[$fieldName] = $tmp;
+						$len = \strlen($tmp);
+						if ($len > $maxLength) {
+							$maxLength = $len;
+						}
+					}
+					foreach ($strings as $fieldName => $fieldStr) {
+						$msg .= Strings::PadLeft($fieldStr, $maxLength).$fieldName."\n";
+					}
 				}
 			}
 			echo "$msg\n";
