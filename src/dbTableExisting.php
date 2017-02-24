@@ -39,22 +39,29 @@ class dbTableExisting extends dbTable {
 			if (Strings::StartsWith($fieldName, '_')) {
 				continue;
 			}
-			$field = [];
-			$field['name'] = $fieldName;
 			// type
-			$field['type'] = $db->getString('Type');
+			$fieldType = $db->getString('Type');
 			// size
-			$pos = \mb_strpos($field['type'], '(');
+			$fieldSize = NULL;
+			$pos = \mb_strpos($fieldType, '(');
 			if ($pos !== FALSE) {
-				$field['size'] = Strings::Trim(
-					\mb_substr($field['type'], $pos),
+				$fieldSize = Strings::Trim(
+					\mb_substr($fieldType, $pos),
 					'(', ')'
 				);
-				$field['type'] = \mb_substr($field['type'], 0, $pos);
+				$fieldType = \mb_substr($fieldType, 0, $pos);
 			}
+			// new field object
+			$field = new dbField(
+				$fieldName,
+				$fieldType,
+				$fieldSize
+			);
 			// null / not null
-			$nullable = $db->getString('Null');
-			$field['nullable'] = (\mb_strtoupper($nullable) == 'YES');
+			$nullable = (\mb_strtoupper( $db->getString('Null') ) == 'YES');
+			if ($nullable) {
+				$field->setNullable(TRUE);
+			}
 			// default value
 			if (\array_key_exists('default', $row)) {
 				$default = (
@@ -62,16 +69,16 @@ class dbTableExisting extends dbTable {
 					? NULL
 					: $db->getString('Default')
 				);
+				$field->setDefault($default);
 			}
 			// primary key
-			$primary = $db->getString('Key');
-			if (\mb_strtoupper($primary) == 'PRI') {
-				$field['primary'] = TRUE;
+			if (\mb_strtoupper( $db->getString('Key') ) == 'PRI') {
+				$field->setPrimary(TRUE);
 			}
 			// auto increment
 			$extra = $db->getString('Extra');
 			if (\mb_strpos(\mb_strtolower($extra), 'auto_increment') !== FALSE) {
-				$field['increment'] = TRUE;
+				$field->setIncrement(TRUE);
 			}
 			$this->fields[$fieldName] = $field;
 		}
