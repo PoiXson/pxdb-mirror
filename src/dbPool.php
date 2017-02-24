@@ -199,7 +199,7 @@ class dbPool {
 	// $schema argument can be path string to class or a class instance object
 	public function addTableSchema($tableName, $schema) {
 		$tableName = dbTable::ValidateTableName($tableName);
-		$schema    = dbTableSchema::ValidateSchemaClass($schema);
+		$schema    = dbTable::ValidateSchemaClass($schema);
 		// table schema already exists
 		if (\array_key_exists($tableName, $this->schemas)) {
 			$poolName = $this->getName();
@@ -226,7 +226,7 @@ class dbPool {
 		$tableName = dbTable::ValidateTableName($tableName);
 		if (\array_key_exists($tableName, $this->schemas)) {
 			$schema = $this->schemas[$tableName];
-			return dbTableSchema::castSchemaTable($schema);
+			return dbTable::GetSchemaClass($schema, $this, $tableName);
 		}
 		return NULL;
 	}

@@ -235,7 +235,7 @@ abstract class dbTable {
 		$engine = 'InnoDB';
 		$sql = "CREATE TABLE `__TABLE__{$tableName}` ( $fieldSQL ) ENGINE={$engine} DEFAULT CHARSET=latin1";
 		if (System::isShell()) {
-			echo "\nCreating table: $tableName ..\n";
+			echo "Creating table: $tableName ..\n";
 		}
 		$db->Execute(
 			$sql,
