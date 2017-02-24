@@ -73,12 +73,12 @@ class dbTableExisting extends dbTable {
 			}
 			// primary key
 			if (\mb_strtoupper( $db->getString('Key') ) == 'PRI') {
-				$field->setPrimary(TRUE);
+				$field->setPrimaryKey(TRUE);
 			}
 			// auto increment
 			$extra = $db->getString('Extra');
 			if (\mb_strpos(\mb_strtolower($extra), 'auto_increment') !== FALSE) {
-				$field->setIncrement(TRUE);
+				$field->setAutoIncrement(TRUE);
 			}
 			$this->fields[$fieldName] = $field;
 		}

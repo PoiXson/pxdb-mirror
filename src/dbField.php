@@ -8,6 +8,7 @@
  */
 namespace pxn\pxdb;
 
+use pxn\phpUtils\Strings;
 use pxn\phpUtils\San;
 use pxn\phpUtils\Defines;
 
@@ -27,12 +28,31 @@ class dbField {
 
 	public function __construct($name, $type, $size=NULL) {
 		$name = San::AlphaNumUnderscore($name);
-		$this->name = $name;
-		$type = San::AlphaNumUnderscore(\mb_strtolower($type));
 		if (empty($name)) {
 			fail('Invalid or missing db field name!',
 				Defines::EXIT_CODE_USAGE_ERROR);
 		}
+		if (Strings::StartsWith($name, '_')) {
+			fail("Field name cannot start with _ underscore: $name"
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$this->name = $name;
+		$this->setType($type);
+		$this->setSize($size);
+	}
+
+
+
+	// field name
+	public function getName() {
+		return $this->name;
+	}
+
+
+
+	// field type
+	public function setType($type) {
+		$type = San::AlphaNumUnderscore(\mb_strtolower($type));
 		if (empty($type)) {
 			fail('Invalid or missing db field type!',
 				Defines::EXIT_CODE_USAGE_ERROR);
@@ -55,14 +75,10 @@ class dbField {
 			fail("Unsupported field type: [{$type}] $name",
 				Defines::EXIT_CODE_USAGE_ERROR);
 		}
-		$this->size = $size;
+		return $this;
 	}
-
-
-
-	// field name
-	public function getName() {
-		return $this->name;
+	public function getType() {
+		return $this->type;
 	}
 
 
@@ -112,7 +128,7 @@ class dbField {
 		if ($increment === NULL) {
 			$this->increment = NULL;
 		} else {
-			$increment = ($increment === TRUE);
+			$this->increment = ($increment === TRUE);
 		}
 		return $this;
 	}
@@ -127,7 +143,7 @@ class dbField {
 		if ($primary === NULL) {
 			$this->primary = NULL;
 		} else {
-			$primary = ($primary === TRUE);
+			$this->primary = ($primary === TRUE);
 		}
 		return $this;
 	}
@@ -142,7 +158,7 @@ class dbField {
 		if ($unique === NULL) {
 			$this->unique = NULL;
 		} else {
-			$unique = ($unique === TRUE);
+			$this->unique = ($unique === TRUE);
 		}
 		return $this;
 	}
