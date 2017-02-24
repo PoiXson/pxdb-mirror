@@ -10,6 +10,7 @@ namespace pxn\pxdb;
 
 use pxn\phpUtils\Strings;
 use pxn\phpUtils\San;
+use pxn\phpUtils\Numbers;
 use pxn\phpUtils\Defines;
 
 
@@ -203,5 +204,317 @@ class dbField {
 
 
 
-}
+	public function ValidateKeys() {
+		// field name
+		if (!San::isAlphaNumUnderscore($this->name)) {
+			fail("Invalid field name: {$this->name}",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$this->name = San::AlphaNumUnderscore( (string)$this->name );
+		if (empty($this->name)) {
+			fail('Invalid or missing field name!',
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		if (Strings::StartsWith($this->name, '_')) {
+			$fieldName = $this->name;
+			fail("Field name cannot start with _ underscore: $fieldName",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		// field type
+		if (empty($this->type)) {
+			$fieldName = $this->name;
+			fail("Missing field type for field: $fieldName",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$this->type =
+			San::AlphaNumUnderscore(
+				\mb_strtolower(
+					(string) $this->type
+				)
+			);
+		if (empty($this->type)) {
+			$fieldName = $this->name;
+			fail("Invalid field type for field: $fieldName",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		// size
+		if ($this->size !== NULL) {
+			switch ($this->type) {
+			case 'increment':
+			case 'int':       case 'tinyint': case 'smallint':
+			case 'mediumint': case 'bigint':
+			case 'bit':       case 'char':
+			case 'boolean':   case 'bool':
+			case 'varchar':
+				$this->size = (int) $this->size;
+			case 'decimal': case 'double':   case 'float':
+			case 'enum':    case 'set':
+			case 'text':    case 'longtext': case 'blob':
+			case 'date':    case 'time':     case 'datetime':
+				$this->size = (string) $this->size;
+				break;
+			default:
+				$fieldName = $this->name;
+				$fieldType = $this->type;
+				fail("Unable to guess size for field: [{$fieldType}] $fieldName",
+					Defines::EXIT_CODE_INTERNAL_ERROR);
+			}
+		}
+	}
+	public function FillKeysExisting() {
+		if ($this->nullable === NULL) {
+			$this->nullable = FALSE;
+		}
+	}
+	public function FillKeysSchema() {
 
+		// auto-increment
+		if ($this->type == 'increment') {
+			$this->setAutoIncrement(TRUE);
+		}
+		if ($this->isAutoIncrement()) {
+			$this->setPrimaryKey(TRUE);
+			$this->setType('int');
+			$this->setSize(11);
+			$this->setNullable(FALSE);
+			$this->setDefault(NULL);
+			return;
+		}
+
+		// size
+		if (empty($this->size)) {
+			// guess default size
+			switch ($this->type) {
+			case 'int':
+				$this->size = 11;
+				break;
+			case 'tinyint':
+				$this->size = 4;
+				break;
+			case 'smallint':
+				$this->size = 6;
+				break;
+			case 'mediumint':
+				$this->size = 8;
+				break;
+			case 'bigint':
+				$this->size = 20;
+				break;
+			case 'decimal': case 'double':
+				$this->size = '16,4';
+				break;
+			case 'float':
+				$this->size = '10,2';
+				break;
+			case 'bit':     case 'char':
+			case 'boolean': case 'bool':
+				$this->size = 1;
+				break;
+			case 'varchar':
+				$this->size = 255;
+			case 'enum': case 'set':
+				$this->size = "''";
+				break;
+			case 'text': case 'longtext': case 'blob':
+			case 'date': case 'time':     case 'datetime':
+				break;
+			default:
+				$fieldName = $this->getName();
+				$fieldType = $this->getType();
+				fail("Unable to guess size for field: [{$fieldType}] $fieldName",
+					Defines::EXIT_CODE_INTERNAL_ERROR);
+			}
+		}
+
+		// null not allowed
+		if ($this->nullable !== TRUE) {
+			$this->nullable = FALSE;
+			// guess based on type
+			switch ($this->type) {
+			case 'decimal': case 'float': case 'double':
+				if ($this->defValue === NULL) {
+					$this->defValue = 0.0;
+				}
+				break;
+			case 'int':       case 'tinyint':
+			case 'smallint':  case 'mediumint': case 'bigint':
+			case 'bit':       case 'boolean':   case 'bool':
+				if ($this->defValue === NULL) {
+					$this->defValue = 0;
+				}
+				break;
+			case 'date': case 'time': case 'datetime':
+				// default value
+				switch ($this->type) {
+				case 'date':
+					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 10) {
+						$this->defValue = '0000-00-00';
+					}
+					break;
+				case 'time':
+					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 8) {
+						$this->defValue = '00:00:00';
+					}
+					break;
+				case 'datetime':
+					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 19) {
+						$this->defValue = '0000-00-00 00:00:00';
+					}
+					break;
+				default:
+					fail('Unexpected error!', Defines::EXIT_CODE_INTERNAL_ERROR);
+				}
+				break;
+			case 'varchar': case 'char': case 'blob':
+			case 'text': case 'longtext':
+				if ($this->defValue === NULL) {
+					$this->defValue = '';
+				}
+				break;
+			case 'enum':    case 'set':
+				if ($this->defValue === NULL) {
+					$this->nullable = TRUE;
+				}
+				break;
+			default:
+				$fieldName = $this->getName();
+				$fieldType = $this->getType();
+				fail("Unsupported field type: [{$fieldType}] $fieldName",
+					Defines::EXIT_CODE_INTERNAL_ERROR);
+			}
+		}
+
+	}
+
+
+
+	public static function CheckFieldNeedsChanges(dbField $existingField, dbField $schemaField) {
+		// prepare copies of field objects
+		$exist = $existingField->clone();
+		$schem = $schemaField->clone();
+		$exist->ValidateKeys();
+		$schem->ValidateKeys();
+		$exist->FillKeysExisting();
+		$schem->FillKeysSchema();
+		// check for needed changes
+		$changes = [];
+
+		// auto-increment
+		if ($exist->isAutoIncrement() !== $schem->isAutoIncrement()) {
+			$changes[] = 'increment';
+		}
+		// primary key
+		if ($exist->isPrimaryKey() !== $schem->isPrimaryKey()) {
+			$changes[] = 'primary';
+		}
+
+		// check field type
+		if ($exist->getType() !== $schem->getType()) {
+			$existDesc = $exist->getDesc();
+			$schemDesc = $schem->getDesc();
+			$changes[] = "type: {$existDesc} -> {$schemDesc}";
+			return $changes;
+		}
+
+		// check properties based on field type
+		switch ($schem->getType()) {
+		// length size
+		case 'int':       case 'tinyint': case 'smallint':
+		case 'mediumint': case 'bigint':
+		case 'decimal':   case 'double':  case 'float':
+		case 'bit':       case 'char':
+		case 'boolean':   case 'bool':
+		case 'varchar':
+		// string values
+		case 'enum': case 'set':
+			$existSize = $exist->getSize();
+			$schemSize = $schem->getSize();
+			if ($existSize != $schemSize) {
+				$msg = [];
+				$msg[] = 'size(';
+				$size = $exist->getSize();
+				if ($size === NULL) {
+					$msg[] = 'NULL';
+				} else
+				if (Numbers::isNumber($size)) {
+					$msg[] = (int) $size;
+				} else {
+					$msg[] = "'{$size}'";
+				}
+				$msg[] = '->';
+				$size = $schem->getSize();
+				if ($size === NULL) {
+					$msg[] = 'NULL';
+				} else
+				if (Numbers::isNumber($size)) {
+					$msg[] = (int) $size;
+				} else {
+					$msg[] = "'{$size}'";
+				}
+				$msg[] = ')';
+				$changes[] = \implode($msg, '');
+			}
+			break;
+		// no size
+		case 'text': case 'longtext': case 'blob':
+		case 'date': case 'time':     case 'datetime':
+//			$existDefault = $existField['default'];
+//			$schemDefault = $schemField['default'];
+//			if ($existDefault != $schemDefault) {
+//				$changes[] = "default({$existDefault}>{$schemDefault})";
+//			}
+//			if ($existField['nullable'] !== $schemField['nullable']) {
+//				$n1 = ($existField['nullable'] ? 'YES' : 'NOT');
+//				$n2 = ($schemField['nullable'] ? 'YES' : 'NOT');
+//				$changes[] = "nullable({$n1}>{$n2})";
+//			}
+			break;
+		default:
+			$fieldName = $schem->getName();
+			$fieldType = $schem->getType();
+			fail("Unsupported field type: [{$fieldType}] $fieldName",
+				Defines::EXIT_CODE_USAGE_ERROR);
+		}
+
+		// check nullable
+		$existNullable = $exist->getNullable();
+		$schemNullable = $schem->getNullable();
+		if ($schemNullable !== NULL) {
+			if ($existNullable === NULL) {
+				if ($schemNullable === TRUE) {
+					$changes[] = 'nullable(NOT -> NUL)';
+				}
+			} else
+			if ($existNullable !== $schemNullable) {
+				$msg = [];
+				$msg[] = 'nullable(';
+				$msg[] = ($existNullable === TRUE ? 'NUL' : 'NOT');
+				$msg[] = ' -> ';
+				$msg[] = ($schemNullable === TRUE ? 'NUL' : 'NOT');
+				$msg[] = ')';
+				$changes[] = \implode($msg, '');
+			}
+		}
+
+		// check default value
+		$existDefault = $exist->getDefault();
+		$schemDefault = $schem->getDefault();
+		if ($existDefault !== $schemDefault) {
+			$msg = [];
+			$msg[] = 'default(';
+			$msg[] = ($existDefault === NULL ? 'NULL' : "'{$existDefault}'");
+			$msg[] = ' -> ';
+			$msg[] = ($schemDefault === NULL ? 'NULL' : "'{$existDefault}'");
+			$msg[] = ')';
+			$changes[] = \implode($msg, '');
+		}
+
+		if (\count($changes) == 0) {
+			return FALSE;
+		}
+		return $changes;
+	}
+
+
+
+}
