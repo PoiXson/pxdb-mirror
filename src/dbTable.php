@@ -27,6 +27,20 @@ abstract class dbTable {
 		$this->pool      = self::ValidatePool($pool);
 		$this->tableName = self::ValidateTableName($tableName);
 	}
+	public function doInitFields() {
+		if ($this->inited) {
+			return TRUE;
+		}
+		$this->initFields();
+		// set key names
+		$fields = [];
+		foreach ($this->fields as $field) {
+			$name = $field->getName();
+			$fields[$name] = $field;
+		}
+		$this->fields = $fields;
+		return FALSE;
+	}
 	public function initFields() {
 		fail('Must override initFields() function in a class extending dbTable!',
 			Defines::EXIT_CODE_INTERNAL_ERROR);
@@ -35,24 +49,17 @@ abstract class dbTable {
 
 
 	public function getFields() {
-		if ($this->inited == FALSE) {
-			$this->initFields();
-		}
+		$this->doInitFields();
 		return $this->fields;
 	}
 	public function hasField($fieldName) {
 		$fieldName = self::ValidateFieldName($fieldName);
-		if ($this->inited == FALSE) {
-			$this->initFields();
-		}
+		$this->doInitFields();
 		return \array_key_exists($fieldName, $this->fields);
 	}
 	public function getField($fieldName) {
 		$fieldName = self::ValidateFieldName($fieldName);
-		// load fields info
-		if ($this->inited == FALSE) {
-			$this->initFields();
-		}
+		$this->doInitFields();
 		if (!\array_key_exists($fieldName, $this->fields)) {
 			return NULL;
 		}
