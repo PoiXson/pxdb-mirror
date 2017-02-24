@@ -9,7 +9,9 @@
 namespace pxn\pxdb\shell;
 
 
-class dbCommand_Import extends dbCommands {
+class dbCommand_ImportExport extends dbCommands {
+
+	public $flagImportExport = NULL;
 
 
 

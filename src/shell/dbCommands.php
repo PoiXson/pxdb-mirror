@@ -284,11 +284,13 @@ abstract class dbCommands {
 			break;
 		// import db tables
 		case 'import':
-			$cmdObj = new dbCommand_Import($dry);
+			$cmdObj = new dbCommand_ImportExport($dry);
+			$cmdObj->flagImportExport = 'import';
 			break;
 		// export db tables
 		case 'export':
-			$cmdObj = new dbCommand_Export($dry);
+			$cmdObj = new dbCommand_ImportExport($dry);
+			$cmdObj->flagImportExport = 'export';
 			break;
 		default:
 			self::DisplayHelp();
