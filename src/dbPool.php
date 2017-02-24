@@ -26,6 +26,9 @@ class dbPool {
 	// conns[index]
 	protected $conns   = [];
 
+	protected $existing = NULL;
+	protected $schemas  = [];
+
 
 
 	public static function configure(
@@ -163,19 +166,108 @@ class dbPool {
 
 
 
-	// add table schema
-	public function addUsingTable($tableName, $schemaClass) {
-		dbTablesUsing::addTable($this, $tableName, $schemaClass);
+	protected function loadExistingTables() {
+		if (\is_array($this->existing)) {
+			return TRUE;
+		}
+		// get list of existing tables
+		$this->existing = [];
+		$db = $this->getDB();
+		if ($db == NULL) {
+			fail('Failed to get db connection for tables list!',
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$db->Execute(
+			"SHOW TABLES",
+			'LoadPoolTables()'
+		);
+		$databaseName = $db->getDatabaseName();
+		while ($db->hasNext()) {
+			$tableName = $db->getString("Tables_in_{$databaseName}");
+			if (Strings::StartsWith($tableName, '_')) {
+				continue;
+			}
+			$this->existing[$tableName] = NULL;
+		}
+		$db->release();
+		return FALSE;
 	}
-	public function addUsingTables(array $tables) {
-		dbTablesUsing::addTables($this, $tables);
+
+
+
+	// table schemas
+	// $schema argument can be path string to class or a class instance object
+	public function addTableSchema($tableName, $schema) {
+		$tableName = dbTable::ValidateTableName($tableName);
+		$schema    = dbTableSchema::ValidateSchemaClass($schema);
+		// table schema already exists
+		if (\array_key_exists($tableName, $this->schemas)) {
+			$poolName = $this->getName();
+			fail("Table already added to pool: {$poolName}:{$tableName}",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		$this->schemas[$tableName] = $schema;
+		return TRUE;
 	}
-	// get table schema
-	public function getUsingTable($tableName) {
-		return dbTablesUsing::getTable($this, $tableName);
+	public function addTableSchemas(array $schemas) {
+		if (\count($schemas) == 0) {
+			return FALSE;
+		}
+		$count = 0;
+		foreach ($schemas as $entryName => $entry) {
+			$result = self::addTableSchema($entryName, $entry);
+			if ($result !== FALSE) {
+				$count++;
+			}
+		}
+		return $count;
 	}
-	public function getUsingTables() {
-		return dbTablesUsing::getTables($this);
+	public function getTableSchema($tableName) {
+		$tableName = dbTable::ValidateTableName($tableName);
+		if (\array_key_exists($tableName, $this->schemas)) {
+			$schema = $this->schemas[$tableName];
+			return dbTableSchema::castSchemaTable($schema);
+		}
+		return NULL;
+	}
+	public function getTableSchemas() {
+		return $this->schemas;
+	}
+
+
+
+	public function hasExistingTable($tableName) {
+		$this->loadExistingTables();
+		$tableName = dbTable::ValidateTableName($tableName);
+		return \array_key_exists($tableName, $this->existing);
+	}
+	public function hasSchemaTable($tableName) {
+		$tableName = dbTable::ValidateTableName($tableName);
+		return \array_key_exists($tableName, $this->schemas);
+	}
+
+
+
+	public function getExistingTable($tableName) {
+		$this->loadExistingTables();
+		$tableName = dbTable::ValidateTableName($tableName);
+		if (!\array_key_exists($tableName, $this->existing)) {
+			return NULL;
+		}
+		$existing = $this->existing[$tableName];
+		// load table object
+		if ($existing === NULL) {
+			$existing = new dbTableExisting($this, $tableName);
+			$this->existing[$tableName] = $existing;
+		}
+		return $existing;
+	}
+	public function getSchemaTable($tableName) {
+		$tableName = dbTable::ValidateTableName($tableName);
+		if (!\array_key_exists($tableName, $this->schemas)) {
+			return NULL;
+		}
+		return dbTable::GetSchemaTable( $this->schemas[$tableName] );
 	}
 
 
