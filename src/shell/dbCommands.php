@@ -20,6 +20,7 @@ use pxn\pxdb\dbPool;
 abstract class dbCommands {
 
 	protected $dry = NULL;
+	private $flagShowFields = NULL;
 
 
 
@@ -67,6 +68,19 @@ abstract class dbCommands {
 			$confirm = ShellTools::getFlagBool('--confirm');
 			if ($confirm != FALSE) {
 				$dry = FALSE;
+			}
+		}
+
+		// commands: list, check
+		if ($cmd == 'list' || $cmd == 'check') {
+			$result = ShellTools::hasFlag('-F', '--no-fields');
+			if ($result) {
+				$this->flagShowFields = FALSE;
+			} else {
+				$result = ShellTools::hasFlag('-f', '--show-fields');
+				if ($result) {
+					$this->flagShowFields = TRUE;
+				}
 			}
 		}
 
@@ -260,11 +274,15 @@ abstract class dbCommands {
 		switch ($cmd) {
 		// list pools/tables
 		case 'list':
-			$cmdObj = new dbCommand_List($dry);
+			$cmdObj = new dbCommand_ListCheck($dry);
+			$cmdObj->flagShowFields = $this->flagShowFields;
+			$cmdObj->flagCheckFields = FALSE;
 			break;
 		// check for needed updates
 		case 'check':
-			$cmdObj = new dbCommand_Check($dry);
+			$cmdObj = new dbCommand_ListCheck($dry);
+			$cmdObj->flagShowFields = $this->flagShowFields;
+			$cmdObj->flagCheckFields = TRUE;
 			break;
 		// update db schema
 		case 'update':
@@ -388,6 +406,12 @@ abstract class dbCommands {
 		if ($cmd == 'check' || $cmd == 'update' || $cmd == 'import') {
 			echo "  --confirm    Confirm the changes to be made (overrides the --dry flag)\n";
 		}
+		if ($cmd == 'list' || $cmd == 'check') {
+			echo "\n";
+			echo "  -f, --show-fields  List fields for tables\n";
+			echo "  -F, --no-fields    Don't list fields in tables\n";
+		}
+		echo "\n";
 		echo "  -p, --pool   Database pool name to use for the operation.\n";
 		echo "  -t, --table  Name of the table to use for the operation.\n";
 		if ($cmd == 'import') {

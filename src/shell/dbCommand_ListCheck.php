@@ -14,7 +14,11 @@ use pxn\pxdb\dbTablesExisting;
 use pxn\phpUtils\Strings;
 
 
-class dbCommand_List extends dbCommands {
+class dbCommand_ListCheck extends dbCommands {
+
+	// flags
+	public $flagShowFields  = FALSE;
+	public $flagCheckFields = FALSE;
 
 
 
