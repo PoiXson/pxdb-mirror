@@ -40,6 +40,44 @@ class dbField {
 		$this->setType($type);
 		$this->setSize($size);
 	}
+	public function clone() {
+		$obj = new self(
+			$this->name,
+			$this->type,
+			$this->size
+		);
+		$obj->nullable  = $this->nullable;
+		$obj->defValue  = $this->defValue;
+		$obj->increment = $this->increment;
+		$obj->primary   = $this->primary;
+		$obj->unique    = $this->unique;
+		return $obj;
+	}
+
+
+
+	public function getDesc() {
+		$msg = [];
+		$msg[] = $this->getType();
+		$msg[] = '(';
+		$msg[] = $this->getSize();
+		$nullable = $this->getNullable();
+		$defValue = $this->getDefault();
+		if ($nullable === TRUE) {
+			$msg[] = '-NUL=';
+			$msg[] = ($defValue === NULL ? 'NULL' : "'{$defValue}'");
+		} else {
+			$msg[] = '-NOT';
+			// no default value and not nullable
+			if ($defValue === NULL) {
+				$msg[] = '=NONE';
+			} else {
+				$msg[] = "='{$defValue}'";
+			}
+		}
+		$msg[] = ')';
+		return \implode($msg, '');
+	}
 
 
 
