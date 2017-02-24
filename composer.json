@@ -34,7 +34,7 @@
 		]
 	},
 	"require": {
-		"pxn/phpUtils":    "0.1.27",
+		"pxn/phpUtils":    "0.1.28",
 		"ext-pdo":         "*",
 		"ext-pdo_mysql":   "*"
 	},
