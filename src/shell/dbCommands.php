@@ -20,7 +20,6 @@ use pxn\pxdb\dbPool;
 abstract class dbCommands {
 
 	protected $dry = NULL;
-	private $flagShowFields = NULL;
 
 
 
@@ -68,19 +67,6 @@ abstract class dbCommands {
 			$confirm = ShellTools::getFlagBool('--confirm');
 			if ($confirm != FALSE) {
 				$dry = FALSE;
-			}
-		}
-
-		// commands: list, check
-		if ($cmd == 'list' || $cmd == 'check') {
-			$result = ShellTools::hasFlag('-F', '--no-fields');
-			if ($result) {
-				$this->flagShowFields = FALSE;
-			} else {
-				$result = ShellTools::hasFlag('-f', '--show-fields');
-				if ($result) {
-					$this->flagShowFields = TRUE;
-				}
 			}
 		}
 
@@ -275,13 +261,21 @@ abstract class dbCommands {
 		// list pools/tables
 		case 'list':
 			$cmdObj = new dbCommand_ListCheck($dry);
-			$cmdObj->flagShowFields = $this->flagShowFields;
+			if (ShellTools::getFlagBool('-f', '--show-fields')) {
+				$cmdObj->flagShowFields = TRUE;
+			} else {
+				$cmdObj->flagShowFields = FALSE;
+			}
 			$cmdObj->flagCheckFields = FALSE;
 			break;
 		// check for needed updates
 		case 'check':
 			$cmdObj = new dbCommand_ListCheck($dry);
-			$cmdObj->flagShowFields = $this->flagShowFields;
+			if (ShellTools::getFlagBool('-F', '--no-fields')) {
+				$cmdObj->flagShowFields = FALSE;
+			} else {
+				$cmdObj->flagShowFields = TRUE;
+			}
 			$cmdObj->flagCheckFields = TRUE;
 			break;
 		// update db schema
