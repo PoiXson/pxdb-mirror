@@ -58,26 +58,22 @@ class dbField {
 
 
 	public function getDesc() {
-		$msg = [];
-		$msg[] = $this->getType();
-		$msg[] = '(';
-		$msg[] = $this->getSize();
+		$msg = $this->getType().
+			'('.$this->getSize();
 		$nullable = $this->getNullable();
 		$defValue = $this->getDefault();
 		if ($nullable === TRUE) {
-			$msg[] = '-NUL=';
-			$msg[] = ($defValue === NULL ? 'NULL' : "'{$defValue}'");
+			$msg .= '-NUL='.($defValue === NULL ? 'NULL' : "'{$defValue}'");
 		} else {
-			$msg[] = '-NOT';
 			// no default value and not nullable
 			if ($defValue === NULL) {
-				$msg[] = '=NONE';
+				$msg .= '-NOT=NONE';
 			} else {
-				$msg[] = "='{$defValue}'";
+				$msg .= "-NOT='{$defValue}'";
 			}
 		}
-		$msg[] = ')';
-		return \implode($msg, '');
+		$msg .= ')';
+		return $msg;
 	}
 
 
@@ -430,29 +426,28 @@ class dbField {
 			$existSize = $exist->getSize();
 			$schemSize = $schem->getSize();
 			if ($existSize != $schemSize) {
-				$msg = [];
-				$msg[] = 'size(';
-				$size = $exist->getSize();
+				$msg = 'size('.$exist->getSize();
 				if ($size === NULL) {
-					$msg[] = 'NULL';
+					$msg .= 'NULL';
 				} else
 				if (Numbers::isNumber($size)) {
-					$msg[] = (int) $size;
+					$msg .= (int) $size;
 				} else {
-					$msg[] = "'{$size}'";
+					$msg .= "'{$size}'";
 				}
-				$msg[] = '->';
+				$msg .= '->';
 				$size = $schem->getSize();
 				if ($size === NULL) {
-					$msg[] = 'NULL';
+					$msg .= 'NULL';
 				} else
 				if (Numbers::isNumber($size)) {
-					$msg[] = (int) $size;
+					$msg .= (int) $size;
 				} else {
-					$msg[] = "'{$size}'";
+					$msg .= "'{$size}'";
 				}
-				$msg[] = ')';
-				$changes[] = \implode($msg, '');
+				$msg .= ')';
+				$changes[] = $msg;
+				unset($msg);
 			}
 			break;
 		// no size
@@ -486,13 +481,11 @@ class dbField {
 				}
 			} else
 			if ($existNullable !== $schemNullable) {
-				$msg = [];
-				$msg[] = 'nullable(';
-				$msg[] = ($existNullable === TRUE ? 'NUL' : 'NOT');
-				$msg[] = ' -> ';
-				$msg[] = ($schemNullable === TRUE ? 'NUL' : 'NOT');
-				$msg[] = ')';
-				$changes[] = \implode($msg, '');
+				$msg = 'nullable(';
+				$msg .= ($existNullable === TRUE ? 'NULL' : 'NOT').' -> ';
+				$msg .= ($schemNullable === TRUE ? 'NULL' : 'NOT').')';
+				$changes[] = $msg;
+				unset($msg);
 			}
 		}
 
@@ -500,13 +493,11 @@ class dbField {
 		$existDefault = $exist->getDefault();
 		$schemDefault = $schem->getDefault();
 		if ($existDefault !== $schemDefault) {
-			$msg = [];
-			$msg[] = 'default(';
-			$msg[] = ($existDefault === NULL ? 'NULL' : "'{$existDefault}'");
-			$msg[] = ' -> ';
-			$msg[] = ($schemDefault === NULL ? 'NULL' : "'{$existDefault}'");
-			$msg[] = ')';
-			$changes[] = \implode($msg, '');
+			$msg = 'default(';
+			$msg .= ($existDefault === NULL ? 'NULL' : "'{$existDefault}'").' -> ';
+			$msg .= ($schemDefault === NULL ? 'NULL' : "'{$schemDefault}'").')';
+			$changes[] = $msg;
+			unset($msg);
 		}
 
 		if (\count($changes) == 0) {
