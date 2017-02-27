@@ -41,7 +41,7 @@ class dbField {
 		$this->setType($type);
 		$this->setSize($size);
 	}
-	public function clone() {
+	public function duplicate() {
 		$obj = new self(
 			$this->name,
 			$this->type,
@@ -390,8 +390,8 @@ class dbField {
 
 	public static function CheckFieldNeedsChanges(dbField $existingField, dbField $schemaField) {
 		// prepare copies of field objects
-		$exist = $existingField->clone();
-		$schem = $schemaField->clone();
+		$exist = $existingField->duplicate();
+		$schem = $schemaField->duplicate();
 		$exist->ValidateKeys();
 		$schem->ValidateKeys();
 		$exist->FillKeysExisting();
