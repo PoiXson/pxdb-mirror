@@ -490,8 +490,8 @@ class dbField {
 		}
 
 		// check default value
-		$existDefault = $exist->getDefault();
-		$schemDefault = $schem->getDefault();
+		$existDefault = (string) $exist->getDefault();
+		$schemDefault = (string) $schem->getDefault();
 		if ($existDefault !== $schemDefault) {
 			$msg = 'default(';
 			$msg .= ($existDefault === NULL ? 'NULL' : "'{$existDefault}'").' -> ';
