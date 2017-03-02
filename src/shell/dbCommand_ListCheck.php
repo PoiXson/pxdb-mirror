@@ -9,6 +9,7 @@
 namespace pxn\pxdb\shell;
 
 use pxn\pxdb\dbPool;
+use pxn\pxdb\dbField;
 use pxn\pxdb\dbTablesExisting;
 
 use pxn\phpUtils\Strings;
@@ -27,42 +28,66 @@ class dbCommand_ListCheck extends dbCommands {
 		$pool     = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		$tableExists = $pool->hasExistingTable($tableName);
-		// found table
-		if ($tableExists) {
-			$table = $pool->getExistingTable($tableName);
-			$fields = $table->getFields();
-			$fieldCount = count($fields);
-			$msg = "<found> {$poolName}:{$tableName}";
-			if ($this->flagShowFields) {
-				$msg .= "\n Fields: {$fieldCount}\n";
-				// list the fields
-				if ($fieldCount > 0) {
-					$maxLength = 11;
-					$strings = [];
-					foreach ($fields as $fieldName => $field) {
-						$fieldType = $field['type'];
-						$fieldTypeStr = (
-							isset($field['size']) && !empty($field['size'])
-							? "{$fieldType}|".$field['size']
-							: $fieldType
-						);
-						$tmp = "  [{$fieldTypeStr}] ";
-						$strings[$fieldName] = $tmp;
-						$len = \strlen($tmp);
-						if ($len > $maxLength) {
-							$maxLength = $len;
-						}
-					}
-					foreach ($strings as $fieldName => $fieldStr) {
-						$msg .= Strings::PadLeft($fieldStr, $maxLength).$fieldName."\n";
-					}
-				}
-			}
-			echo "$msg\n";
 		// missing table
-		} else {
+		if (!$tableExists) {
 			$msg = "<MISSING> {$poolName}:{$tableName}";
 			echo "$msg\n";
+			return TRUE;
+		}
+		// found table
+		$existTable = $pool->getExistingTable($tableName);
+		$schemFields = $pool
+			->getSchemaTable($tableName)
+				->getFields();
+		$fieldCount = \count($schemFields);
+		$msg = "<found> {$poolName}:{$tableName}  Fields: {$fieldCount}\n";
+		$msg .= "\n";
+		// list/check the expected fields
+		if ($fieldCount > 0) {
+			if ($this->flagShowFields || $this->flagCheckFields) {
+				$strings = [
+					[ '   Type ', ' Name ', ' Changes Needed ' ],
+					[ '  ======', '======', '================' ]
+				];
+				foreach ($schemFields as $fieldName => $field) {
+					// prepare schema field
+					$schemField = $field->duplicate();
+					$schemField->ValidateKeys();
+					$schemField->FillKeysSchema();
+					// check for needed changes
+					$needsChangesStr = '';
+					if ($this->flagCheckFields) {
+						// field exists
+						$exists = $existTable->hasField($fieldName);
+						if ($exists) {
+							$existField = $existTable->getField($fieldName);
+							$needsChanges = dbField::CheckFieldNeedsChanges($existField, $schemField);
+							if (\is_array($needsChanges)) {
+								$needsChangesStr = \implode($needsChanges, ', ');
+							}
+						// missing field
+						} else {
+							$needsChangesStr = 'MISSING';
+						}
+					}
+					// build display string
+					$fieldType = $schemField->getType();
+					$fieldSize = $schemField->getSize();
+					$fieldTypeStr = (
+						!empty($fieldSize)
+						? "{$fieldType}({$fieldSize})"
+						: $fieldType
+					);
+					$strings[$fieldName] = [
+						"  $fieldTypeStr",
+						$fieldName,
+						$needsChangesStr
+					];
+				}
+				$msg .= \implode(Strings::PadColumns($strings, 8, 8), "\n");
+				unset ($strings);
+				echo "$msg\n";
+			}
 		}
 		return TRUE;
 	}
