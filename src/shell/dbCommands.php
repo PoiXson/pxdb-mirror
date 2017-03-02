@@ -17,20 +17,8 @@ use pxn\phpUtils\Defines;
 use pxn\pxdb\dbPool;
 
 
-abstract class dbCommands {
-
-	protected $dry = NULL;
-
-
-
-	public function __construct($dry) {
-		System::RequireShell();
-		$this->dry = $dry;
-	}
-
-
-
-	public abstract function execute($pool, $table);
+final class dbCommands {
+	private function __construct() {}
 
 
 
