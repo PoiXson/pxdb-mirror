@@ -9,17 +9,12 @@
 namespace pxn\pxdb\shell;
 
 
-class dbCommand_Update extends dbCommands {
+class dbCommand_Update extends dbCommands_Common {
 
 
 
-	// returns true if successful
-	public function execute($pool, $tableName) {
-		
-		
-		
-		
-		
+	public function __construct($dry=TRUE) {
+		parent::__construct($dry, self::CMD_UPDATE);
 	}
 
 

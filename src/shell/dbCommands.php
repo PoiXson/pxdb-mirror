@@ -254,7 +254,7 @@ final class dbCommands {
 		switch ($cmd) {
 		// list pools/tables
 		case 'list':
-			$cmdObj = new dbCommand_ListCheck($dry);
+			$cmdObj = new dbCommand_List($dry);
 			if (ShellTools::getFlagBool('-f', '--show-fields')) {
 				$cmdObj->flagShowFields = TRUE;
 			} else {
@@ -264,7 +264,7 @@ final class dbCommands {
 			break;
 		// check for needed updates
 		case 'check':
-			$cmdObj = new dbCommand_ListCheck($dry);
+			$cmdObj = new dbCommand_Check($dry);
 			if (ShellTools::getFlagBool('-F', '--no-fields')) {
 				$cmdObj->flagShowFields = FALSE;
 			} else {
@@ -278,12 +278,12 @@ final class dbCommands {
 			break;
 		// import db tables
 		case 'import':
-			$cmdObj = new dbCommand_ImportExport($dry);
+			$cmdObj = new dbCommand_Import($dry);
 			$cmdObj->flagImportExport = 'import';
 			break;
 		// export db tables
 		case 'export':
-			$cmdObj = new dbCommand_ImportExport($dry);
+			$cmdObj = new dbCommand_Export($dry);
 			$cmdObj->flagImportExport = 'export';
 			break;
 		default:

@@ -9,14 +9,12 @@
 namespace pxn\pxdb\shell;
 
 
-class dbCommand_Import extends dbCommand_Common {
-
-	public $flagImportExport = NULL;
+class dbCommand_Check extends dbCommand_Common {
 
 
 
 	public function __construct($dry=TRUE) {
-		parent::__construct($dry, self::CMD_IMPORT);
+		parent::__construct($dry, self::CMD_CHECK);
 	}
 
 

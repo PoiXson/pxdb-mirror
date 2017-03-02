@@ -9,19 +9,14 @@
 namespace pxn\pxdb\shell;
 
 
-class dbCommand_ImportExport extends dbCommands {
+class dbCommand_Export extends dbCommand_Common {
 
 	public $flagImportExport = NULL;
 
 
 
-	// returns true if successful
-	public function execute($pool, $tableName) {
-		
-		
-		
-		
-		
+	public function __construct($dry=TRUE) {
+		parent::__construct($dry, self::CMD_EXPORT);
 	}
 
 
