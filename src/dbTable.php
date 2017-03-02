@@ -29,7 +29,7 @@ abstract class dbTable {
 	}
 	public function doInitFields() {
 		if ($this->inited) {
-			return TRUE;
+			return FALSE;
 		}
 		$this->initFields();
 		// set key names
@@ -42,7 +42,7 @@ abstract class dbTable {
 			$fields[$name] = $field;
 		}
 		$this->fields = $fields;
-		return FALSE;
+		return TRUE;
 	}
 	public function initFields() {
 		fail('Must override initFields() function in a class extending dbTable!',
