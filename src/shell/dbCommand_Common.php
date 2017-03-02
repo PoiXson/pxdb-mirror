@@ -15,11 +15,28 @@ use pxn\pxdb\dbTablesExisting;
 use pxn\phpUtils\Strings;
 
 
-class dbCommand_ListCheck extends dbCommands {
+abstract class dbCommand_Common extends dbCommand {
 
-	// flags
-	public $flagShowFields  = FALSE;
-	public $flagCheckFields = FALSE;
+	const CMD_LIST_FIELDS = 1;
+	const CMD_CHECK       = 2;
+	const CMD_UPDATE      = 4;
+	const CMD_IMPORT      = 8;
+	const CMD_EXPORT      = 16;
+
+	protected $cmdFlags = 0;
+
+
+
+	public function __construct($dry=TRUE, $cmdFlags) {
+		parent::__construct($dry);
+		$this->cmdFlags = $cmdFlags;
+	}
+
+
+
+	public function isCMD($isFlag) {
+		return ($isFlag & $this->cmdFlags);
+	}
 
 
 
@@ -44,11 +61,14 @@ class dbCommand_ListCheck extends dbCommands {
 		$msg .= "\n";
 		// list/check the expected fields
 		if ($fieldCount > 0) {
-			if ($this->flagShowFields || $this->flagCheckFields) {
-				$strings = [
-					[ '   Type ', ' Name ', ' Changes Needed ' ],
-					[ '  ======', '======', '================' ]
-				];
+			if ($this->isCMD(self::CMD_LIST_FIELDS | self::CMD_CHECK | self::CMD_UPDATE)) {
+				$strings = [];
+				$strings[0] = ['   Type ', ' Name '];
+				$strings[1] = ['  ======', '======'];
+				if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
+					$strings[0][] = ' Changes Needed ';
+					$strings[1][] = '================';
+				}
 				foreach ($schemFields as $fieldName => $field) {
 					// prepare schema field
 					$schemField = $field->duplicate();
@@ -56,7 +76,7 @@ class dbCommand_ListCheck extends dbCommands {
 					$schemField->FillKeysSchema();
 					// check for needed changes
 					$needsChangesStr = '';
-					if ($this->flagCheckFields) {
+					if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
 						// field exists
 						$exists = $existTable->hasField($fieldName);
 						if ($exists) {
