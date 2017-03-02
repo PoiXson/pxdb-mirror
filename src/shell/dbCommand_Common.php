@@ -62,32 +62,26 @@ abstract class dbCommand_Common extends dbCommand {
 		// list/check the expected fields
 		if ($fieldCount > 0) {
 			if ($this->isCMD(self::CMD_LIST_FIELDS | self::CMD_CHECK | self::CMD_UPDATE)) {
-				$strings = [];
-				$strings[0] = ['   Type ', ' Name '];
-				$strings[1] = ['  ======', '======'];
-				if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
-					$strings[0][] = ' Changes Needed ';
-					$strings[1][] = '================';
-				}
+				$changesArray = [];
 				foreach ($schemFields as $fieldName => $field) {
 					// prepare schema field
 					$schemField = $field->duplicate();
 					$schemField->ValidateKeys();
 					$schemField->FillKeysSchema();
 					// check for needed changes
-					$needsChangesStr = '';
+					$changesNeeded = [];
 					if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
 						// field exists
 						$exists = $existTable->hasField($fieldName);
 						if ($exists) {
 							$existField = $existTable->getField($fieldName);
-							$needsChanges = dbField::CheckFieldNeedsChanges($existField, $schemField);
-							if (\is_array($needsChanges)) {
-								$needsChangesStr = \implode($needsChanges, ', ');
+							$result = dbField::CheckFieldNeedsChanges($existField, $schemField);
+							if (\is_array($result)) {
+								$changesNeeded[$fieldName] = $result;
 							}
 						// missing field
 						} else {
-							$needsChangesStr = 'MISSING';
+							$changesNeeded[$fieldName] = 'MISSING';
 						}
 					}
 					// build display string
@@ -98,15 +92,27 @@ abstract class dbCommand_Common extends dbCommand {
 						? "{$fieldType}({$fieldSize})"
 						: $fieldType
 					);
-					$strings[$fieldName] = [
-						"  $fieldTypeStr",
-						$fieldName,
-						$needsChangesStr
+					$changesArray[$fieldName] = [
+						'type' => "  $fieldTypeStr",
+						'name' => $fieldName,
+						'changes' => $changesNeeded
 					];
 				}
+				$strings = [];
+				$strings[0] = ['   Type ', ' Name '];
+				$strings[1] = ['  ======', '======'];
+				if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
+					$strings[0][] = ' Changes Needed ';
+					$strings[1][] = '================';
+				}
+				$strings = \array_merge(
+					$strings,
+					$changesArray
+				);
 				$msg .= \implode(Strings::PadColumns($strings, 8, 8), "\n");
 				unset ($strings);
 				echo "$msg\n";
+				return $changesArray;
 			}
 		}
 		return TRUE;
