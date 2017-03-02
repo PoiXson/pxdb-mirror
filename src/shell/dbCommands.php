@@ -166,13 +166,15 @@ abstract class dbCommands {
 						$dry
 					);
 					if ($result === FALSE) {
-						echo "\n Ran $cmd on $count tables, then failed!";
+						$plural = ($count == 1 ? '' : 's');
+						echo "\n Ran $cmd on $count table{$$plural}, then failed!";
 						return FALSE;
 					}
 					$count++;
 				}
 			}
-			echo "\n Ran $cmd on $count tables";
+			$plural = ($count == 1 ? '' : 's');
+			echo "\n Ran $cmd on $count table{$plural}";
 			return TRUE;
 		}
 
@@ -194,14 +196,16 @@ abstract class dbCommands {
 						$dry
 					);
 					if ($result === FALSE) {
-						echo "\n Ran $cmd on $count tables, then failed!";
+						$plural = ($count == 1 ? '' : 's');
+						echo "\n Ran $cmd on $count table{$$plural}, then failed!";
 						return FALSE;
 					}
 					$count++;
 					continue;
 				}
 			}
-			echo "\n Ran $cmd on $count tables";
+			$plural = ($count == 1 ? '' : 's');
+			echo "\n Ran $cmd on $count table{$plural}";
 			return TRUE;
 		}
 
@@ -224,12 +228,14 @@ abstract class dbCommands {
 					$dry
 				);
 				if ($result === FALSE) {
-					echo "\n Ran $cmd on $count tables";
+					$plural = ($count == 1 ? '' : 's');
+					echo "\n Ran $cmd on $count table{$plural}";
 					return FALSE;
 				}
 				$count++;
 			}
-			echo "\n Ran $cmd on $count tables";
+			$plural = ($count == 1 ? '' : 's');
+			echo "\n Ran $cmd on $count table{$plural}";
 			return TRUE;
 		}
 
