@@ -8,79 +8,14 @@
  */
 namespace pxn\pxdb;
 
-//use pxn\phpUtils\Strings;
-//use pxn\phpUtils\Defines;
-
 
 abstract class dbTableSchema extends dbTable {
 
 
 
-/*
-	private function __construct() {}
-
-	protected static $usingTables = [];
-
-
-
-	public static function addTable($pool, $tableName, $schema) {
-		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getName();
-		if (!\array_key_exists($poolName, self::$usingTables)) {
-			self::$usingTables[$poolName] = [];
-		}
-		// ensure safe table name
-		$tableName = self::ValidateTableName($tableName);
-		if (\is_string($schema)) {
-			self::$usingTables[$poolName][$tableName] =
-				self::ValidateSchemaClass($schema);
-		} else {
-			self::$usingTables[$poolName][$tableName] =
-				self::GetSchemaClass($schema);
-		}
-		return TRUE;
+	public function __construct($pool, $tableName) {
+		parent::__construct($pool, $tableName);
 	}
-	// format: [ 'table_name' => 'path\\to\\schema\\class', .. ]
-	public static function addTables($pool, array $tables) {
-		if (count($tables) == 0) {
-			return FALSE;
-		}
-		$pool = self::ValidatePool($pool);
-		$count = 0;
-		foreach ($tables as $entryName => $entry) {
-			self::addTable($pool, $entryName, $entry);
-			$count++;
-		}
-		return $count;
-	}
-	public static function getTable($pool, $tableName) {
-		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getName();
-		// unknown pool
-		if (!\array_key_exists($poolName, self::$usingTables)) {
-			return NULL;
-		}
-		$tableName = self::ValidateTableName($tableName);
-		if (empty($tableName)) {
-			fail('Unknown or invalid table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		// unknown table
-		if (!\array_key_exists($tableName, self::$usingTables[$poolName])) {
-			fail("Unknown table schema: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		return self::$usingTables[$poolName][$tableName];
-	}
-	public static function getTables($pool) {
-		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getName();
-		if (!\array_key_exists($poolName, self::$usingTables)) {
-			return NULL;
-		}
-		return self::$usingTables[$poolName];
-	}
-*/
 
 
 

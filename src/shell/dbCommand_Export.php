@@ -11,8 +11,6 @@ namespace pxn\pxdb\shell;
 
 class dbCommand_Export extends dbCommand_Common {
 
-	public $flagImportExport = NULL;
-
 
 
 	public function __construct($dry=TRUE) {

@@ -88,40 +88,4 @@ class dbTableExisting extends dbTable {
 
 
 
-/*
-	// returns a list of table keys (field values may not yet be cached)
-	public static function getTables($pool) {
-		$pool = self::ValidatePool($pool);
-		$poolName = $pool->getName();
-		self::LoadPoolTables($pool);
-		if (\array_key_exists($poolName, self::$cache)) {
-			return self::$cache[$poolName];
-		}
-		return NULL;
-	}
-	public static function getFields($pool, $tableName) {
-		$pool      = self::ValidatePool($pool);
-		$tableName = self::ValidateTableName($tableName);
-		$poolName = $pool->getName();
-		if (Strings::StartsWith($tableName, '_')) {
-			fail("Table name cannot start with _ underscore: {$poolName}:{$tableName}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		self::LoadPoolTables($pool);
-		if (!\array_key_exists($poolName, self::$cache)) {
-			fail("Unknown pool: $poolName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		// load fields in table
-		self::LoadTableFields($pool, $tableName);
-		if (!\array_key_exists($tableName, self::$cache[$poolName])) {
-			fail("Unknown table: {$poolName}:{$tableName}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		return self::$cache[$poolName][$tableName];
-	}
-*/
-
-
-
 }

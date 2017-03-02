@@ -62,10 +62,7 @@ class dbConn extends dbPrepared {
 			fail("Failed to generate DSN for database: $dbName",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-
-
-
-
+//TODO: is anything missing here?
 		if (\debug()) {
 			$this->doConnect();
 		}
