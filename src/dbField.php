@@ -25,6 +25,8 @@ class dbField {
 	public $primary   = NULL;
 	public $unique    = NULL;
 
+	public $locked = FALSE;
+
 
 
 	public function __construct($name, $type, $size=NULL) {
@@ -53,6 +55,22 @@ class dbField {
 		$obj->primary   = $this->primary;
 		$obj->unique    = $this->unique;
 		return $obj;
+	}
+
+
+
+	public function lock() {
+		$this->locked = TRUE;
+	}
+	public function isLocked() {
+		return ($this->locked != FALSE);
+	}
+	public function ValidUnlocked() {
+		if ($this->isLocked()) {
+			fail("dbField object is locked: {$this->name}",
+				Defines::EXIT_CODE_INTERNAL_ERROR);
+		}
+		return TRUE;
 	}
 
 
@@ -87,6 +105,7 @@ class dbField {
 
 	// field type
 	public function setType($type) {
+		$this->ValidUnlocked();
 		$type = San::AlphaNumUnderscore(\mb_strtolower($type));
 		if (empty($type)) {
 			fail('Invalid or missing db field type!',
@@ -123,6 +142,7 @@ class dbField {
 		return $this->size;
 	}
 	public function setSize($size) {
+		$this->ValidUnlocked();
 		$this->size = $size;
 		return $this;
 	}
@@ -134,6 +154,7 @@ class dbField {
 		return $this->nullable;
 	}
 	public function setNullable($nullable=TRUE) {
+		$this->ValidUnlocked();
 		if ($nullable === NULL) {
 			$this->nullable = NULL;
 		} else {
@@ -149,6 +170,7 @@ class dbField {
 		return $this->defValue;
 	}
 	public function setDefault($defValue) {
+		$this->ValidUnlocked();
 		$this->defValue = $defValue;
 		return $this;
 	}
@@ -160,6 +182,7 @@ class dbField {
 		return ($this->increment === TRUE);
 	}
 	public function setAutoIncrement($increment=TRUE) {
+		$this->ValidUnlocked();
 		if ($increment === NULL) {
 			$this->increment = NULL;
 		} else {
@@ -175,6 +198,7 @@ class dbField {
 		return ($this->primary === TRUE);
 	}
 	public function setPrimaryKey($primary=TRUE) {
+		$this->ValidUnlocked();
 		if ($primary === NULL) {
 			$this->primary = NULL;
 		} else {
@@ -190,6 +214,7 @@ class dbField {
 		return ($this->unique === TRUE);
 	}
 	public function setUnique($unique=TRUE) {
+		$this->ValidUnlocked();
 		if ($unique === NULL) {
 			$this->unique = NULL;
 		} else {
@@ -201,6 +226,7 @@ class dbField {
 
 
 	public function ValidateKeys() {
+		$this->ValidUnlocked();
 		// field name
 		if (!San::isAlphaNumUnderscore($this->name)) {
 			fail("Invalid field name: {$this->name}",
@@ -258,11 +284,13 @@ class dbField {
 		}
 	}
 	public function FillKeysExisting() {
+		$this->ValidUnlocked();
 		if ($this->nullable === NULL) {
 			$this->nullable = FALSE;
 		}
 	}
 	public function FillKeysSchema() {
+		$this->ValidUnlocked();
 
 		// auto-increment
 		if ($this->type == 'increment') {

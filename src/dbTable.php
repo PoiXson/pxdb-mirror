@@ -36,6 +36,9 @@ abstract class dbTable {
 		$fields = [];
 		foreach ($this->fields as $field) {
 			$name = $field->getName();
+			// validate and lock field
+			$field->ValidateKeys();
+			$field->lock();
 			$fields[$name] = $field;
 		}
 		$this->fields = $fields;
