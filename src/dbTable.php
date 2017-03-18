@@ -71,6 +71,12 @@ abstract class dbTable {
 
 
 
+	public function getName() {
+		return $this->tableName;
+	}
+
+
+
 	public static function ValidatePool($pool) {
 		if ($pool == NULL) {
 			fail('Invalid or unknown pool!',
