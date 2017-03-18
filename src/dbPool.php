@@ -170,7 +170,7 @@ class dbPool {
 		$this->existing = NULL;
 		$this->LoadExistingTables();
 	}
-	protected function loadExistingTables() {
+	protected function LoadExistingTables() {
 		if (\is_array($this->existing)) {
 			return TRUE;
 		}
@@ -241,7 +241,7 @@ class dbPool {
 
 
 	public function hasExistingTable($tableName) {
-		$this->loadExistingTables();
+		$this->LoadExistingTables();
 		$tableName = dbTable::ValidateTableName($tableName);
 		return \array_key_exists($tableName, $this->existing);
 	}
@@ -253,7 +253,7 @@ class dbPool {
 
 
 	public function getExistingTable($tableName) {
-		$this->loadExistingTables();
+		$this->LoadExistingTables();
 		$tableName = dbTable::ValidateTableName($tableName);
 		if (!\array_key_exists($tableName, $this->existing)) {
 			return NULL;
