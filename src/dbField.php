@@ -81,13 +81,13 @@ class dbField {
 		$nullable = $this->getNullable();
 		$defValue = $this->getDefault();
 		if ($nullable === TRUE) {
-			$msg .= '-NUL='.($defValue === NULL ? 'NULL' : "'{$defValue}'");
+			$msg .= '|NUL|'.($defValue === NULL ? 'NULL' : "'{$defValue}'");
 		} else {
 			// no default value and not nullable
 			if ($defValue === NULL) {
-				$msg .= '-NOT=NONE';
+				$msg .= '|NOT|NONE';
 			} else {
-				$msg .= "-NOT='{$defValue}'";
+				$msg .= "|NOT|'{$defValue}'";
 			}
 		}
 		$msg .= ')';
