@@ -253,6 +253,10 @@ class dbPool {
 
 
 	public function getExistingTable($tableName) {
+		if ($tableName instanceof \pxn\pxdb\dbTable) {
+			return $tableName;
+		}
+		$tableName = (string) $tableName;
 		$this->LoadExistingTables();
 		$tableName = dbTable::ValidateTableName($tableName);
 		if (!\array_key_exists($tableName, $this->existing)) {
@@ -267,6 +271,10 @@ class dbPool {
 		return $existing;
 	}
 	public function getSchemaTable($tableName) {
+		if ($tableName instanceof \pxn\pxdb\dbTable) {
+			return $tableName;
+		}
+		$tableName = (string) $tableName;
 		$tableName = dbTable::ValidateTableName($tableName);
 		if (!\array_key_exists($tableName, $this->schemas)) {
 			return NULL;
