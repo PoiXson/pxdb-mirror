@@ -113,7 +113,7 @@ class dbField {
 			$sql[] = 'INT(11)';
 		} else
 		if (empty($fieldSize)) {
-			$sql[] = $fieldType;
+			$sql[] = \mb_strtoupper($fieldType);
 		} else {
 			switch ($fieldType) {
 			case 'varchar': case 'char':
@@ -123,7 +123,8 @@ class dbField {
 			default:
 				break;
 			}
-			$sql[] = "{$fieldType}({$fieldSize})";
+			$fieldTypeUpper = \mb_strtoupper($fieldType);
+			$sql[] = "{$fieldTypeUpper}({$fieldSize})";
 		}
 		// charset
 		switch ($fieldType) {
