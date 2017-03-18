@@ -433,7 +433,7 @@ class dbField {
 		}
 
 		// null not allowed
-		if ($this->nullable !== TRUE) {
+		if ($this->nullable === NULL) {
 			$this->nullable = FALSE;
 			// guess based on type
 			switch ($this->type) {
@@ -449,9 +449,7 @@ class dbField {
 					$this->defValue = 0;
 				}
 				break;
-			case 'date': case 'time': case 'datetime':
-				// default value
-				switch ($this->type) {
+			// default value
 				case 'date':
 					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 10) {
 						$this->defValue = '0000-00-00';
@@ -467,10 +465,6 @@ class dbField {
 						$this->defValue = '0000-00-00 00:00:00';
 					}
 					break;
-				default:
-					fail('Unexpected error!', Defines::EXIT_CODE_INTERNAL_ERROR);
-				}
-				break;
 			case 'varchar': case 'char': case 'blob':
 			case 'text': case 'longtext':
 				if ($this->defValue === NULL) {
