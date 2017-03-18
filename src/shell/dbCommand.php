@@ -28,4 +28,19 @@ abstract class dbCommand {
 
 
 
+	public function isDry($defaultDry=TRUE) {
+		if ($this->dry === NULL) {
+			return ($defaultDry !== FALSE);
+		}
+		return ($this->dry === TRUE);
+	}
+	public function notDry($defaultDry=TRUE) {
+		if ($this->dry === NULL) {
+			return ($defaultDry === FALSE);
+		}
+		return ($this->dry === FALSE);
+	}
+
+
+
 }
