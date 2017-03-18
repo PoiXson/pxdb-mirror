@@ -82,6 +82,7 @@ final class dbCommands {
 					$tableFlag,
 					$dry
 				);
+				echo "\n";
 				return ($result !== FALSE);
 			}
 			unset ($poolFlag, $tableFlag);
@@ -105,11 +106,13 @@ final class dbCommands {
 						$dry
 					);
 					if ($result === FALSE) {
+						echo "\n";
 						return FALSE;
 					}
 					$count++;
 				}
 				if ($count > 0) {
+					echo "\n";
 					return TRUE;
 				}
 			}
@@ -123,6 +126,7 @@ final class dbCommands {
 				'*',
 				$dry
 			);
+			echo "\n";
 			return ($result !== FALSE);
 		}
 
@@ -156,6 +160,9 @@ final class dbCommands {
 					if ($result === FALSE) {
 						$plural = ($count == 1 ? '' : 's');
 						echo "\n Ran $cmd on $count table{$plural}, then failed!\n";
+						if ($dry) {
+							echo " [ Dry Mode - No changes made ]\n";
+						}
 						return FALSE;
 					}
 					$count++;
@@ -163,6 +170,9 @@ final class dbCommands {
 			}
 			$plural = ($count == 1 ? '' : 's');
 			echo "\n Ran $cmd on $count table{$plural}\n";
+			if ($dry) {
+				echo " [ Dry Mode - No changes made ]\n";
+			}
 			return TRUE;
 		}
 
@@ -186,6 +196,9 @@ final class dbCommands {
 					if ($result === FALSE) {
 						$plural = ($count == 1 ? '' : 's');
 						echo "\n Ran $cmd on $count table{$plural}, then failed!\n";
+						if ($dry) {
+							echo " [ Dry Mode - No changes made ]\n";
+						}
 						return FALSE;
 					}
 					$count++;
@@ -194,6 +207,9 @@ final class dbCommands {
 			}
 			$plural = ($count == 1 ? '' : 's');
 			echo "\n Ran $cmd on $count table{$plural}\n";
+			if ($dry) {
+				echo " [ Dry Mode - No changes made ]\n";
+			}
 			return TRUE;
 		}
 
@@ -218,12 +234,18 @@ final class dbCommands {
 				if ($result === FALSE) {
 					$plural = ($count == 1 ? '' : 's');
 					echo "\n Ran $cmd on $count table{$plural}\n";
+					if ($dry) {
+						echo " [ Dry Mode - No changes made ]\n";
+					}
 					return FALSE;
 				}
 				$count++;
 			}
 			$plural = ($count == 1 ? '' : 's');
 			echo "\n Ran $cmd on $count table{$plural}\n";
+			if ($dry) {
+				echo " [ Dry Mode - No changes made ]\n";
+			}
 			return TRUE;
 		}
 
@@ -361,8 +383,7 @@ final class dbCommands {
 
 
 	public static function DisplayHelp($cmd=NULL) {
-		echo "\n";
-		echo "Usage:\n";
+		echo "\nUsage:\n";
 		switch ($cmd) {
 		case 'list':
 			echo "  db list [options]\n";
@@ -383,15 +404,13 @@ final class dbCommands {
 			echo "  db <command> [options]\n";
 			break;
 		}
-		echo "\n";
-		echo "Commands:\n";
+		echo "\nCommands:\n";
 		echo "  list    List the existing database pools/tables\n";
 		echo "  check   Check for needed updates to table schemas.\n";
 		echo "  update  Update the database tables to the current schema, and create tables as needed.\n";
 		echo "  import  Import data from a stored backup.\n";
 		echo "  export  Export data to a backup stored in the filesystem.\n";
-		echo "\n";
-		echo "Options:\n";
+		echo "\nOptions:\n";
 		echo "  -D, --dry    Run the operation without making changes. (default for some operations)\n";
 		if ($cmd == 'check' || $cmd == 'update' || $cmd == 'import') {
 			echo "  --confirm    Confirm the changes to be made (overrides the --dry flag)\n";
