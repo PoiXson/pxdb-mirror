@@ -96,6 +96,86 @@ class dbField {
 
 
 
+	public function getSQL() {
+		$sql = [];
+		$fieldName = $this->getName();
+		$fieldType = \mb_strtolower(
+			San::AlphaNumUnderscore(
+				$this->getType()
+			)
+		);
+		$fieldSize = $this->getSize();
+		// name
+		$sql[] = "`{$fieldName}`";
+		// type/size
+		if ($fieldType == 'increment') {
+			$sql[] = 'INT(11)';
+		} else
+		if (empty($fieldSize)) {
+			$sql[] = $fieldType;
+		} else {
+			switch ($fieldType) {
+			case 'varchar': case 'char':
+			case 'text':    case 'longtext':
+			case 'enum':    case 'set':
+				$fieldSize = San::AlphaNumUnderscore($fieldSize);
+			default:
+				break;
+			}
+			$sql[] = "{$fieldType}({$fieldSize})";
+		}
+		// charset
+		switch ($fieldType) {
+		case 'varchar': case 'char':
+		case 'text':    case 'longtext':
+		case 'enum':    case 'set':
+			$sql[] = "CHARACTER SET latin1 COLLATE latin1_swedish_ci";
+		default:
+			break;
+		}
+		// null / not null
+		$nullable = ($this->getNullable() !== FALSE);
+		$sql[] = (
+			$nullable
+			? 'NULL'
+			: 'NOT NULL'
+		);
+		// default
+		$defValue = $this->getDefault();
+		if ($defValue === NULL) {
+			if ($nullable) {
+				$sql[] = 'DEFAULT NULL';
+			}
+		} else {
+			switch ($fieldType) {
+			case 'int': case 'tinyint': case 'smallint':
+			case 'mediumint': case 'bigint':
+				$defValue = (int) $defValue;
+				$sql[] = "DEFAULT '{$defValue}'";
+				break;
+			case 'decimal': case 'double':
+				$defValue = (double) $defValue;
+				$sql[] = "DEFAULT '{$defValue}'";
+				break;
+			case 'float':
+				$defValue = (float) $defValue;
+				$sql[] = "DEFAULT '{$defValue}'";
+				break;
+			case 'bit': case 'boolean':
+				$defValue = ($defValue == 0 ? 0 : 1);
+				$sql[] = "DEFAULT '{$defValue}'";
+				break;
+			default:
+				$sql[] = "DEFAULT '{$defValue}'";
+				break;
+			}
+		}
+		// done
+		return \implode(' ', $sql);
+	}
+
+
+
 	// field name
 	public function getName() {
 		return $this->name;
