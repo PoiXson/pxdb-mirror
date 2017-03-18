@@ -125,7 +125,7 @@ final class dbTools {
 
 
 
-	public static function AddTableField($pool, $table, dbField $field, $dry=FALSE) {
+	public static function AddTableField($pool, $table, dbField $field, $dry=FALSE, $afterFieldName=NULL) {
 		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
 		// validate pool
 		$pool = dbPool::getPool($pool);
@@ -154,6 +154,12 @@ final class dbTools {
 		// generate sql
 		$fieldSQL = $field->getSQL();
 		$sql = "ALTER TABLE `{$tableName}` ADD $fieldSQL";
+		if (!empty($afterFieldName)) {
+			$afterFieldName = San::AlphaNumUnderscore(
+				(string) $afterFieldName
+			);
+			$sql .= " AFTER `{$afterFieldName}`";
+		}
 		$desc = $field->getDesc();
 		echo "{$dryStr} Adding field: {$desc}\n";
 		// alter table
