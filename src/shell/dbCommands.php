@@ -38,6 +38,7 @@ final class dbCommands {
 			self::DisplayHelp($cmd);
 			ExitNow(Defines::EXIT_CODE_GENERAL);
 		}
+		$helpMsg = [];
 
 		// is dry run?
 		{
@@ -93,7 +94,9 @@ final class dbCommands {
 			$args = ShellTools::getArgs();
 			\array_shift($args);
 			\array_shift($args);
-			if (\count($args) > 0) {
+			if (\count($args) == 0) {
+				$helpMsg[] = 'No pools:tables in request!';
+			} else {
 				// split pool:table arguments
 				$entries = self::SplitPoolTable($args);
 				// perform the command
@@ -131,7 +134,7 @@ final class dbCommands {
 		}
 
 		// command not handled
-		self::DisplayHelp($cmd);
+		self::DisplayHelp($cmd, $helpMsg);
 		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 	}
 	private static function _doRunCommand($cmd, $pool, $table, $dry) {
@@ -382,7 +385,17 @@ final class dbCommands {
 
 
 
-	public static function DisplayHelp($cmd=NULL) {
+	public static function DisplayHelp($cmd=NULL, $helpMsg=[]) {
+		if ($helpMsg !== NULL) {
+			if (\is_array($helpMsg)) {
+				foreach ($helpMsg as $line) {
+					echo "{$line}\n";
+				}
+			} else {
+				$helpMsg = (string) $helpMsg;
+				echo "{$helpMsg}\n";
+			}
+		}
 		echo "\nUsage:\n";
 		switch ($cmd) {
 		case 'list':
