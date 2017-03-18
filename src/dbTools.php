@@ -50,6 +50,9 @@ final class dbTools {
 		// get first field
 		$fields = $table->getFields();
 		$firstField = \reset($fields);
+		$firstField = $firstField->duplicate();
+		$firstField->ValidateKeys();
+		$firstField->FillKeysSchema();
 		// generate sql
 		$dbEngine = 'InnoDB';
 		$fieldSQL = $firstField->getSQL();
@@ -99,11 +102,14 @@ final class dbTools {
 		}
 		$db->release();
 		// add more fields
-		foreach ($fields as $fieldName => $field) {
+		foreach ($fields as $fieldName => $entry) {
 			// skip first field
 			if ($fieldName === $firstFieldName) {
 				continue;
 			}
+			$field = $entry->duplicate();
+			$field->ValidateKeys();
+			$field->FillKeysSchema();
 			// add field to table
 			self::AddTableField(
 				$pool,
