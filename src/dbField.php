@@ -75,6 +75,7 @@ class dbField {
 
 
 
+	// (size|nullable|default)
 	public function getDesc() {
 		$msg = $this->getType().
 			'('.$this->getSize();
@@ -85,9 +86,9 @@ class dbField {
 		} else {
 			// no default value and not nullable
 			if ($defValue === NULL) {
-				$msg .= '|NOT|NONE';
+				$msg .= '|NOTNUL|NONE';
 			} else {
-				$msg .= "|NOT|'{$defValue}'";
+				$msg .= "|NOTNUL|'{$defValue}'";
 			}
 		}
 		$msg .= ')';

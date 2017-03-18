@@ -55,6 +55,7 @@ final class dbTools {
 		$fieldSQL = $firstField->getSQL();
 		$sql = "CREATE TABLE `__TABLE__{$tableName}` ( $fieldSQL ) ENGINE={$dbEngine} DEFAULT CHARSET=latin1";
 		echo "{$dryStr}Creating table: {$poolName}:{$tableName} ..\n";
+		echo "{$dryStr}Note: (size|nullable|default)\n";
 		// create new table
 		$db = $pool->getDB();
 		$db->setDry($dry);
