@@ -49,7 +49,7 @@ abstract class dbCommand_Common extends dbCommand {
 		if (!$tableExists) {
 			$msg = "<MISSING> {$poolName}:{$tableName}";
 			echo "$msg\n";
-			return TRUE;
+			return 'MISSING-TABLE';
 		}
 		// found table
 		$existTable = $pool->getExistingTable($tableName);
