@@ -166,6 +166,10 @@ class dbPool {
 
 
 
+	public function ReloadExistingTableCache() {
+		$this->existing = NULL;
+		$this->LoadExistingTables();
+	}
 	protected function loadExistingTables() {
 		if (\is_array($this->existing)) {
 			return TRUE;
