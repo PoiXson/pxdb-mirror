@@ -227,4 +227,128 @@ final class dbTools {
 
 
 
+	public static function CheckFieldNeedsChanges(dbField $existingField, dbField $schemaField) {
+		// prepare copies of field objects
+		$exist = $existingField->duplicate();
+		$schem = $schemaField->duplicate();
+		$exist->ValidateKeys();
+		$schem->ValidateKeys();
+		$exist->FillKeysExisting();
+		$schem->FillKeysSchema();
+		// check for needed changes
+		$changes = [];
+
+		// auto-increment
+		if ($exist->isAutoIncrement() !== $schem->isAutoIncrement()) {
+			$changes[] = 'increment';
+		}
+		// primary key
+		if ($exist->isPrimaryKey() !== $schem->isPrimaryKey()) {
+			$changes[] = 'primary';
+		}
+
+		// check field type
+		if ($exist->getType() !== $schem->getType()) {
+			$existDesc = $exist->getDesc();
+			$schemDesc = $schem->getDesc();
+			$changes[] = "type: {$existDesc} -> {$schemDesc}";
+			return $changes;
+		}
+
+		// check properties based on field type
+		switch ($schem->getType()) {
+		// length size
+		case 'int':       case 'tinyint': case 'smallint':
+		case 'mediumint': case 'bigint':
+		case 'decimal':   case 'double':  case 'float':
+		case 'bit':       case 'char':
+		case 'boolean':   case 'bool':
+		case 'varchar':
+		// string values
+		case 'enum': case 'set':
+			$existSize = $exist->getSize();
+			$schemSize = $schem->getSize();
+			if ($existSize != $schemSize) {
+				$msg = 'size('.$exist->getSize();
+				if ($size === NULL) {
+					$msg .= 'NULL';
+				} else
+				if (Numbers::isNumber($size)) {
+					$msg .= (int) $size;
+				} else {
+					$msg .= "'{$size}'";
+				}
+				$msg .= '->';
+				$size = $schem->getSize();
+				if ($size === NULL) {
+					$msg .= 'NULL';
+				} else
+				if (Numbers::isNumber($size)) {
+					$msg .= (int) $size;
+				} else {
+					$msg .= "'{$size}'";
+				}
+				$msg .= ')';
+				$changes[] = $msg;
+				unset($msg);
+			}
+			break;
+		// no size
+		case 'text': case 'longtext': case 'blob':
+		case 'date': case 'time':     case 'datetime':
+//			$existDefault = $existField['default'];
+//			$schemDefault = $schemField['default'];
+//			if ($existDefault != $schemDefault) {
+//				$changes[] = "default({$existDefault}>{$schemDefault})";
+//			}
+//			if ($existField['nullable'] !== $schemField['nullable']) {
+//				$n1 = ($existField['nullable'] ? 'YES' : 'NOT');
+//				$n2 = ($schemField['nullable'] ? 'YES' : 'NOT');
+//				$changes[] = "nullable({$n1}>{$n2})";
+//			}
+			break;
+		default:
+			$fieldName = $schem->getName();
+			$fieldType = $schem->getType();
+			fail("Unsupported field type: [{$fieldType}] $fieldName",
+				Defines::EXIT_CODE_USAGE_ERROR);
+		}
+
+		// check nullable
+		$existNullable = $exist->getNullable();
+		$schemNullable = $schem->getNullable();
+		if ($schemNullable !== NULL) {
+			if ($existNullable === NULL) {
+				if ($schemNullable === TRUE) {
+					$changes[] = 'nullable(NOT -> NUL)';
+				}
+			} else
+			if ($existNullable !== $schemNullable) {
+				$msg = 'nullable(';
+				$msg .= ($existNullable === TRUE ? 'NULL' : 'NOT').' -> ';
+				$msg .= ($schemNullable === TRUE ? 'NULL' : 'NOT').')';
+				$changes[] = $msg;
+				unset($msg);
+			}
+		}
+
+		// check default value
+		$existDefault = (string) $exist->getDefault();
+		$schemDefault = (string) $schem->getDefault();
+		if ($existDefault !== $schemDefault) {
+			$msg = 'default(';
+			$msg .= ($existDefault === NULL ? 'NULL' : "'{$existDefault}'").' -> ';
+			$msg .= ($schemDefault === NULL ? 'NULL' : "'{$schemDefault}'").')';
+			$changes[] = $msg;
+			unset($msg);
+		}
+
+		if (\count($changes) == 0) {
+			return FALSE;
+		}
+		return $changes;
+	}
+
+
+
 }
