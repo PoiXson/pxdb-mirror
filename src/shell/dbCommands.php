@@ -122,7 +122,7 @@ final class dbCommands {
 		}
 
 		// no argument (default to all pools/tables)
-		if ($cmd == 'list' || $cmd == 'check') {
+		if ($cmd == 'list' || $cmd == 'check' || $cmd == 'update') {
 			$result = self::_doRunCommand(
 				$cmd,
 				'*',
@@ -356,16 +356,8 @@ final class dbCommands {
 						Defines::EXIT_CODE_INVALID_ARGUMENT);
 				}
 			}
-			// default pool name
-			if (empty($poolName)) {
-				if ($tableName == '*') {
-					$poolName = '*';
-				} else {
-					$poolName = dbPool::dbNameDefault;
-				}
-			}
 			// parse pool name
-			if ($poolName == '*' || \mb_strtolower($poolName) == 'all') {
+			if (empty($poolName) || $poolName == '*' || \mb_strtolower($poolName) == 'all') {
 				$poolName = '*';
 			} else {
 				$poolName = San::AlphaNumUnderscore($poolName);
