@@ -10,6 +10,7 @@ namespace pxn\pxdb;
 
 use pxn\phpUtils\Strings;
 use pxn\phpUtils\San;
+use pxn\phpUtils\Numbers;
 
 
 final class dbTools {
@@ -269,14 +270,16 @@ final class dbTools {
 			$existSize = $exist->getSize();
 			$schemSize = $schem->getSize();
 			if ($existSize != $schemSize) {
-				$msg = 'size('.$exist->getSize();
+				$size = $exist->getSize();
 				if ($size === NULL) {
 					$msg .= 'NULL';
-				} else
-				if (Numbers::isNumber($size)) {
-					$msg .= (int) $size;
 				} else {
-					$msg .= "'{$size}'";
+					$msg = "size({$size}";
+					if (Numbers::isNumber($size)) {
+						$msg .= (int) $size;
+					} else {
+						$msg .= "'{$size}'";
+					}
 				}
 				$msg .= '->';
 				$size = $schem->getSize();
