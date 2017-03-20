@@ -163,7 +163,7 @@ final class dbTools {
 			$sql .= " AFTER `{$afterFieldName}`";
 		}
 		$desc = $field->getDesc();
-		echo "{$dryStr} Adding field: {$desc}\n";
+//		echo "{$dryStr} Adding field: {$desc}\n";
 		// alter table
 		$db = $pool->getDB();
 		$db->setDry($dry);
@@ -177,7 +177,6 @@ final class dbTools {
 		}
 		unset($sql);
 		$db->release();
-		return TRUE;
 	}
 	public static function UpdateTableField($pool, $table, dbField $field, $dry=FALSE) {
 		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
@@ -210,7 +209,7 @@ final class dbTools {
 		$fieldSQL = $field->getSQL();
 		$sql = "ALTER TABLE `__TABLE__{$tableName}` CHANGE `{$fieldName}` $fieldSQL";
 		$desc = $field->getDesc();
-		echo "{$dryStr} Changing field: {$desc}\n";
+//		echo "{$dryStr} Changing field: {$desc}\n";
 		// alter table
 		$db = $pool->getDB();
 		$db->setDry($dry);
@@ -224,7 +223,6 @@ final class dbTools {
 		}
 		unset($sql);
 		$db->release();
-		return TRUE;
 	}
 
 
