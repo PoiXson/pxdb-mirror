@@ -116,6 +116,7 @@ final class dbTools {
 				$pool,
 				$table,
 				$field,
+				NULL,
 				$dry
 			);
 		}
@@ -126,7 +127,7 @@ final class dbTools {
 
 
 
-	public static function AddTableField($pool, $table, dbField $field, $dry=FALSE, $afterFieldName=NULL) {
+	public static function AddTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=FALSE) {
 		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
 		// validate pool
 		$pool = dbPool::getPool($pool);
