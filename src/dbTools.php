@@ -83,13 +83,13 @@ final class dbTools {
 			$field->ValidateKeys();
 			$field->FillKeysSchema();
 			// add field to table
-			self::AddTableField(
-				$pool,
-				$table,
-				$field,
-				NULL,
-				$dry
-			);
+				self::AddChangeTableField(
+					$pool,
+					$table,
+					$field,
+					NULL,
+					$dry
+				);
 		}
 		// force cache reload
 		$pool->ReloadExistingTableCache();
@@ -98,7 +98,7 @@ final class dbTools {
 
 
 
-	public static function AddTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=FALSE) {
+	public static function AddChangeTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=FALSE) {
 		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
 		// validate pool
 		$pool = dbPool::getPool($pool);

@@ -64,7 +64,7 @@ class dbCommand_Update extends dbCommand_Common {
 				$desc = $schemField->getDesc();
 				echo " {$dryStr}* Adding field:  {$fieldName}\n";
 				echo " {$dryStr}    $desc\n";
-				dbTools::AddTableField(
+				dbTools::AddChangeTableField(
 					$pool,
 					$schemTable,
 					$schemField,
