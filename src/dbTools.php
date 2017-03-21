@@ -33,17 +33,7 @@ final class dbTools {
 			fail('Table is invalid or unknown!',
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-		$tableName = San::AlphaNumUnderscore(
-			$table->getName()
-		);
-		if (empty($tableName)) {
-			fail('Invalid table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($tableName, '_')) {
-			fail("Cannot create tables starting with _ underscore: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		$tableName = $table->getName();
 		if ($pool->hasExistingTable($tableName)) {
 			fail("Cannot create table, already exists: $tableName",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
@@ -74,7 +64,7 @@ final class dbTools {
 		$db->setDry($dry);
 		$result = $db->Execute(
 			$sql,
-			'CreateTable()'
+			"CreateTable({$tableName})"
 		);
 		if ($result->hasError()) {
 			fail("Failed to create table: $tableName",

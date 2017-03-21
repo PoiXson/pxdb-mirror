@@ -23,6 +23,10 @@ class dbField {
 	public $defValue  = NULL;
 	public $increment = NULL;
 	public $primary   = NULL;
+//TODO:
+//	public $index     = NULL;
+//	public $fulltext  = NULL;
+//TODO: support multiple field unique
 	public $unique    = NULL;
 
 	public $locked = FALSE;

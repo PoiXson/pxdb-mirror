@@ -51,7 +51,6 @@ class dbCommand_Update extends dbCommand_Common {
 		$schemFields = $schemTable->getFields();
 		$existTable = $pool->getExistingTable($tableName);
 		$lastFieldName = NULL;
-//TODO: need to check for auto-increment, primary key, and unique
 		foreach ($schemFields as $fieldName => $field) {
 			$schemField = $field->duplicate();
 			$schemField->ValidateKeys();
