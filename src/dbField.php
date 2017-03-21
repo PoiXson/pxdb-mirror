@@ -172,6 +172,10 @@ class dbField {
 				break;
 			}
 		}
+		// auto-increment
+		if ($this->isAutoIncrement()) {
+			$sql[] = 'AUTO_INCREMENT';
+		}
 		// done
 		return \implode(' ', $sql);
 	}

@@ -72,35 +72,6 @@ final class dbTools {
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
 		unset($sql);
-		// set auto-increment
-		if ($firstField->isAutoIncrement()) {
-			$firstFieldName = San::AlphaNumUnderscore(
-				$firstField->getName()
-			);
-			if (empty($firstFieldName)) {
-				fail('Invalid or missing table name!',
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
-			$sql = "ALTER TABLE `__TABLE__{$tableName}` ADD PRIMARY KEY ( `{$firstFieldName}` )";
-			$result = $db->Execute(
-				$sql,
-				'InitAutoIncrementField(primary-key)'
-			);
-			if (!$result) {
-				fail("Failed to set primary key on field: $firstFieldName",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
-			$sql = "ALTER TABLE `__TABLE__{$tableName}` MODIFY `{$firstFieldName}` int(11) NOT NULL AUTO_INCREMENT";
-			$result = $db->Execute(
-				$sql,
-				'InitAutoIncrementField(auto-increment)'
-			);
-			if (!$result) {
-				fail("Failed to set auto-increment on field: $firstFieldName",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
-			unset($sql);
-		}
 		$db->release();
 		// add more fields
 		foreach ($fields as $fieldName => $entry) {
