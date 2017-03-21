@@ -8,8 +8,6 @@
  */
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\Arrays;
-
 use pxn\pxdb\dbPool;
 use pxn\pxdb\dbTools;
 

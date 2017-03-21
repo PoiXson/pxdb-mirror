@@ -9,8 +9,7 @@
 namespace pxn\pxdb\shell;
 
 use pxn\pxdb\dbPool;
-use pxn\pxdb\dbField;
-use pxn\pxdb\dbTablesExisting;
+use pxn\pxdb\dbTools;
 
 use pxn\phpUtils\Strings;
 
@@ -75,7 +74,7 @@ abstract class dbCommand_Common extends dbCommand {
 						$exists = $existTable->hasField($fieldName);
 						if ($exists) {
 							$existField = $existTable->getField($fieldName);
-							$result = dbField::CheckFieldNeedsChanges($existField, $schemField);
+							$result = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 							if (\is_array($result)) {
 								$changesNeeded[$fieldName] = $result;
 							}
