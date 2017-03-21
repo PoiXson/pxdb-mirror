@@ -56,9 +56,18 @@ final class dbTools {
 		$firstField = $firstField->duplicate();
 		$firstField->ValidateKeys();
 		$firstField->FillKeysSchema();
+		$firstFieldName = $firstField->getName();
 		// generate sql
 		$dbEngine = 'InnoDB';
 		$fieldSQL = $firstField->getSQL();
+		// primary key
+		if ($firstField->isPrimaryKey() || $firstField->isAutoIncrement()) {
+			$fieldSQL .= " , PRIMARY KEY ( `{$firstFieldName}` )";
+		}
+		// unique
+		if ($firstField->isUnique()) {
+			$fieldSQL .= " , UNIQUE ( `{$fieldName}` )";
+		}
 		$sql = "CREATE TABLE `__TABLE__{$tableName}` ( $fieldSQL ) ENGINE={$dbEngine} DEFAULT CHARSET=latin1";
 		// create new table
 		$db = $pool->getDB();
@@ -73,16 +82,15 @@ final class dbTools {
 		}
 		unset($sql);
 		$db->release();
-		// add more fields
+		// force cache reload
+		$pool->ReloadExistingTableCache();
+		// add rest of the fields
 		foreach ($fields as $fieldName => $entry) {
-			// skip first field
-			if ($fieldName === $firstFieldName) {
-				continue;
-			}
 			$field = $entry->duplicate();
 			$field->ValidateKeys();
 			$field->FillKeysSchema();
 			// add field to table
+			if ($fieldName != $firstFieldName) {
 				self::AddChangeTableField(
 					$pool,
 					$table,
@@ -90,6 +98,7 @@ final class dbTools {
 					NULL,
 					$dry
 				);
+			}
 		}
 		// force cache reload
 		$pool->ReloadExistingTableCache();
@@ -107,91 +116,65 @@ final class dbTools {
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
 		$poolName = $pool->getName();
+		$fieldName = $field->getName();
 		// validate table
 		$table = $pool->getSchemaTable($table);
 		if ($table == NULL) {
 			fail('Table is invalid or unknown!',
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-		$tableName = San::AlphaNumUnderscore(
-			$table->getName()
-		);
-		if (empty($tableName)) {
-			fail('Invalid table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($tableName, '_')) {
-			fail("Cannot create tables starting with _ underscore: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
+		$tableName = $table->getName();
+		$existTable = $pool->getExistingTable($tableName);
+		$exists = $existTable->hasField($fieldName);
+		$desc = $field->getDesc();
+		if ($exists) {
+			$existField = $existTable->getField($fieldName);
+			$existDesc = $existField->getDesc();
+			echo " {$dryStr}* Changing field:  {$fieldName}\n";
+			echo " {$dryStr}    from: {$existDesc}\n";
+			echo " {$dryStr}      to: {$desc}\n";
+			unset($existField, $existDesc);
+		} else {
+			echo " {$dryStr}* Adding field:  {$fieldName}  $desc\n";
 		}
 		// generate sql
-		$fieldSQL = $field->getSQL();
-		$sql = "ALTER TABLE `{$tableName}` ADD $fieldSQL";
+		$sql = "ALTER TABLE `__TABLE__{$tableName}` ";
+		$sql .= (
+			$exists
+			? "CHANGE `{$fieldName}` "
+			: 'ADD '
+		);
+		$sql .= $field->getSQL();
+		// insert after field
 		if (!empty($afterFieldName)) {
 			$afterFieldName = San::AlphaNumUnderscore(
 				(string) $afterFieldName
 			);
 			$sql .= " AFTER `{$afterFieldName}`";
 		}
-		$desc = $field->getDesc();
+		// primary key
+		if ($field->isPrimaryKey() || $field->isAutoIncrement()) {
+			$sql .= ", ADD PRIMARY KEY ( `{$fieldName}` )";
+		}
+		// unique
+		if ($field->isUnique()) {
+			$sql .= ", ADD UNIQUE ( `{$fieldName}` )";
+		}
+		// alter table
+//		$desc = $field->getDesc();
 //		echo "{$dryStr} Adding field: {$desc}\n";
-		// alter table
-		$db = $pool->getDB();
-		$db->setDry($dry);
-		$result = $db->Execute(
-			$sql,
-			'AddTableField()'
-		);
-		if ($result->hasError()) {
-			fail("Failed to add table field: {$tableName}:: $desc",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		unset($sql);
-		$db->release();
-	}
-	public static function UpdateTableField($pool, $table, dbField $field, $dry=FALSE) {
-		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
-		// validate pool
-		$pool = dbPool::getPool($pool);
-		if ($pool == NULL) {
-			fail('Invalid or missing pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$poolName = $pool->getName();
-		// validate table
-		$table = $pool->getSchemaTable($table);
-		if ($table == NULL) {
-			fail('Table is invalid or unknown!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$tableName = San::AlphaNumUnderscore(
-			$table->getName()
-		);
-		if (empty($tableName)) {
-			fail('Invalid table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($tableName, '_')) {
-			fail("Cannot create tables starting with _ underscore: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		// generate sql
-		$fieldName = $field->getName();
-		$fieldSQL = $field->getSQL();
-		$sql = "ALTER TABLE `__TABLE__{$tableName}` CHANGE `{$fieldName}` $fieldSQL";
-		$desc = $field->getDesc();
 //		echo "{$dryStr} Changing field: {$desc}\n";
-		// alter table
 		$db = $pool->getDB();
 		$db->setDry($dry);
 		$result = $db->Execute(
 			$sql,
-			'UpdateTableField()'
+			"AddChangeTableField({$tableName}::{$fieldName})"
 		);
 		if ($result->hasError()) {
-			fail("Failed to change table field: {$tableName}:: $desc",
+			fail("Failed to add/modify table field: {$tableName}:: $desc",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
+		// finished
 		unset($sql);
 		$db->release();
 	}
