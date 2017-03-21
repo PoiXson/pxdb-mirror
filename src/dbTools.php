@@ -48,6 +48,8 @@ final class dbTools {
 			fail("Cannot create table, already exists: $tableName",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
+		echo "{$dryStr}Creating Table: {$poolName}:{$tableName} ..\n";
+//		echo "{$dryStr}Note: (size|nullable|default)\n";
 		// get first field
 		$fields = $table->getFields();
 		$firstField = \reset($fields);
@@ -58,8 +60,6 @@ final class dbTools {
 		$dbEngine = 'InnoDB';
 		$fieldSQL = $firstField->getSQL();
 		$sql = "CREATE TABLE `__TABLE__{$tableName}` ( $fieldSQL ) ENGINE={$dbEngine} DEFAULT CHARSET=latin1";
-		echo "{$dryStr}Creating table: {$poolName}:{$tableName} ..\n";
-		echo "{$dryStr}Note: (size|nullable|default)\n";
 		// create new table
 		$db = $pool->getDB();
 		$db->setDry($dry);

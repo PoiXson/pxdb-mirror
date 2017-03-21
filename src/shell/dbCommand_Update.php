@@ -34,7 +34,7 @@ class dbCommand_Update extends dbCommand_Common {
 		// check table exists
 		if (!$pool->hasExistingTable($tableName)) {
 			// create table
-			echo "{$dryStr}Creating Table: {$tableName}\n";
+//			echo "{$dryStr}Creating Table: {$tableName}\n";
 			dbTools::CreateTable(
 				$pool,
 				$schemTable,
@@ -44,7 +44,7 @@ class dbCommand_Update extends dbCommand_Common {
 		}
 
 		// check fields
-		echo "\n{$dryStr}Updating Table: {$tableName}\n";
+//		echo "\n{$dryStr}Updating Field: {$tableName}\n";
 		$countAdded = 0;
 		$countAlter = 0;
 		$countUnchanged = 0;
@@ -62,8 +62,8 @@ class dbCommand_Update extends dbCommand_Common {
 			if (!$exists) {
 				// add missing field
 				$desc = $schemField->getDesc();
-				echo " {$dryStr}* Adding field:  {$fieldName}\n";
-				echo " {$dryStr}    $desc\n";
+//				echo " {$dryStr}* Adding field:  {$fieldName}\n";
+//				echo " {$dryStr}    $desc\n";
 				dbTools::AddChangeTableField(
 					$pool,
 					$schemTable,
@@ -86,9 +86,9 @@ class dbCommand_Update extends dbCommand_Common {
 				// modify existing field
 				$existDesc = $existField->getDesc();
 				$schemDesc = $schemField->getDesc();
-				echo " {$dryStr}* Changing field:  {$fieldName}\n";
-				echo " {$dryStr}    from: {$existDesc}\n";
-				echo " {$dryStr}      to: {$schemDesc}\n";
+//				echo " {$dryStr}* Changing field:  {$fieldName}\n";
+//				echo " {$dryStr}    from: {$existDesc}\n";
+//				echo " {$dryStr}      to: {$schemDesc}\n";
 				dbTools::UpdateTableField(
 					$pool,
 					$schemTable,
