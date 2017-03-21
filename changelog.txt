@@ -1,6 +1,18 @@
 pxdb 0.1.x - PHP Database Utilities Library
 
 
+2017-03-21 pxdb 0.1.3
+=====================
+* finished db list, check, and update commands
+* added dbCommand_Common class to merge execute() functions from db list, check, and update commands
+* renamed dbField->clone() function to duplicate()
+* added lock() isLocked() and ValidUnlocked() functions to dbField class
+* added dbPool->ReloadExistingTableCache() function
+* added dbTable->getName() function
+* added dbTools class containing CreateTable() AddTableField() and UpdateTableField() functions
+* added $helpMsg argument to dbCommands::DisplayHelp() function for additional messages
+
+
 2017-02-24 pxdb 0.1.2
 =====================
 * finished 'db list' and 'db check' shell commands
