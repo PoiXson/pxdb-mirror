@@ -12,14 +12,14 @@ use pxn\pxdb\dbPool;
 use pxn\pxdb\dbTools;
 
 
-class dbCommand_Update extends dbCommand_Common {
+class dbCommand_Update extends dbCommand {
 
 	private static $lastTableChanged = NULL;
 
 
 
 	public function __construct($dry=TRUE) {
-		parent::__construct($dry, self::CMD_UPDATE);
+		parent::__construct($dry);
 	}
 
 

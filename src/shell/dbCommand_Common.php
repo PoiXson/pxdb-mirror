@@ -18,9 +18,8 @@ abstract class dbCommand_Common extends dbCommand {
 
 	const CMD_LIST_FIELDS = 1;
 	const CMD_CHECK       = 2;
-	const CMD_UPDATE      = 4;
-	const CMD_IMPORT      = 8;
-	const CMD_EXPORT      = 16;
+//	const CMD_IMPORT      = 4;
+//	const CMD_EXPORT      = 8;
 
 	protected $cmdFlags = 0;
 
@@ -59,7 +58,7 @@ abstract class dbCommand_Common extends dbCommand {
 		$msg .= "\n";
 		// list/check the expected fields
 		if ($fieldCount > 0) {
-			if ($this->isCMD(self::CMD_LIST_FIELDS | self::CMD_CHECK | self::CMD_UPDATE)) {
+			if ($this->isCMD(self::CMD_LIST_FIELDS | self::CMD_CHECK)) {
 				$changesArray = [];
 				foreach ($schemFields as $fieldName => $field) {
 					// prepare schema field
@@ -68,7 +67,7 @@ abstract class dbCommand_Common extends dbCommand {
 					$schemField->FillKeysSchema();
 					// check for needed changes
 					$changesNeeded = [];
-					if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
+					if ($this->isCMD(self::CMD_CHECK)) {
 						// field exists
 						if ($existTable->hasField($fieldName)) {
 							$existField = $existTable->getField($fieldName);
@@ -98,7 +97,7 @@ abstract class dbCommand_Common extends dbCommand {
 				$strings = [];
 				$strings[0] = ['   Type ', ' Name '];
 				$strings[1] = ['  ======', '======'];
-				if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
+				if ($this->isCMD(self::CMD_CHECK)) {
 					$strings[0][] = ' Changes Needed ';
 					$strings[1][] = '================';
 				}
