@@ -39,7 +39,7 @@ final class dbTools {
 			fail("Cannot create table, already exists: $tableName",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-		echo "{$dryStr}Creating Table: {$poolName}:{$tableName} ..\n";
+		echo "{$dryStr}Creating New Table: {$poolName}:{$tableName}\n";
 //		echo "{$dryStr}Note: (size|nullable|default)\n";
 		// get first field
 		$fields = $table->getFields();
@@ -163,9 +163,6 @@ final class dbTools {
 			$sql .= ", ADD UNIQUE ( `{$fieldName}` )";
 		}
 		// alter table
-//		$desc = $field->getDesc();
-//		echo "{$dryStr} Adding field: {$desc}\n";
-//		echo "{$dryStr} Changing field: {$desc}\n";
 		$db = $pool->getDB();
 		$db->setDry($dry);
 		$result = $db->Execute(
@@ -254,16 +251,6 @@ final class dbTools {
 		// no size
 		case 'text': case 'longtext': case 'blob':
 		case 'date': case 'time':     case 'datetime':
-//			$existDefault = $existField['default'];
-//			$schemDefault = $schemField['default'];
-//			if ($existDefault != $schemDefault) {
-//				$changes[] = "default({$existDefault}>{$schemDefault})";
-//			}
-//			if ($existField['nullable'] !== $schemField['nullable']) {
-//				$n1 = ($existField['nullable'] ? 'YES' : 'NOT');
-//				$n2 = ($schemField['nullable'] ? 'YES' : 'NOT');
-//				$changes[] = "nullable({$n1}>{$n2})";
-//			}
 			break;
 		default:
 			$fieldName = $schem->getName();
