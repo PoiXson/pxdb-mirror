@@ -98,6 +98,7 @@ final class dbTools {
 
 
 
+	// set $afterFieldName to "__FIRST__" to insert at front of table
 	public static function AddChangeTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=TRUE) {
 		$dry = ($dry !== FALSE);
 		$dryStr = ($dry ? '[DRY] ' : '');
@@ -124,7 +125,7 @@ final class dbTools {
 
 		}
 		$desc = $field->getDesc();
-		if ($exists) {
+		if ($exists === TRUE) {
 			$existField = $existTable->getField($fieldName);
 			$existDesc = $existField->getDesc();
 			echo "{$dryStr}* Changing field:  {$fieldName}\n";
@@ -142,12 +143,16 @@ final class dbTools {
 			: 'ADD '
 		);
 		$sql .= $field->getSQL();
-		// insert after field
-		if (!empty($afterFieldName)) {
-			$afterFieldName = San::AlphaNumUnderscore(
-				(string) $afterFieldName
-			);
-			$sql .= " AFTER `{$afterFieldName}`";
+		// insert after field (or front of table)
+		if ($exists !== TRUE && !empty($afterFieldName)) {
+			if ($afterFieldName === '__FIRST__') {
+				$sql .= ' FIRST';
+			} else {
+				$afterFieldName = San::AlphaNumUnderscore(
+					(string) $afterFieldName
+				);
+				$sql .= " AFTER `{$afterFieldName}`";
+			}
 		}
 		// primary key
 		if ($field->isPrimaryKey() || $field->isAutoIncrement()) {

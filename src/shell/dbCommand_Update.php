@@ -50,7 +50,7 @@ class dbCommand_Update extends dbCommand_Common {
 		$countUnchanged = 0;
 		$schemFields = $schemTable->getFields();
 		$existTable = $pool->getExistingTable($tableName);
-		$lastFieldName = NULL;
+		$lastFieldName = '__FIRST__';
 		foreach ($schemFields as $fieldName => $field) {
 			$schemField = $field->duplicate();
 			$schemField->ValidateKeys();
@@ -60,7 +60,7 @@ class dbCommand_Update extends dbCommand_Common {
 			$exists = $existTable->hasField($fieldName);
 			if (!$exists) {
 				// add missing field
-				$desc = $schemField->getDesc();
+//				$desc = $schemField->getDesc();
 //				echo " {$dryStr}* Adding field:  {$fieldName}\n";
 //				echo " {$dryStr}    $desc\n";
 				dbTools::AddChangeTableField(
@@ -83,8 +83,8 @@ class dbCommand_Update extends dbCommand_Common {
 			$changes = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 			if ($changes !== FALSE) {
 				// modify existing field
-				$existDesc = $existField->getDesc();
-				$schemDesc = $schemField->getDesc();
+//				$existDesc = $existField->getDesc();
+//				$schemDesc = $schemField->getDesc();
 //				echo " {$dryStr}* Changing field:  {$fieldName}\n";
 //				echo " {$dryStr}    from: {$existDesc}\n";
 //				echo " {$dryStr}      to: {$schemDesc}\n";
