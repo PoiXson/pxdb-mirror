@@ -116,8 +116,13 @@ final class dbTools {
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
 		$tableName = $table->getName();
-		$existTable = $pool->getExistingTable($tableName);
-		$exists = $existTable->hasField($fieldName);
+		$existTable = NULL;
+		$exists     = NULL;
+		if (!$dry) {
+			$existTable = $pool->getExistingTable($tableName);
+			$exists = $existTable->hasField($fieldName);
+
+		}
 		$desc = $field->getDesc();
 		if ($exists) {
 			$existField = $existTable->getField($fieldName);
