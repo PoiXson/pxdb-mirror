@@ -199,9 +199,8 @@ class dbPool {
 
 
 
-	// table schemas
 	// $schema argument can be path string to class or a class instance object
-	public function addTableSchema($tableName, $schema) {
+	public function addSchemaTable($tableName, $schema) {
 		$tableName = dbTable::ValidateTableName($tableName);
 		$schema    = dbTable::ValidateSchemaClass($schema);
 		// table schema already exists
@@ -213,28 +212,38 @@ class dbPool {
 		$this->schemas[$tableName] = $schema;
 		return TRUE;
 	}
-	public function addTableSchemas(array $schemas) {
+	public function addSchemaTables(array $schemas) {
 		if (\count($schemas) == 0) {
 			return FALSE;
 		}
 		$count = 0;
 		foreach ($schemas as $entryName => $entry) {
-			$result = self::addTableSchema($entryName, $entry);
+			$result = self::addSchemaTable($entryName, $entry);
 			if ($result !== FALSE) {
 				$count++;
 			}
 		}
 		return $count;
 	}
-	public function getTableSchema($tableName) {
-		$tableName = dbTable::ValidateTableName($tableName);
+	public function getSchemaTable($table) {
+		if ($table instanceof \pxn\pxdb\dbTable) {
+			return $table;
+		}
+		$tableName = dbTable::ValidateTableName(
+			(string) $table
+		);
 		if (\array_key_exists($tableName, $this->schemas)) {
 			$schema = $this->schemas[$tableName];
-			return dbTable::GetSchemaClass($schema, $this, $tableName);
+			$clss = dbTable::GetSchemaClass(
+				$schema,
+				$this,
+				$tableName
+			);
+			return $clss;
 		}
 		return NULL;
 	}
-	public function getTableSchemas() {
+	public function getSchemaTables() {
 		return $this->schemas;
 	}
 
@@ -252,46 +261,28 @@ class dbPool {
 
 
 
-	public function getExistingTable($tableName) {
-		if ($tableName instanceof \pxn\pxdb\dbTable) {
-			return $tableName;
+	public function getExistingTable($table) {
+		if ($table instanceof \pxn\pxdb\dbTable) {
+			return $table;
 		}
-		$tableName = (string) $tableName;
 		$this->LoadExistingTables();
-		$tableName = dbTable::ValidateTableName($tableName);
-		if (!\array_key_exists($tableName, $this->existing)) {
-			return NULL;
+		$tableName = dbTable::ValidateTableName(
+			(string) $table
+		);
+		if (\array_key_exists($tableName, $this->existing)) {
+			$existing = $this->existing[$tableName];
+			// load table object
+			if ($existing === NULL) {
+				$existing = new dbTableExisting($this, $tableName);
+				$this->existing[$tableName] = $existing;
+			}
+			return $existing;
 		}
-		$existing = $this->existing[$tableName];
-		// load table object
-		if ($existing === NULL) {
-			$existing = new dbTableExisting($this, $tableName);
-			$this->existing[$tableName] = $existing;
-		}
-		return $existing;
+        return NULL;
 	}
 	public function getExistingTables() {
 		$this->LoadExistingTables();
 		return $this->existing;
-	}
-	public function getSchemaTable($tableName) {
-		if ($tableName instanceof \pxn\pxdb\dbTable) {
-			return $tableName;
-		}
-		$tableName = (string) $tableName;
-		$tableName = dbTable::ValidateTableName($tableName);
-		if (!\array_key_exists($tableName, $this->schemas)) {
-			return NULL;
-		}
-		$clss = dbTable::GetSchemaClass(
-			$this->schemas[$tableName],
-			$this,
-			$tableName
-		);
-		return $clss;
-	}
-	public function getSchemaTables() {
-		return $this->schemas;
 	}
 
 

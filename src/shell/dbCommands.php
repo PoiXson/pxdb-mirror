@@ -153,7 +153,7 @@ final class dbCommands {
 			}
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
-				$tables = $poolEntry->getTableSchemas();
+				$tables = $poolEntry->getSchemaTables();
 				foreach ($tables as $tableEntryName => $tableEntry) {
 					$result = self::_doRunCommandOnce(
 						$cmd,
@@ -226,7 +226,7 @@ final class dbCommands {
 				fail('Invalid pool!',
 					Defines::EXIT_CODE_INVALID_ARGUMENT);
 			}
-			$tables = $poolEntry->getTableSchemas();
+			$tables = $poolEntry->getSchemaTables();
 			$count = 0;
 			foreach ($tables as $tableEntryName => $tableEntry) {
 				$result = self::_doRunCommandOnce(
