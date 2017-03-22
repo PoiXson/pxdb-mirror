@@ -1,6 +1,15 @@
 pxdb 0.1.x - PHP Database Utilities Library
 
 
+2017-03-22 pxdb 0.1.4
+=====================
+* added getExistingTables() and getSchemaTable() functions
+* merged dbTools::UpdateTableField() function into AddChangeTableField()
+* fixed inserting a field at front of a table
+* fixed and cleaned up db update command logging
+* further cleanup and few more fixes
+
+
 2017-03-21 pxdb 0.1.3
 =====================
 * finished db list, check, and update commands
