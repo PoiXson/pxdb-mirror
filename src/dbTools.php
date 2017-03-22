@@ -18,8 +18,9 @@ final class dbTools {
 
 
 
-	public static function CreateTable($pool, $table, $dry=FALSE) {
-		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
+	public static function CreateTable($pool, $table, $dry=TRUE) {
+		$dry = ($dry !== FALSE);
+		$dryStr = ($dry ? '[DRY] ' : '');
 		// validate pool
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {
@@ -97,8 +98,9 @@ final class dbTools {
 
 
 
-	public static function AddChangeTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=FALSE) {
-		$dryStr = ($dry === FALSE ? '' : '[DRY] ');
+	public static function AddChangeTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=TRUE) {
+		$dry = ($dry !== FALSE);
+		$dryStr = ($dry ? '[DRY] ' : '');
 		// validate pool
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {

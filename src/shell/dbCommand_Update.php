@@ -26,7 +26,7 @@ class dbCommand_Update extends dbCommand_Common {
 
 	// returns true if successful
 	public function execute($pool, $tableName) {
-		$dryStr = ($this->dry === FALSE ? '' : '[DRY] ');
+		$dryStr = ($this->dry ? '[DRY] ' : '');
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		$schemTable = $pool->getSchemaTable($tableName);

@@ -137,7 +137,8 @@ final class dbCommands {
 		self::DisplayHelp($cmd, $helpMsg);
 		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 	}
-	private static function _doRunCommand($cmd, $pool, $table, $dry) {
+	private static function _doRunCommand($cmd, $pool, $table, $dry=TRUE) {
+		$dry = ($dry !== FALSE);
 		if ($dry) {
 			echo " [Dry Mode] \n";
 		}
@@ -264,7 +265,8 @@ final class dbCommands {
 
 		return $result;
 	}
-	private static function _doRunCommandOnce($cmd, $pool, $table, $dry) {
+	private static function _doRunCommandOnce($cmd, $pool, $table, $dry=TRUE) {
+		$dry = ($dry !== FALSE);
 		$poolName = dbPool::castPoolName($pool);
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {

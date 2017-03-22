@@ -110,7 +110,7 @@ abstract class dbPrepared {
 				}
 				echo "$msg\n";
 			}
-			if (!$this->isDry()) {
+			if ($this->notDry()) {
 				// run query
 				if (!$this->st->execute()) {
 					$this->setError();
@@ -196,8 +196,11 @@ abstract class dbPrepared {
 		// is dry
 		return TRUE;
 	}
+	public function notDry() {
+		return !$this->isDry();
+	}
 	public function setDry($dry=TRUE) {
-		$this->dry = $dry;
+		$this->dry = ($dry !== FALSE);
 	}
 
 
