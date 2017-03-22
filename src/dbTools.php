@@ -127,12 +127,12 @@ final class dbTools {
 		if ($exists) {
 			$existField = $existTable->getField($fieldName);
 			$existDesc = $existField->getDesc();
-			echo " {$dryStr}* Changing field:  {$fieldName}\n";
-			echo " {$dryStr}    from: {$existDesc}\n";
-			echo " {$dryStr}      to: {$desc}\n";
+			echo "{$dryStr}* Changing field:  {$fieldName}\n";
+			echo "{$dryStr}    from: {$existDesc}\n";
+			echo "{$dryStr}      to: {$desc}\n";
 			unset($existField, $existDesc);
 		} else {
-			echo " {$dryStr}* Adding field:  {$fieldName}  $desc\n";
+			echo "{$dryStr}* Adding field:  {$fieldName}  $desc\n";
 		}
 		// generate sql
 		$sql = "ALTER TABLE `__TABLE__{$tableName}` ";
