@@ -43,9 +43,8 @@ abstract class dbCommand_Common extends dbCommand {
 	public function execute($pool, $tableName) {
 		$pool     = dbPool::getPool($pool);
 		$poolName = $pool->getName();
-		$tableExists = $pool->hasExistingTable($tableName);
 		// missing table
-		if (!$tableExists) {
+		if (!$pool->hasExistingTable($tableName)) {
 			$msg = "<MISSING> {$poolName}:{$tableName}";
 			echo "$msg\n";
 			return 'MISSING-TABLE';
@@ -71,8 +70,7 @@ abstract class dbCommand_Common extends dbCommand {
 					$changesNeeded = [];
 					if ($this->isCMD(self::CMD_CHECK | self::CMD_UPDATE)) {
 						// field exists
-						$exists = $existTable->hasField($fieldName);
-						if ($exists) {
+						if ($existTable->hasField($fieldName)) {
 							$existField = $existTable->getField($fieldName);
 							$result = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 							if (\is_array($result)) {

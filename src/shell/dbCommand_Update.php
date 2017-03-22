@@ -86,10 +86,11 @@ class dbCommand_Update extends dbCommand_Common {
 			$changes = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 			if ($changes !== FALSE) {
 				// modify existing field
-				dbTools::UpdateTableField(
+				dbTools::AddChangeTableField(
 					$pool,
 					$schemTable,
 					$schemField,
+					NULL,
 					$this->dry
 				);
 				$countAlter++;
