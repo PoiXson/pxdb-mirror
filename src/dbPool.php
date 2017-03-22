@@ -270,6 +270,10 @@ class dbPool {
 		}
 		return $existing;
 	}
+	public function getExistingTables() {
+		$this->LoadExistingTables();
+		return $this->existing;
+	}
 	public function getSchemaTable($tableName) {
 		if ($tableName instanceof \pxn\pxdb\dbTable) {
 			return $tableName;
@@ -285,6 +289,9 @@ class dbPool {
 			$tableName
 		);
 		return $clss;
+	}
+	public function getSchemaTables() {
+		return $this->schemas;
 	}
 
 
