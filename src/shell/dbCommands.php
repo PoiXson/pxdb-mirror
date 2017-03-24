@@ -380,64 +380,63 @@ final class dbCommands {
 
 
 	public static function DisplayHelp($cmd=NULL, $helpMsg=[]) {
-		if ($helpMsg !== NULL) {
-			if (\is_array($helpMsg)) {
-				foreach ($helpMsg as $line) {
-					echo "{$line}\n";
-				}
-			} else {
-				$helpMsg = (string) $helpMsg;
-				echo "{$helpMsg}\n";
-			}
-		}
-		echo "\nUsage:\n";
+		$help = (new \pxn\phpUtils\ShellHelp())
+			->setSelfName('pxntools db')
+			->setCommand($cmd)
+			->setMessage($helpMsg);
 		switch ($cmd) {
 		case 'list':
-			echo "  db list [options]\n";
 			break;
 		case 'check':
-			echo "  db check [options] [[pool:]table] ..\n";
-			break;
 		case 'update':
-			echo "  db update [options] [[pool:]table] ..\n";
+			$help->appendUsage('[[pool:]table]..');
 			break;
 		case 'import':
-			echo "  db import [options] --file <filename> [[pool:]table] ..\n";
-			break;
 		case 'export':
-			echo "  db export [options] --file <filename> [[pool:]table] ..\n";
+			$help->appendUsage('[--path <path>] [--file <filename>] [[pool:]table]..');
 			break;
 		default:
-			echo "  db <command> [options]\n";
+			$help->addCommands([
+				'list'   => 'List the existing database pools/tables.',
+				'check'  => 'Check for needed updates to table schemas.',
+				'update' => 'Update the database tables to the current schema, and create tables as needed.',
+				'import' => 'Import data from a stored backup file.',
+				'export' => 'Export data to a backup stored in the file-system.',
+			]);
+		}
+		$help->addFlags([
+				'Run the command without making changes (default for some commands)'
+					=> [ '-D', '--dry' ],
+				'Confirm the changes to be made (overrides the --dry flag)'
+					=> [ '--confirm' ],
+			], 'pre');
+		$help->addFlags([
+				'Name of the database pool to use for the command.'
+					=> [ '-p', '--pool' ],
+				'Name of the table to use for the command.'
+					=> [ '-t', '--table' ],
+			], 'mid');
+		switch ($cmd) {
+		case 'list':
+		case 'check':
+			$help->addFlags([
+				'List fields in tables.'
+					=> [ '-f', '--show-fields' ],
+				'Don\'t list fields.'
+					=> [ '-F', '--no-fields' ],
+			], 'mid2');
+			break;
+		case 'import':
+		case 'export':
+			$help->addFlags([
+				'Path to search/detect file.'
+					=> [ '--path' ],
+				'Exact path or filename.'
+					=> [ '--file' ],
+			], 'mid2');
 			break;
 		}
-		echo "\nCommands:\n";
-		echo "  list    List the existing database pools/tables\n";
-		echo "  check   Check for needed updates to table schemas.\n";
-		echo "  update  Update the database tables to the current schema, and create tables as needed.\n";
-		echo "  import  Import data from a stored backup.\n";
-		echo "  export  Export data to a backup stored in the filesystem.\n";
-		echo "\nOptions:\n";
-		echo "  -D, --dry    Run the operation without making changes. (default for some operations)\n";
-		if ($cmd == 'check' || $cmd == 'update' || $cmd == 'import') {
-			echo "  --confirm    Confirm the changes to be made (overrides the --dry flag)\n";
-		}
-		if ($cmd == 'list' || $cmd == 'check') {
-			echo "\n";
-			echo "  -f, --show-fields  List fields for tables\n";
-			echo "  -F, --no-fields    Don't list fields in tables\n";
-		}
-		echo "\n";
-		echo "  -p, --pool   Database pool name to use for the operation.\n";
-		echo "  -t, --table  Name of the table to use for the operation.\n";
-		if ($cmd == 'import') {
-			echo "\n";
-			echo "  -f, --file   The filename or path to restore data from.\n";
-		}
-		if ($cmd == 'export') {
-			echo "  -f, --file   The filename or path to write the exported data.\n";
-		}
-		echo "\n";
+		$help->Display();
 	}
 
 
