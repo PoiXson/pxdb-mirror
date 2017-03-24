@@ -204,28 +204,32 @@ final class dbCommands {
 			}
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
-				if ($poolEntry->hasTable($table)) {
-					$result = self::_doRunCommandOnce(
-						$cmd,
-						$poolEntry,
-						$table,
-						$dry
-					);
-					if ($result === FALSE) {
-						$plural = ($count == 1 ? '' : 's');
-						echo ShellTools::FormatString(
-							" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
-						);
-						if ($dry) {
-							echo ShellTools::FormatString(
-								" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
-							);
-						}
-						return FALSE;
-					}
-					$count++;
+				if (!$poolEntry->hasExistingTable($table)) {
 					continue;
 				}
+				$result = self::_doRunCommandOnce(
+					$cmd,
+					$poolEntry,
+					$table,
+					$dry
+				);
+				if ($result === FALSE) {
+					$plural = ($count == 1 ? '' : 's');
+					echo ShellTools::FormatString(
+						" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
+					);
+					if ($dry) {
+						echo ShellTools::FormatString(
+							" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
+						);
+					}
+					return FALSE;
+				}
+				$count++;
+			}
+			if ($count == 0) {
+				fail("Table not found: {$pool}:{$table}",
+					Defines::EXIT_CODE_USAGE_ERROR);
 			}
 			$plural = ($count == 1 ? '' : 's');
 			echo ShellTools::FormatString(
