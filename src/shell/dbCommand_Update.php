@@ -118,6 +118,7 @@ class dbCommand_Update extends dbCommand {
 				"{$dryStr}Added {color=green}$countAdded{reset} field{$plural1}, and modified {color=green}$countAlter{reset} field{$plural2}\n"
 			);
 		}
+		echo "\n";
 		return TRUE;
 	}
 
