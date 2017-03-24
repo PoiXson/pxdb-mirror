@@ -12,6 +12,7 @@ use pxn\pxdb\dbPool;
 use pxn\pxdb\dbTools;
 
 use pxn\phpUtils\Strings;
+use pxn\phpUtils\ShellTools;
 
 
 abstract class dbCommand_Common extends dbCommand {
@@ -44,8 +45,9 @@ abstract class dbCommand_Common extends dbCommand {
 		$poolName = $pool->getName();
 		// missing table
 		if (!$pool->hasExistingTable($tableName)) {
-			$msg = "<MISSING> {$poolName}:{$tableName}";
-			echo "$msg\n";
+			echo ShellTools::FormatString(
+				"{color=red}<MISSING>{reset} {$poolName}:{$tableName}"
+			);
 			return 'MISSING-TABLE';
 		}
 		// found table
@@ -54,8 +56,7 @@ abstract class dbCommand_Common extends dbCommand {
 			->getSchemaTable($tableName)
 				->getFields();
 		$fieldCount = \count($schemFields);
-		$msg = "<found> {$poolName}:{$tableName}  Fields: {$fieldCount}\n";
-		$msg .= "\n";
+		$msg = "<found> {color=green}{$poolName}:{$tableName}{reset}  Fields: {color=green}{$fieldCount}{reset}\n";
 		// list/check the expected fields
 		if ($fieldCount > 0) {
 			if ($this->isCMD(self::CMD_LIST_FIELDS | self::CMD_CHECK)) {
@@ -107,7 +108,9 @@ abstract class dbCommand_Common extends dbCommand {
 				);
 				$msg .= \implode(Strings::PadColumns($strings, 8, 8), "\n");
 				unset ($strings);
-				echo "$msg\n";
+				echo ShellTools::FormatString(
+					"$msg\n\n"
+				);
 				return $changesArray;
 			}
 		}

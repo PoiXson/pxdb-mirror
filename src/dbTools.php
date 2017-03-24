@@ -11,6 +11,7 @@ namespace pxn\pxdb;
 use pxn\phpUtils\Strings;
 use pxn\phpUtils\San;
 use pxn\phpUtils\Numbers;
+use pxn\phpUtils\ShellTools;
 
 
 final class dbTools {
@@ -20,7 +21,7 @@ final class dbTools {
 
 	public static function CreateTable($pool, $table, $dry=TRUE) {
 		$dry = ($dry !== FALSE);
-		$dryStr = ($dry ? '[DRY] ' : '');
+		$dryStr = ($dry ? '{color=orange}[DRY]{reset} ' : '');
 		// validate pool
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {
@@ -39,8 +40,12 @@ final class dbTools {
 			fail("Cannot create table, already exists: $tableName",
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
-		echo "{$dryStr}Creating New Table: {$poolName}:{$tableName}\n";
-//		echo "{$dryStr}Note: (size|nullable|default)\n";
+		echo ShellTools::FormatString(
+			"{$dryStr}Creating New Table: {color=green}{$poolName}:{$tableName}{reset}\n"
+		);
+		echo ShellTools::FormatString(
+			"{$dryStr}Note: (size|nullable|default)\n"
+		);
 		// get first field
 		$fields = $table->getFields();
 		$firstField = \reset($fields);
@@ -101,7 +106,7 @@ final class dbTools {
 	// set $afterFieldName to "__FIRST__" to insert at front of table
 	public static function AddChangeTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=TRUE) {
 		$dry = ($dry !== FALSE);
-		$dryStr = ($dry ? '[DRY] ' : '');
+		$dryStr = ($dry ? '{color=orange}[DRY]{reset} ' : '');
 		// validate pool
 		$pool = dbPool::getPool($pool);
 		if ($pool == NULL) {
@@ -128,12 +133,16 @@ final class dbTools {
 		if ($exists === TRUE) {
 			$existField = $existTable->getField($fieldName);
 			$existDesc = $existField->getDesc();
-			echo "{$dryStr}* Changing field:  {$fieldName}\n";
-			echo "{$dryStr}    from: {$existDesc}\n";
-			echo "{$dryStr}      to: {$desc}\n";
+			echo ShellTools::FormatString(
+				"{$dryStr}{color=green}*{reset} Changing field:  {color=green}{$fieldName}{reset}\n",
+				"{$dryStr}    from: {$existDesc}\n",
+				"{$dryStr}      to: {$desc}\n"
+			);
 			unset($existField, $existDesc);
 		} else {
-			echo "{$dryStr}* Adding field:  {$fieldName}  $desc\n";
+			echo ShellTools::FormatString(
+				"{$dryStr}{color=green}*{reset} Adding field:  {color=green}{$fieldName}{reset}  $desc\n"
+			);
 		}
 		// generate sql
 		$sql = "ALTER TABLE `__TABLE__{$tableName}` ";

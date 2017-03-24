@@ -11,6 +11,8 @@ namespace pxn\pxdb\shell;
 use pxn\pxdb\dbPool;
 use pxn\pxdb\dbTools;
 
+use pxn\phpUtils\ShellTools;
+
 
 class dbCommand_Update extends dbCommand {
 
@@ -26,11 +28,13 @@ class dbCommand_Update extends dbCommand {
 
 	// returns true if successful
 	public function execute($pool, $tableName) {
-		$dryStr = ($this->dry ? '[DRY] ' : '');
+		$dryStr = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		$schemTable = $pool->getSchemaTable($tableName);
-		echo "\n{$dryStr}Checking Table: {$poolName}:{$tableName}\n";
+		echo ShellTools::FormatString(
+			"\n{$dryStr}Checking Table: {color=green}{$poolName}:{$tableName}{reset}\n"
+		);
 
 		// check table exists
 		if (!$pool->hasExistingTable($tableName)) {
@@ -45,7 +49,9 @@ class dbCommand_Update extends dbCommand {
 				$fields = $table->getFields();
 				$countFields = \count($fields);
 				$plural = ($countFields == 1 ? '' : 's');
-				echo "{$dryStr}Created new table with $countFields field{$plural}\n";
+				echo ShellTools::FormatString(
+					"{$dryStr}Created new table with {color=green}$countFields{reset} field{$plural}\n"
+				);
 			}
 			return TRUE;
 		}
@@ -104,11 +110,15 @@ class dbCommand_Update extends dbCommand {
 		}
 		// finished
 		if ($countAdded == 0 && $countAlter == 0) {
-			echo "{$dryStr}No fields need changes.\n";
+			echo ShellTools::FormatString(
+				"{$dryStr}{color=green}No fields need changes.{reset}\n"
+			);
 		} else {
 			$plural1 = ($countAdded == 1 ? '' : 's');
 			$plural2 = ($countAlter == 1 ? '' : 's');
-			echo "{$dryStr}Added $countAdded field{$plural1}, and modified $countAlter field{$plural2}\n";
+			echo ShellTools::FormatString(
+				"{$dryStr}Added {color=green}$countAdded{reset} field{$plural1}, and modified {color=green}$countAlter{reset} field{$plural2}\n"
+			);
 		}
 		return TRUE;
 	}

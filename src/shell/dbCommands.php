@@ -140,12 +140,16 @@ final class dbCommands {
 	private static function _doRunCommand($cmd, $pool, $table, $dry=TRUE) {
 		$dry = ($dry !== FALSE);
 		if ($dry) {
-			echo " [Dry Mode] \n";
+			echo ShellTools::FormatString(
+				" {color=orange}[Dry Mode]{reset} \n"
+			);
 		}
 
 		// all pools and tables
 		if ($pool == '*' && $table == '*') {
-			echo " Cmd: $cmd  Pool: -all-  Table: -all-\n\n";
+			echo ShellTools::FormatString(
+				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}-all-{reset}  Table: {color=green}-all-{reset}\n\n"
+			);
 			$pools = dbPool::getPools();
 			if ($pools === NULL || count($pools) == 0) {
 				fail('No database pools configured!',
@@ -163,9 +167,13 @@ final class dbCommands {
 					);
 					if ($result === FALSE) {
 						$plural = ($count == 1 ? '' : 's');
-						echo "\n Ran $cmd on $count table{$plural}, then failed!\n";
+						echo ShellTools::FormatString(
+							" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
+						);
 						if ($dry) {
-							echo " [ Dry Mode - No changes made ]\n";
+							echo ShellTools::FormatString(
+								" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
+							);
 						}
 						return FALSE;
 					}
@@ -173,16 +181,22 @@ final class dbCommands {
 				}
 			}
 			$plural = ($count == 1 ? '' : 's');
-			echo "\n Ran $cmd on $count table{$plural}\n";
+			echo ShellTools::FormatString(
+				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
+			);
 			if ($dry) {
-				echo " [ Dry Mode - No changes made ]\n";
+				echo ShellTools::FormatString(
+					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
+				);
 			}
 			return TRUE;
 		}
 
 		// all pools
 		if ($pool == '*') {
-			echo " Cmd: $cmd  Pool: -all-  Table: $table\n\n";
+			echo ShellTools::FormatString(
+				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}-all-{reset}  Table: {color=green}$table{reset}\n\n"
+			);
 			$pools = dbPool::getPools();
 			if ($pools === NULL || count($pools) == 0) {
 				fail('No database pools configured!',
@@ -199,9 +213,13 @@ final class dbCommands {
 					);
 					if ($result === FALSE) {
 						$plural = ($count == 1 ? '' : 's');
-						echo "\n Ran $cmd on $count table{$plural}, then failed!\n";
+						echo ShellTools::FormatString(
+							" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
+						);
 						if ($dry) {
-							echo " [ Dry Mode - No changes made ]\n";
+							echo ShellTools::FormatString(
+								" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
+							);
 						}
 						return FALSE;
 					}
@@ -210,9 +228,13 @@ final class dbCommands {
 				}
 			}
 			$plural = ($count == 1 ? '' : 's');
-			echo "\n Ran $cmd on $count table{$plural}\n";
+			echo ShellTools::FormatString(
+				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
+			);
 			if ($dry) {
-				echo " [ Dry Mode - No changes made ]\n";
+				echo ShellTools::FormatString(
+					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
+				);
 			}
 			return TRUE;
 		}
@@ -220,7 +242,9 @@ final class dbCommands {
 		// all tables
 		if ($table == '*') {
 			$poolName = dbPool::castPoolName($pool);
-			echo " Cmd: $cmd  Pool: $poolName  Table: -all-\n\n";
+			echo ShellTools::FormatString(
+				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}$poolName{reset}  Table: {color=green}-all-{reset}\n\n"
+			);
 			$poolEntry = dbPool::getPool($pool);
 			if ($poolEntry == NULL) {
 				fail('Invalid pool!',
@@ -237,25 +261,35 @@ final class dbCommands {
 				);
 				if ($result === FALSE) {
 					$plural = ($count == 1 ? '' : 's');
-					echo "\n Ran $cmd on $count table{$plural}\n";
+					echo ShellTools::FormatString(
+						" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
+					);
 					if ($dry) {
-						echo " [ Dry Mode - No changes made ]\n";
+						echo ShellTools::FormatString(
+							"{color=orange} [ Dry Mode - No changes made ]{reset}\n"
+						);
 					}
 					return FALSE;
 				}
 				$count++;
 			}
 			$plural = ($count == 1 ? '' : 's');
-			echo "\n Ran $cmd on $count table{$plural}\n";
+			echo ShellTools::FormatString(
+				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
+			);
 			if ($dry) {
-				echo " [ Dry Mode - No changes made ]\n";
+				echo ShellTools::FormatString(
+					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
+				);
 			}
 			return TRUE;
 		}
 
 		// one pool/table
 		$poolName = dbPool::castPoolName($pool);
-		echo " Cmd: $cmd  Pool: $poolName  Table: $table\n\n";
+		echo ShellTools::FormatString(
+			" Cmd: {color=green}$cmd{reset}  Pool: {color=green}$poolName{reset}  Table: {color=green}$table{reset}\n\n"
+		);
 		$result = self::_doRunCommandOnce(
 			$cmd,
 			$pool,

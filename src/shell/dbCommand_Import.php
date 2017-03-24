@@ -8,6 +8,8 @@
  */
 namespace pxn\pxdb\shell;
 
+use pxn\phpUtils\ShellTools;
+
 
 class dbCommand_Import extends dbCommand {
 
@@ -21,11 +23,13 @@ class dbCommand_Import extends dbCommand {
 
 	// returns true if successful
 	public function execute($pool, $tableName) {
-		$dryStr = ($this->dry ? '[DRY] ' : '');
+		$dryStr = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		$existTable = $pool->getExistingTable($tableName);
-		echo "\n{$dryStr}Importing Table: {$poolName}:{$tableName}\n";
+		echo ShellTools::FormatString(
+			"\n{$dryStr}Importing Table: {color=green}{$poolName}:{$tableName}{reset}\n"
+		);
 	}
 
 
