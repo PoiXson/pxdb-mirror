@@ -235,7 +235,7 @@ final class dbTools {
 				if ($size === NULL) {
 					$msg .= 'NULL';
 				} else {
-					$msg = "size({$size}";
+					$msg = "size(";
 					if (Numbers::isNumber($size)) {
 						$msg .= (int) $size;
 					} else {

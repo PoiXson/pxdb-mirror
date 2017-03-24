@@ -16,8 +16,6 @@ use pxn\phpUtils\ShellTools;
 
 class dbCommand_Update extends dbCommand {
 
-	private static $lastTableChanged = NULL;
-
 
 
 	public function __construct($dry=TRUE) {

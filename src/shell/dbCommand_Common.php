@@ -19,8 +19,6 @@ abstract class dbCommand_Common extends dbCommand {
 
 	const CMD_LIST_FIELDS = 1;
 	const CMD_CHECK       = 2;
-//	const CMD_IMPORT      = 4;
-//	const CMD_EXPORT      = 8;
 
 	protected $cmdFlags = 0;
 
@@ -74,11 +72,16 @@ abstract class dbCommand_Common extends dbCommand {
 							$existField = $existTable->getField($fieldName);
 							$result = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 							if (\is_array($result)) {
+								if (ShellTools::isAnsiColorEnabled()) {
+									foreach ($result as $index => &$value) {
+										$value = "{color=orange}$value{reset}";
+									}
+								}
 								$changesNeeded[$fieldName] = $result;
 							}
 						// missing field
 						} else {
-							$changesNeeded[$fieldName] = 'MISSING';
+							$changesNeeded[$fieldName] = '{color=red}MISSING{reset}';
 						}
 					}
 					// build display string
