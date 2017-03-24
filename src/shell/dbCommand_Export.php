@@ -9,12 +9,23 @@
 namespace pxn\pxdb\shell;
 
 
-class dbCommand_Export extends dbCommand_Common {
+class dbCommand_Export extends dbCommand {
 
 
 
 	public function __construct($dry=TRUE) {
-		parent::__construct($dry, self::CMD_EXPORT);
+		parent::__construct($dry);
+	}
+
+
+
+	// returns true if successful
+	public function execute($pool, $tableName) {
+		$dryStr = ($this->dry ? '[DRY] ' : '');
+		$pool = dbPool::getPool($pool);
+		$poolName = $pool->getName();
+		$existTable = $pool->getExistingTable($tableName);
+		echo "\n{$dryStr}Exporting Table: {$poolName}:{$tableName}\n";
 	}
 
 
