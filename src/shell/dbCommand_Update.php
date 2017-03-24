@@ -26,7 +26,7 @@ class dbCommand_Update extends dbCommand {
 
 	// returns true if successful
 	public function execute($pool, $tableName) {
-		$dryStr = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
+		$dryStr = ($this->isDry() ? '{color=orange}[DRY]{reset} ' : '');
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		$schemTable = $pool->getSchemaTable($tableName);
@@ -42,7 +42,7 @@ class dbCommand_Update extends dbCommand {
 				$schemTable,
 				$this->dry
 			);
-			if (!$this->dry) {
+			if ($this->notDry()) {
 				$table = $pool->getExistingTable($tableName);
 				$fields = $table->getFields();
 				$countFields = \count($fields);

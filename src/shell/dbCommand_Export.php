@@ -23,7 +23,7 @@ class dbCommand_Export extends dbCommand {
 
 	// returns true if successful
 	public function execute($pool, $tableName) {
-		$dryStr = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
+		$dryStr = ($this->isDry() ? '{color=orange}[DRY]{reset} ' : '');
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		$existTable = $pool->getExistingTable($tableName);
