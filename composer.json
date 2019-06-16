@@ -34,14 +34,14 @@
 		]
 	},
 	"require": {
-		"pxn/phpUtils":    "0.1.*",
+		"pxn/phputils":    "0.1.*",
 		"ext-pdo":         "*",
 		"ext-pdo_mysql":   "*"
 	},
 	"require-dev": {
 		"ext-mbstring":    "*",
-		"filp/whoops":     "2.1.*",
-		"phpunit/phpunit": "6.*"
+		"filp/whoops":     "2.*",
+		"phpunit/phpunit": "8.*"
 	},
 	"scripts": {
 		"test": "phpunit",
