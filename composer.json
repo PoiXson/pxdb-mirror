@@ -8,8 +8,8 @@
 		"framework", "utilities", "database", "mysql"
 	],
 	"support": {
-		"issues": "https://github.com/PoiXson/pxdb/issues",
-		"source": "https://github.com/PoiXson/pxdb",
+		"source": "http://git.poixson.com/summary/pxn!pxdb.git",
+		"issues": "http://git.poixson.com/tickets/pxn!pxdb.git",
 		"irc":    "irc://irc.esper.net/poixson"
 	},
 	"authors": [{
