@@ -41,6 +41,7 @@
 	"require-dev": {
 		"ext-mbstring":    "*",
 		"filp/whoops":     "2.*",
+		"pxn/composerlocaldev": "1.*",
 		"phpunit/phpunit": "8.*"
 	}
 }
