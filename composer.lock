@@ -915,11 +915,11 @@
         },
         {
             "name": "pxn/composerlocaldev",
-            "version": "1.2",
+            "version": "1.3",
             "source": {
                 "type": "git",
                 "url": "https://git.poixson.com/r/pxn/ComposerLocalDev.git",
-                "reference": "d54640a9875f704c5b4330b0d1ab90b7e3f4d8cd"
+                "reference": "ae8225610a21d0d5d84e1d1eebccf8bacecd2c16"
             },
             "require": {
                 "composer-plugin-api": "^1.1"
@@ -953,7 +953,7 @@
                 "dev",
                 "symlink"
             ],
-            "time": "2019-07-01T10:26:09+00:00"
+            "time": "2019-07-04T03:25:12+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
