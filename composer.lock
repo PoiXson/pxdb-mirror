@@ -11,14 +11,8 @@
             "version": "0.1.29",
             "source": {
                 "type": "git",
-                "url": "https://github.com/PoiXson/phpUtils.git",
+                "url": "https://git.poixson.com/r/pxn/phpUtils.git",
                 "reference": "fe785b7d08f9c5eb0cfc53a938c87bc7206f41f8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PoiXson/phpUtils/zipball/fe785b7d08f9c5eb0cfc53a938c87bc7206f41f8",
-                "reference": "fe785b7d08f9c5eb0cfc53a938c87bc7206f41f8",
-                "shasum": ""
             },
             "require-dev": {
                 "51systems/doctrine-encrypt": "v6.0.*",
@@ -791,16 +785,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "8.2.3",
+            "version": "8.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "f67ca36860ebca7224d4573f107f79bd8ed0ba03"
+                "reference": "25fe0b5031b24722f66a75ad479a074cccc1bb37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f67ca36860ebca7224d4573f107f79bd8ed0ba03",
-                "reference": "f67ca36860ebca7224d4573f107f79bd8ed0ba03",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/25fe0b5031b24722f66a75ad479a074cccc1bb37",
+                "reference": "25fe0b5031b24722f66a75ad479a074cccc1bb37",
                 "shasum": ""
             },
             "require": {
@@ -827,7 +821,7 @@
                 "sebastian/global-state": "^3.0.0",
                 "sebastian/object-enumerator": "^3.0.3",
                 "sebastian/resource-operations": "^2.0.1",
-                "sebastian/type": "^1.1.0",
+                "sebastian/type": "^1.1.3",
                 "sebastian/version": "^2.0.1"
             },
             "require-dev": {
@@ -870,7 +864,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2019-06-19T12:03:56+00:00"
+            "time": "2019-07-03T08:30:33+00:00"
         },
         {
             "name": "psr/log",
@@ -921,11 +915,11 @@
         },
         {
             "name": "pxn/composerlocaldev",
-            "version": "1.1",
+            "version": "1.2",
             "source": {
                 "type": "git",
                 "url": "https://git.poixson.com/r/pxn/ComposerLocalDev.git",
-                "reference": "ddcd2fe15c8e67b314e4b5c4b7857cedd9073927"
+                "reference": "d54640a9875f704c5b4330b0d1ab90b7e3f4d8cd"
             },
             "require": {
                 "composer-plugin-api": "^1.1"
@@ -959,7 +953,7 @@
                 "dev",
                 "symlink"
             ],
-            "time": "2019-07-01T06:07:18+00:00"
+            "time": "2019-07-01T10:26:09+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -1489,16 +1483,16 @@
         },
         {
             "name": "sebastian/type",
-            "version": "1.1.2",
+            "version": "1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/type.git",
-                "reference": "251ca774d58181fe1d3eda68843264eaae7e07ef"
+                "reference": "3aaaa15fa71d27650d62a948be022fe3b48541a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/type/zipball/251ca774d58181fe1d3eda68843264eaae7e07ef",
-                "reference": "251ca774d58181fe1d3eda68843264eaae7e07ef",
+                "url": "https://api.github.com/repos/sebastianbergmann/type/zipball/3aaaa15fa71d27650d62a948be022fe3b48541a3",
+                "reference": "3aaaa15fa71d27650d62a948be022fe3b48541a3",
                 "shasum": ""
             },
             "require": {
@@ -1531,7 +1525,7 @@
             ],
             "description": "Collection of value objects that represent the types of the PHP type system",
             "homepage": "https://github.com/sebastianbergmann/type",
-            "time": "2019-06-19T06:39:12+00:00"
+            "time": "2019-07-02T08:10:15+00:00"
         },
         {
             "name": "sebastian/version",
