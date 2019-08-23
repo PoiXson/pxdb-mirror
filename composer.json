@@ -34,13 +34,14 @@
 		]
 	},
 	"require": {
-		"pxn/phputils":    "0.1.*",
-		"ext-pdo":         "*",
-		"ext-pdo_mysql":   "*"
+		"pxn/phputils": "0.1.*",
+		"ext-pdo": "*"
+	},
+	"suggest": {
+		"ext-pdo_mysql": "*"
 	},
 	"require-dev": {
-		"ext-mbstring":    "*",
-		"filp/whoops":     "2.*",
+		"filp/whoops": "2.*",
 		"pxn/composerlocaldev": "1.*",
 		"phpunit/phpunit": "8.*"
 	}
