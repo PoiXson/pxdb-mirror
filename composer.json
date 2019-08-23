@@ -2,14 +2,14 @@
 	"name":        "pxn/pxdb",
 	"description": "PHP Database Utilities Library",
 	"type":        "library",
-	"homepage":    "http://poixson.com/",
+	"homepage":    "https://poixson.com/",
 	"license":     "GPL-3.0",
 	"keywords": [
 		"framework", "utilities", "database", "mysql"
 	],
 	"support": {
-		"source": "http://git.poixson.com/summary/pxn!pxdb.git",
-		"issues": "http://git.poixson.com/tickets/pxn!pxdb.git",
+		"source": "https://git.poixson.com/summary/pxn!pxdb.git",
+		"issues": "https://git.poixson.com/tickets/pxn!pxdb.git",
 		"irc":    "irc://irc.esper.net/poixson"
 	},
 	"authors": [{
