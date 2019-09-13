@@ -4,8 +4,50 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dda07c385f2d7bd1646ac3d8e3bbe13a",
+    "content-hash": "5e5ad9cf69c1ac5c90a5bfd8fc5288af",
     "packages": [
+        {
+            "name": "pxn/composerlocaldev",
+            "version": "1.10",
+            "source": {
+                "type": "git",
+                "url": "https://git.poixson.com/r/pxn/ComposerLocalDev.git",
+                "reference": "1702344eb6456d4f81ee3c880ef020ba90524d9a"
+            },
+            "require": {
+                "composer-plugin-api": "^1.1"
+            },
+            "require-dev": {
+                "composer/composer": "^1.8",
+                "phpunit/phpunit": "8.*"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "pxn\\ComposerLocalDev\\Plugin"
+            },
+            "autoload": {
+                "psr-4": {
+                    "pxn\\ComposerLocalDev\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "lorenzop",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Links vendor data to a local workspace",
+            "homepage": "http://poixson.com/",
+            "keywords": [
+                "dev",
+                "symlink"
+            ],
+            "time": "2019-09-13T22:15:43+00:00"
+        },
         {
             "name": "pxn/phputils",
             "version": "0.1.29",
@@ -910,48 +952,6 @@
                 "psr-3"
             ],
             "time": "2018-11-20T15:27:04+00:00"
-        },
-        {
-            "name": "pxn/composerlocaldev",
-            "version": "1.9",
-            "source": {
-                "type": "git",
-                "url": "https://git.poixson.com/r/pxn/ComposerLocalDev.git",
-                "reference": "a789ccbe0d00ee53a583f4b16b9f38dc68d7e38a"
-            },
-            "require": {
-                "composer-plugin-api": "^1.1"
-            },
-            "require-dev": {
-                "composer/composer": "^1.8",
-                "phpunit/phpunit": "8.*"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "pxn\\ComposerLocalDev\\Plugin"
-            },
-            "autoload": {
-                "psr-4": {
-                    "pxn\\ComposerLocalDev\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "lorenzop",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Links vendor data to a local workspace",
-            "homepage": "http://poixson.com/",
-            "keywords": [
-                "dev",
-                "symlink"
-            ],
-            "time": "2019-09-13T02:04:04+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
