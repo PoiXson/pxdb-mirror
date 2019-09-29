@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5e5ad9cf69c1ac5c90a5bfd8fc5288af",
+    "content-hash": "64617104ecfca0af3bb2a52c6b94b193",
     "packages": [
         {
             "name": "pxn/composerlocaldev",
@@ -50,17 +50,23 @@
         },
         {
             "name": "pxn/phputils",
-            "version": "0.1.29",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://git.poixson.com/r/pxn/phpUtils.git",
-                "reference": "fe785b7d08f9c5eb0cfc53a938c87bc7206f41f8"
+                "reference": "7c365ea1b94ea9b5608777fb062fe82fa7ac0c60"
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.3",
+                "pxn/composerlocaldev": "1.*"
             },
             "require-dev": {
-                "51systems/doctrine-encrypt": "v6.0.*",
-                "ext-mbstring": "*",
-                "filp/whoops": "2.1.*",
-                "phpunit/phpunit": "6.*"
+                "filp/whoops": "2.*",
+                "phpunit/phpunit": "8.*"
+            },
+            "suggest": {
+                "51systems/doctrine-encrypt": "v6.*"
             },
             "type": "library",
             "autoload": {
@@ -82,12 +88,12 @@
                 }
             ],
             "description": "PHP Utilities Library",
-            "homepage": "http://poixson.com/",
+            "homepage": "https://poixson.com/",
             "keywords": [
                 "framework",
                 "utilities"
             ],
-            "time": "2017-03-22T21:06:05+00:00"
+            "time": "2019-09-20T23:03:43+00:00"
         }
     ],
     "packages-dev": [
@@ -1719,7 +1725,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "pxn/phputils": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

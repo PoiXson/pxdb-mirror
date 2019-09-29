@@ -34,7 +34,7 @@
 		]
 	},
 	"require": {
-		"pxn/phputils": "0.1.*",
+		"pxn/phputils": "dev-master",
 		"ext-pdo": "*",
 		"pxn/composerlocaldev": "1.*"
 	},
