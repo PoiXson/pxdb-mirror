@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/8.1/phpunit.xsd"
+		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
 		bootstrap="vendor/autoload.php"
-		stopOnError="true"
-		stopOnFailure="true"
+		stopOnError="false"
+		stopOnFailure="false"
 		executionOrder="depends,defects"
 		forceCoversAnnotation="true"
 		beStrictAboutOutputDuringTests="true"
@@ -11,16 +11,15 @@
 		backupGlobals="true"
 		backupStaticAttributes="true"
 		cacheResult="false"
-		cacheTokens="false"
 		verbose="true">
+	<coverage processUncoveredFiles="true">
+		<include>
+			<directory suffix=".php">src</directory>
+		</include>
+	</coverage>
 	<testsuites>
 		<testsuite name="default">
-			<directory suffix="Test.php">tests</directory>
+			<directory prefix="test_" suffix=".php">tests</directory>
 		</testsuite>
 	</testsuites>
-	<filter>
-		<whitelist processUncoveredFilesFromWhitelist="true">
-			<directory suffix=".php">src</directory>
-		</whitelist>
-	</filter>
 </phpunit>
