@@ -5,7 +5,7 @@
 	"homepage":    "https://poixson.com/",
 	"license":     "GPL-3.0",
 	"keywords": [
-		"framework", "utilities", "database", "mysql"
+		"framework", "utilities", "database", "mysql", "sqlite"
 	],
 	"support": {
 		"source": "https://git.poixson.com/summary/pxn!pxdb.git",
@@ -21,12 +21,6 @@
 			"pxn\\pxdb\\": "src/"
 		}
 	},
-	"autoload-dev": {
-		"psr-4": {
-			"pxn\\pxdb\\tests\\":    "tests/",
-			"pxn\\pxdb\\examples\\": "examples/"
-		}
-	},
 	"archive": {
 		"exclude": [
 			"tests/",
@@ -34,15 +28,15 @@
 		]
 	},
 	"require": {
-		"pxn/phputils": "dev-master",
+		"pxn/phputils": "0.3.*",
 		"ext-pdo": "*",
 		"pxn/composerlocaldev": "1.*"
 	},
 	"suggest": {
-		"ext-pdo_mysql": "*"
+		"ext-pdo_mysql": "*",
+		"ext-pdo_sqlite": "*"
 	},
 	"require-dev": {
-		"filp/whoops": "2.*",
-		"phpunit/phpunit": "8.*"
+		"phpunit/phpunit": "*"
 	}
 }
