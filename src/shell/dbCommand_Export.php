@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types = 1);
 /*
  * PoiXson pxdb - PHP Database Utilities Library
- * @copyright 2004-2017
+ * @copyright 2004-2021
  * @license GPL-3
  * @author lorenzo at poixson.com
- * @link http://poixson.com/
- */
+ * @link https://poixson.com/
+ * /
 namespace pxn\pxdb\shell;
 
 use pxn\pxdb\dbPool;
@@ -145,3 +145,4 @@ $filepath = "{$path}{$filename}";
 
 
 }
+*/
