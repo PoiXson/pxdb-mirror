@@ -1,4 +1,10 @@
-pxdb 0.1.x - PHP Database Utilities Library
+pxdb - PHP Database Utilities Library
+
+
+2021-02-28 pxdb 0.3.0
+=====================
+* refactoring project for php 8.0
+* releasing only to allow dependent projects to update composer.lock files
 
 
 2017-03-22 pxdb 0.1.4
