@@ -5,15 +5,22 @@
  * @license AGPL-3
  * @author lorenzo at poixson.com
  * @link https://poixson.com/
- * /
+ */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\General;
-use pxn\phpUtils\Strings;
+//use pxn\phpUtils\General;
+//use pxn\phpUtils\Strings;
 
 
 abstract class dbPrepared {
 
+
+
+
+
+
+}
+/*
 //	const ARG_PRE   = '[';
 //	const ARG_DELIM = '|';
 //	const ARG_POST  = ']';

@@ -5,53 +5,74 @@
  * @license AGPL-3
  * @author lorenzo at poixson.com
  * @link https://poixson.com/
- * /
+ */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\San;
-use pxn\phpUtils\System;
-use pxn\phpUtils\Defines;
+//use pxn\phpUtils\Strings;
+//use pxn\phpUtils\San;
+//use pxn\phpUtils\System;
+//use pxn\phpUtils\Defines;
 
 
 class dbPool {
 
-	const dbNameDefault = 'main';
-	const MaxConnections = 5;  // max connections per pool
+	const DEFAULT_DB_NAME = 'main';
+
+	// max connections per pool
+	const MAX_CONNECTIONS = 5;
 
 	// pools[name]
 	protected static $pools = [];
 
-	protected $dbName = NULL;
+	protected $dbName = null;
+
 	// conns[index]
-	protected $conns   = [];
+	protected $conns = [];
 
-	protected $existing = NULL;
-	protected $schemas  = [];
-
+	protected $schemas = [];
 
 
-	public static function configure(
-		$dbName,
-		$driver,
-		$host,
-		$port,
-		$u,
-		$p,
-		$database,
-		$prefix
-	) {
-		$conn = new dbConn(
-			$dbName,
-			$driver,
-			$host,
-			$port,
-			$u,
-			$p,
-			$database,
-			$prefix
+
+	public static function load(array $cfg) {
+		$dbName   = (isset($cfg['name'    ]) ? $cfg['name'    ] : 'main');
+		$driver   = (isset($cfg['driver'  ]) ? $cfg['driver'  ] : ''    );
+		$host     = (isset($cfg['host'    ]) ? $cfg['host'    ] : ''    );
+		$port     = (isset($cfg['port'    ]) ? $cfg['port'    ] : 0     );
+		$user     = (isset($cfg['user'    ]) ? $cfg['user'    ] : ''    );
+		$pass     = (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''    );
+		$database = (isset($cfg['database']) ? $cfg['database'] : ''    );
+		$prefix   = (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : ''    );
+		return configure(
+			dbName:   $dbName,
+			driver:   $driver,
+			host:     $host,
+			port: (int) $port,
+			user:     $user,
+			pass:     $pass,
+			database: $database,
+			prefix:   $prefix
 		);
-		unset($u, $p);
+	}
+	public static function configure(
+		string $dbName='main',
+		string $driver='sqlite',
+		string $host='',
+		int    $port=0,
+		string $user='',
+		string $pass='',
+		string $database='',
+		string $prefix='') {
+		$conn = new dbConn(
+			dbName:   $dbName,
+			driver:   $driver,
+			host:     $host,
+			port:     $port,
+			user:     $user,
+			pass:     $pass,
+			database: $database,
+			prefix:   $prefix
+		);
+		unset($user, $pass);
 		$pool = new self(
 			$dbName,
 			$conn
@@ -59,13 +80,10 @@ class dbPool {
 		self::$pools[$dbName] = $pool;
 		return $pool;
 	}
-	public function __construct($dbName, $conn) {
-		$this->dbName = $dbName;
-		$this->conns[] = $conn;
-	}
 
 
 
+/*
 	public static function get($dbName=NULL, $errorMode=NULL) {
 		$pool = self::getPool($dbName);
 		if ($pool == NULL) {
@@ -81,7 +99,7 @@ class dbPool {
 		}
 		// default db
 		if (empty($dbName)) {
-			$dbName = self::dbNameDefault;
+			$dbName = self::DEFAULT_DB_NAME;
 		}
 		$dbName = (string) $dbName;
 		// db pool doesn't exist
@@ -109,7 +127,8 @@ class dbPool {
 		}
 		// clone if in use
 		if ($found === NULL) {
-			if (\count($this->conns) >= self::MaxConnections) {
+//TODO
+			if (\count($this->conns) >= self::MAX_CONNECTIONS) {
 				fail("Max connections reached for database: $dbName",
 					Defines::EXIT_CODE_IO_ERROR);
 			}
@@ -123,12 +142,27 @@ class dbPool {
 		$found->setErrorMode($errorMode);
 		return $found;
 	}
+*/
+
+
+
+	public function __construct($dbName, $conn) {
+		$this->dbName = $dbName;
+		$this->conns[] = $conn;
+	}
+
+
+
+}
+/*
+	protected $existing = NULL;
+
 
 
 
 	public static function dbExists($dbName=NULL) {
 		if (empty($dbName)) {
-			$dbName = self::$dbNameDefault;
+			$dbName = self::$DEFAULT_DB_NAME;
 		}
 		return isset(self::$pools[$dbName]) && self::$pools[$dbName] != NULL;
 	}

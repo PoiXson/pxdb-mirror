@@ -5,50 +5,46 @@
  * @license AGPL-3
  * @author lorenzo at poixson.com
  * @link https://poixson.com/
- * /
+ */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\San;
-use pxn\phpUtils\Defines;
+//use pxn\phpUtils\Strings;
+//use pxn\phpUtils\San;
+//use pxn\phpUtils\Defines;
 
 
 class dbConn extends dbPrepared {
 
-	const ERROR_MODE_EXCEPTION = FALSE;
-	const ERROR_MODE_PASSIVE   = TRUE;
+	protected ?string $dbName   = null;
+	protected ?string $user     = null;
+	protected ?string $pass     = null;
+	protected ?string $database = null;
+	protected ?string $prefix   = null;
 
-	protected $dbName = NULL;
-	protected $u      = NULL;
-	protected $p      = NULL;
-	protected $database = NULL;
-	protected $prefix = NULL;
-	protected $dsn    = NULL;
+	protected ?string $dsn = null;
 
-	protected $connection = NULL;
-	protected $used       = FALSE;
+//	protected $connection = null;
+	protected bool $locked = false;
 
 
 
 	// new connection
 	public function __construct(
-		$dbName,
-		$driver,
-		$host,
-		$port,
-		$u,
-		$p,
-		$database,
-		$prefix
+		string $dbName,
+		string $driver,
+		string $host, int    $port,
+		string $user, string $pass,
+		string $database,
+		string $prefix
 	) {
 		parent::__construct();
 		$this->dbName = San::AlphaNumUnderscore( (string) $dbName );
 		if (empty($this->dbName)) {
-			fail('Database name is missing or invalid!',
-				Defines::EXIT_CODE_CONFIG_ERROR);
+			fail('Database name is missing or invalid!');
+			exit(1);
 		}
-		$this->u        = (empty($u) ? 'ro'.'ot' : $u);
-		$this->p        = $p;
+		$this->user     = (empty($user) ? 'root' : $user);
+		$this->pass     = $pass;
 		$this->database = $database;
 		$this->prefix   = $prefix;
 		// build data source name
@@ -59,104 +55,29 @@ class dbConn extends dbPrepared {
 			$port
 		);
 		if (empty($this->dsn)) {
-			fail("Failed to generate DSN for database: $dbName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
+			fail("Failed to generate DSN for database: $dbName");
+			exit(1);
 		}
-//TODO: is anything missing here?
-		if (\debug()) {
-			$this->doConnect();
-		}
+		$this->doConnect();
 	}
-	public function cloneConn() {
-		$conn = new self(
+	public function clone_conn(): self {
+		return new self(
 			$this->dbName,
 			$this->dsn,
-			$this->u,
-			$this->p,
+			$this->user,
+			$this->pass,
 			$this->database,
 			$this->prefix
 		);
-		return $conn;
-	}
-
-
-
-	// connect to database
-	private function doConnect() {
-		if ($this->connection != NULL) {
-			return FALSE;
-		}
-		try {
-			$options = [
-				\PDO::ATTR_PERSISTENT         => TRUE,
-				\PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
-				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-			];
-			$this->connection = new \PDO(
-				$this->dsn,
-				$this->u,
-				\base64_decode($this->p),
-				$options
-			);
-		} catch (\PDOException $e) {
-			$this->connection = NULL;
-			$dbName = $this->dbName;
-			$dsn    = $this->dsn;
-			fail("Failed to connect to database: $dbName - $dsn",
-				Defines::EXIT_CODE_CONFIG_ERROR, $e);
-		}
-		return TRUE;
-	}
-
-
-
-	public function getConn() {
-		$this->doConnect();
-		return $this->connection;
-	}
-	public function getDatabaseName() {
-		return $this->database;
-	}
-	public function getTablePrefix() {
-		if (empty($this->prefix)) {
-			return '';
-		}
-		return $this->prefix;
-	}
-
-
-
-	public function inUse() {
-		return $this->used;
-	}
-	public function isLocked() {
-		return $this->inUse();
-	}
-	public function lock() {
-		if ($this->used == TRUE) {
-			$dbName = $this->dbName;
-			fail("Database already locked: $dbName",
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
-		$this->used = TRUE;
-	}
-	public function release() {
-		$this->clean();
-		$this->used = FALSE;
 	}
 
 
 
 	public static function BuildDSN(
-		$driver,
-		$database,
-		$host,
-		$port
+		string $driver,
+		string $database,
+		string $host, int $port
 	) {
-		$driver   = (string) $driver;
-		$database = (string) $database;
-		$host     = (string) $host;
-		$port     = (int)    $port;
 		$dsn = \strtolower($driver).':';
 		// unix socket
 		if (Strings::StartsWith($host, '/')) {
@@ -173,5 +94,62 @@ class dbConn extends dbPrepared {
 
 
 
+	// connect to database
+	private function doConnect(): void {
+		if ($this->connection != null)
+			return false;
+		try {
+			$options = [
+				\PDO::ATTR_PERSISTENT         => true,
+				\PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+			];
+			$this->connection = new \PDO(
+				$this->dsn,
+				$this->user,
+				\base64_decode($this->pass),
+				$options
+			);
+		} catch (\PDOException $e) {
+			$this->connection = null;
+			$dbName = $this->dbName;
+			$dsn    = $this->dsn;
+			fail("Failed to connect to database: $dbName - $dsn", $e);
+			exit(1);
+		}
+		return true;
+	}
+
+
+
+	public function getConn() {
+		$this->doConnect();
+		return $this->connection;
+	}
+	public function getDatabaseName(): string {
+		return $this->database;
+	}
+	public function getTablePrefix(): string {
+		return (empty($this->prefix) ? '' : $this->prefix);
+	}
+
+
+
+	public function isLocked() {
+		return $this->locked;
+	}
+	public function lock() {
+		if ($this->locked == true) {
+			fail('Database already locked: '.$this->dbName,
+				Defines::EXIT_CODE_USAGE_ERROR);
+		}
+		$this->locked = true;
+	}
+	public function release() {
+		$this->clean();
+		$this->locked = false;
+	}
+
+
+
 }
-*/
