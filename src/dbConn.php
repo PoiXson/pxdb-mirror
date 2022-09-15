@@ -39,10 +39,8 @@ class dbConn extends dbPrepared {
 	) {
 		parent::__construct();
 		$this->dbName = San::AlphaNumUnderscore( (string) $dbName );
-		if (empty($this->dbName)) {
-			fail('Database name is missing or invalid!');
-			exit(1);
-		}
+		if (empty($this->dbName))
+			throw new \RuntimeException('Database name is missing or invalid');
 		$this->user     = (empty($user) ? 'root' : $user);
 		$this->pass     = $pass;
 		$this->database = $database;
@@ -54,10 +52,8 @@ class dbConn extends dbPrepared {
 			$host,
 			$port
 		);
-		if (empty($this->dsn)) {
-			fail("Failed to generate DSN for database: $dbName");
-			exit(1);
-		}
+		if (empty($this->dsn))
+			throw new \RuntimeException('Failed to generate DSN for database: '.$dbName);
 		$this->doConnect();
 	}
 	public function clone_conn(): self {
@@ -114,8 +110,7 @@ class dbConn extends dbPrepared {
 			$this->connection = null;
 			$dbName = $this->dbName;
 			$dsn    = $this->dsn;
-			fail("Failed to connect to database: $dbName - $dsn", $e);
-			exit(1);
+			throw new \RuntimeException("Failed to connect to database: $dbName - $dsn", $e);
 		}
 		return true;
 	}
@@ -139,10 +134,8 @@ class dbConn extends dbPrepared {
 		return $this->locked;
 	}
 	public function lock() {
-		if ($this->locked == true) {
-			fail('Database already locked: '.$this->dbName,
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
+		if ($this->locked == true)
+			throw new \RuntimeException('Database already locked: '.$this->dbName);
 		$this->locked = true;
 	}
 	public function release() {
