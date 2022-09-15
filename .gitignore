@@ -8,13 +8,12 @@ debug
 DEBUG
 .debug
 
-pxnloader.php
 .htdb*
 config.php
 public/static/bootstrap
+public/static/bootstrap-icons
 public/static/jquery
 public/static/bootswatch
-data/
 error_log
 log/
 logs/
@@ -29,6 +28,7 @@ cache/
 .twig_cache/
 .backups/
 *.lock
+!Cargo.lock
 !composer.lock
 
 bin/
@@ -40,9 +40,26 @@ coverage/
 rpmbuild/
 out/
 build/
+build-phar/
 Makefile
 Makefile.fragments
 Makefile.objects
+Makefile.in
+aclocal.m4
+autom4te.cache/
+compile
+config.guess
+config.status
+config.sub
+configure
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+**/.deps/
+**/.dirstamp
+.libs/
 .externalToolBuilders/
 
 composer.phar
@@ -50,9 +67,11 @@ auth.json
 
 .classpath
 .project
+.cproject
 .buildpath
 .gradle/
 .settings/
+.autotools
 
 *.class
 *.iml
@@ -66,6 +85,8 @@ auth.json
 *.rpm
 *.o
 *.a
+*.la
+*.lo
 *.obj
 *.dll
 *.deb
