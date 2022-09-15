@@ -10,7 +10,7 @@
 	"support": {
 		"source": "https://git.poixson.com/summary/pxn!pxdb.git",
 		"issues": "https://git.poixson.com/tickets/pxn!pxdb.git",
-		"irc":    "irc://irc.esper.net/poixson"
+		"discord": "https://discord.gg/jHgP2a3kDx"
 	},
 	"authors": [{
 		"name":  "lorenzop",
@@ -28,9 +28,9 @@
 		]
 	},
 	"require": {
-		"pxn/phputils": "0.3.*",
+		"pxn/phputils": "*",
 		"ext-pdo": "*",
-		"pxn/composerlocaldev": "1.*"
+		"pxn/composerlocaldev": "*"
 	},
 	"suggest": {
 		"ext-pdo_mysql": "*",
@@ -38,5 +38,10 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "*"
+	},
+	"config": {
+		"allow-plugins": {
+			"pxn/composerlocaldev": true
+		}
 	}
 }
