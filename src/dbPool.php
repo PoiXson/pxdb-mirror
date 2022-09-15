@@ -42,7 +42,7 @@ class dbPool {
 		$pass     = (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''    );
 		$database = (isset($cfg['database']) ? $cfg['database'] : ''    );
 		$prefix   = (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : ''    );
-		return configure(
+		return self::configure(
 			dbName:   $dbName,
 			driver:   $driver,
 			host:     $host,

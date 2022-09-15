@@ -16,6 +16,8 @@ abstract class dbPrepared {
 
 
 
+	public function __construct() {
+	}
 
 
 
@@ -113,7 +115,7 @@ abstract class dbPrepared {
 					$msg .= ' ;';
 				}
 				if (!empty($desc)) {
-					$msg .= "  /* $desc */";
+					$msg .= "  / * $desc * /";
 				}
 				echo "$msg\n";
 			}

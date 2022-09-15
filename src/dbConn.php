@@ -9,7 +9,7 @@
 namespace pxn\pxdb;
 
 //use pxn\phpUtils\Strings;
-//use pxn\phpUtils\San;
+use pxn\phpUtils\utils\SanUtils;
 //use pxn\phpUtils\Defines;
 
 
@@ -23,7 +23,7 @@ class dbConn extends dbPrepared {
 
 	protected ?string $dsn = null;
 
-//	protected $connection = null;
+	protected $connection = null;
 	protected bool $locked = false;
 
 
@@ -38,7 +38,7 @@ class dbConn extends dbPrepared {
 		string $prefix
 	) {
 		parent::__construct();
-		$this->dbName = San::AlphaNumUnderscore( (string) $dbName );
+		$this->dbName = SanUtils::alpha_num_simple( (string) $dbName );
 		if (empty($this->dbName))
 			throw new \RuntimeException('Database name is missing or invalid');
 		$this->user     = (empty($user) ? 'root' : $user);
@@ -75,23 +75,32 @@ class dbConn extends dbPrepared {
 		string $host, int $port
 	) {
 		$dsn = \strtolower($driver).':';
-		// unix socket
-		if (Strings::StartsWith($host, '/')) {
-			$dsn .= "unix_socket={$host}";
-		// normal tcp
-		} else {
-			$dsn .= "host={$host}";
-			if ($port != NULL && $port > 0 && $port != 3306) {
-				$dsn .= ";port={$port}";
+		// sqlite
+		if ($dsn == 'sqlite:') {
+			return $dsn.$database;
+		} else
+		// mysql
+		if ($dsn == 'mysql:') {
+			// unix socket
+			if (\str_starts_with($host, '/')) {
+				$dsn .= "unix_socket={$host}";
+			// normal tcp
+			} else {
+				$dsn .= "host={$host}";
+				if ($port != NULL && $port > 0 && $port != 3306) {
+					$dsn .= ";port={$port}";
+				}
 			}
+			return "{$dsn};dbname={$database};charset=utf8mb4";
+		} else {
+			throw new \RuntimeException('Unknown database type: '.$driver);
 		}
-		return "{$dsn};dbname={$database};charset=utf8mb4";
 	}
 
 
 
 	// connect to database
-	private function doConnect(): void {
+	private function doConnect(): bool {
 		if ($this->connection != null)
 			return false;
 		try {
