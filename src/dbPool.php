@@ -28,6 +28,7 @@ class dbPool {
 
 	// conns[index]
 	protected $conns = [];
+	protected int $maxConns = \PHP_INT_MIN;
 
 	protected $schemas = [];
 
@@ -149,6 +150,17 @@ class dbPool {
 	public function __construct($dbName, $conn) {
 		$this->dbName = $dbName;
 		$this->conns[] = $conn;
+	}
+
+
+
+	public function getMaxConnections(): int {
+		if ($this->maxConns >= 0)
+			return $this->maxConns;
+		return self::MAX_CONNECTIONS;
+	}
+	public function setMaxConnections(int $max): void {
+		$this->maxConns = $max;
 	}
 
 
