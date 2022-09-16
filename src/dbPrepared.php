@@ -14,9 +14,48 @@ namespace pxn\pxdb;
 
 abstract class dbPrepared {
 
+	protected ?string $st   = null;
+	protected ?string $rs   = null;
+	protected ?string $sql  = null;
+	protected ?string $desc = null;
+	protected bool $dry = false;
+
+	protected $row = null;
+	protected array $args = [];
+	protected int $row_count = -1;
+	protected int $insert_id = -1;
+
 
 
 	public function __construct() {
+		$this->clean();
+	}
+
+
+
+	public abstract function clone_conn(): self;
+
+	protected abstract function doConnect(): bool;
+	public abstract function getConn();
+
+	public abstract function getDriver(): string;
+	public abstract function getDatabaseName(): string;
+	public abstract function getTablePrefix(): string;
+
+	public abstract function lock();
+	public abstract function release();
+
+
+
+	public function clean() {
+		$this->st   = null;
+		$this->rs   = null;
+		$this->sql  = null;
+		$this->desc = null;
+		$this->row  = null;
+		$this->args = [];
+		$this->rowCount = -1;
+		$this->insertId = -1;
 	}
 
 
@@ -26,27 +65,6 @@ abstract class dbPrepared {
 //	const ARG_PRE   = '[';
 //	const ARG_DELIM = '|';
 //	const ARG_POST  = ']';
-
-	protected $st   = NULL;
-	protected $rs   = NULL;
-	protected $sql  = NULL;
-	protected $desc = NULL;
-	protected $dry  = NULL;
-
-	protected $row      = NULL;
-	protected $args     = [];
-	protected $rowCount = -1;
-	protected $insertId = -1;
-
-	protected $hasError = FALSE;
-	protected $errorMode = dbConn::ERROR_MODE_EXCEPTION;
-
-
-
-	public function __construct() {
-		$this->clean();
-	}
-
 
 
 	public abstract function getConn();
@@ -268,20 +286,6 @@ abstract class dbPrepared {
 
 
 
-	public function clean($keepDry=FALSE) {
-		$this->st       = NULL;
-		$this->rs       = NULL;
-		$this->sql      = NULL;
-		$this->desc     = NULL;
-		if ($keepDry == FALSE) {
-			$this->dry  = NULL;
-		}
-		$this->row      = NULL;
-		$this->args     = [];
-		$this->rowCount = -1;
-		$this->insertId = -1;
-		$this->hasError = FALSE;
-	}
 
 
 
