@@ -68,7 +68,7 @@ class dbPool {
 			return self::$pools[$dbName];
 		return null;
 	}
-	public static function Get(?string|dbPool $pool=null): dbConn {
+	public static function Get(string|dbPool $pool='main'): dbConn {
 		// already proper type
 		if ($pool instanceof dbPool)
 			return $pool->getDB();

@@ -56,7 +56,7 @@ class dbConn extends dbPrepared {
 			default:
 				break;
 		}
-		$this->driver   = \str_to_lower(\trim($driver));
+		$this->driver   = \strtolower(\trim($driver));
 		$this->host     = $host;
 		$this->port     = $port;
 		$this->user     = $user;
@@ -115,7 +115,7 @@ class dbConn extends dbPrepared {
 
 
 	// connect to database
-	private function doConnect(): bool {
+	protected function doConnect(): bool {
 		if ($this->connection != null)
 			return false;
 		try {
@@ -135,16 +135,20 @@ class dbConn extends dbPrepared {
 			$this->connection = null;
 			$dbName = $this->dbName;
 			$dsn    = $this->dsn;
-			throw new \RuntimeException("Failed to connect to database: $dbName - $dsn", $e);
+			throw new \RuntimeException("Failed to connect to database: $dbName - $dsn - ".$e->getMessage());
 		}
 		return true;
 	}
 
-
-
 	public function getConn() {
 		$this->doConnect();
 		return $this->connection;
+	}
+
+
+
+	public function getDriver(): string {
+		return $this->driver;
 	}
 	public function getDatabaseName(): string {
 		return $this->database;
@@ -166,12 +170,6 @@ class dbConn extends dbPrepared {
 	public function release() {
 		$this->clean();
 		$this->locked = false;
-	}
-
-
-
-	public function getDriver(): string {
-		return $this->driver;
 	}
 
 

@@ -20,7 +20,9 @@ final class dbTools {
 
 
 	public static function LoadSchema(dbConn $db, string $file, string $clss): bool {
-		require("src/schemas/$file");
+		if (!\str_starts_with($file, '/'))
+			$file = __DIR__.'schemas/'.$file;
+		require($file);
 		$sch = new $clss();
 		$schema = $sch->getSchema();
 		return self::CreateUpdateSchema($db, $schema);
@@ -28,7 +30,7 @@ final class dbTools {
 
 
 
-	public static function CreateUpdateSchema(string|dbConn $db='main', array $schema): bool {
+	public static function CreateUpdateSchema(string|dbConn $db='main', array $schema=[]): bool {
 		if (\is_string($db)) {
 			$db = dbPool::GetDB( (string)$db );
 			$result = CreateUpdateSchema($db, $schema);
