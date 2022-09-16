@@ -64,66 +64,49 @@ class dbPool {
 
 
 
-/*
-	public static function get($dbName=NULL, $errorMode=NULL) {
-		$pool = self::getPool($dbName);
-		if ($pool == NULL) {
-			return NULL;
-		}
-		$db = $pool->getDB($errorMode);
-		return $db;
+	public static function getPools(): array {
+		return self::$pools;
 	}
-	public static function getPool($dbName=NULL) {
-		// already pool instance
-		if ($dbName != NULL && $dbName instanceof dbPool) {
-			return $dbName;
-		}
-		// default db
-		if (empty($dbName)) {
+	public static function GetPool(?string $dbName=null): ?dbPool {
+		// default main db
+		if (empty($dbName))
 			$dbName = self::DEFAULT_DB_NAME;
-		}
-		$dbName = (string) $dbName;
-		// db pool doesn't exist
-		if (!self::dbExists($dbName)) {
-			fail("Database isn't configured: $dbName",
-				Defines::EXIT_CODE_CONFIG_ERROR);
-		}
-		return self::$pools[$dbName];
+		if (isset(self::$pools[$dbName]))
+			return self::$pools[$dbName];
+		return null;
 	}
-	public function getDB($errorMode=NULL) {
-		if ($errorMode === NULL) {
-			$errorMode = dbConn::ERROR_MODE_EXCEPTION;
-		}
-		// get db connection
-		$found = NULL;
-		// find unused
+	public static function Get(?string|dbPool $pool=null): dbConn {
+		// already proper type
+		if ($pool instanceof dbPool)
+			return $pool->getDB();
+		// by db pool name
+		$dbName = (string)$pool;
+		$p = self::GetPool($dbName);
+		// db pool doesn't exist
+		if ($p == null)
+			throw new \RuntimeException('Unknown database pool: '.$dbName);
+		return $p->getDB();
+	}
+	public function getDB(): dbConn {
+		// find available
+		$found = null;
 		foreach ($this->conns as $conn) {
-			// connection in use
-			if ($conn->inUse())
+			if ($conn->isLocked())
 				continue;
-			// available connection
 			$found = $conn;
-			$found->setErrorMode($errorMode);
 			break;
 		}
-		// clone if in use
-		if ($found === NULL) {
-//TODO
-			if (\count($this->conns) >= self::MAX_CONNECTIONS) {
-				fail("Max connections reached for database: $dbName",
-					Defines::EXIT_CODE_IO_ERROR);
-			}
-			// get first connection
+		// all in use
+		if ($found == null) {
+			if (\count($this->conns) >= $this->getMaxConnections())
+				throw new \RuntimeException('Max connections reached for database: '.$this->dbName);
 			$conn = \reset($this->conns);
-			// clone the connection
 			$found = $conn->cloneConn();
 		}
 		$found->lock();
 		$found->clean();
-		$found->setErrorMode($errorMode);
 		return $found;
 	}
-*/
 
 
 
@@ -143,55 +126,28 @@ class dbPool {
 		$this->maxConns = $max;
 	}
 
-
-
-}
-/*
-	protected $existing = NULL;
-
-
-
-
-	public static function dbExists($dbName=NULL) {
-		if (empty($dbName)) {
-			$dbName = self::$DEFAULT_DB_NAME;
-		}
-		return isset(self::$pools[$dbName]) && self::$pools[$dbName] != NULL;
-	}
-	public static function getPools() {
-		return self::$pools;
-	}
-
-
-
-	public static function GetNameByPool($pool=NULL) {
-		$p = dbPool::getPool($pool);
-		if ($p == NULL) {
-			return NULL;
-		}
-		return $p->getName();
-	}
-	public function getName() {
-		return $this->dbName;
-	}
-	public static function castPoolName($pool) {
-		if (\is_string($pool)) {
-			return (string) $pool;
-		}
-		if ($pool instanceof \pxn\pxdb\dbPool) {
-			return $pool->getName();
-		}
-		return NULL;
-	}
-
-
-
-	public function getConnCount() {
+	public function getConnCount(): int {
 		return \count($this->conns);
 	}
 
 
 
+	public function getName(): string {
+		return $this->dbName;
+	}
+
+
+
+	public static function isDB(string $dbName): bool {
+		if (!isset(self::$pools[$dbName]))
+			return false;
+		return (self::$pools[$dbName] != null);
+	}
+
+
+
+}
+/*
 	public function ReloadExistingTableCache() {
 		$this->existing = NULL;
 		$this->LoadExistingTables();
