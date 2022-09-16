@@ -34,26 +34,19 @@ class dbPool {
 
 
 
-	public static function load(array $cfg) {
+	public static function Load(array $cfg): dbPool {
 		$dbName   = (isset($cfg['name'    ]) ? $cfg['name'    ] : 'main');
-		$driver   = (isset($cfg['driver'  ]) ? $cfg['driver'  ] : ''    );
-		$host     = (isset($cfg['host'    ]) ? $cfg['host'    ] : ''    );
-		$port     = (isset($cfg['port'    ]) ? $cfg['port'    ] : 0     );
-		$user     = (isset($cfg['user'    ]) ? $cfg['user'    ] : ''    );
-		$pass     = (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''    );
-		$database = (isset($cfg['database']) ? $cfg['database'] : ''    );
-		$prefix   = (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : ''    );
 		$conn = new dbConn(
 			dbName:   $dbName,
-			driver:   $driver,
-			host:     $host,
-			port:     $port,
-			user:     $user,
-			pass:     $pass,
-			database: $database,
-			prefix:   $prefix
+			driver:   (isset($cfg['driver'  ]) ? $cfg['driver'  ] : ''),
+			host:     (isset($cfg['host'    ]) ? $cfg['host'    ] : ''),
+			port:     (isset($cfg['port'    ]) ? $cfg['port'    ] : 0 ),
+			user:     (isset($cfg['user'    ]) ? $cfg['user'    ] : ''),
+			pass:     (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''),
+			database: (isset($cfg['database']) ? $cfg['database'] : ''),
+			prefix:   (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : '')
 		);
-		unset($user, $pass);
+		unset($cfg);
 		$pool = new self(
 			$dbName,
 			$conn
