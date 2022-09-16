@@ -5,7 +5,7 @@
  * @license AGPL-3
  * @author lorenzo at poixson.com
  * @link https://poixson.com/
- * /
+ */
 namespace pxn\pxdb;
 
 use pxn\phpUtils\Strings;
@@ -19,7 +19,32 @@ final class dbTools {
 
 
 
-	public static function CreateTable($pool, $table, $dry=TRUE) {
+	public static function LoadSchema(dbConn $db, string $file, string $clss): bool {
+		require("src/schemas/$file");
+		$sch = new $clss();
+		$schema = $sch->getSchema();
+		return self::CreateUpdateSchema($db, $schema);
+	}
+
+
+
+	public static function CreateUpdateSchema(string|dbConn $db='main', array $schema): bool {
+		if (\is_string($db)) {
+			$db = dbPool::GetDB( (string)$db );
+			$result = CreateUpdateSchema($db, $schema);
+			$db->release();
+			return $result;
+		}
+
+
+//TODO
+return false;
+	}
+
+
+
+}
+/*
 		$dry = ($dry !== FALSE);
 		$dryStr = ($dry ? '{color=orange}[DRY]{reset} ' : '');
 		// validate pool
