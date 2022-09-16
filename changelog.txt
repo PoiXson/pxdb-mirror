@@ -1,6 +1,12 @@
 pxdb - PHP Database Utilities Library
 
 
+2022-09-16 pxdb 0.3.3
+=====================
+* added new dbSchema class
+* more cleanup and fixes
+
+
 2022-09-16 pxdb 0.3.2
 =====================
 * finished dbConn class with support for mysql and sqlite
