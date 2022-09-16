@@ -130,6 +130,7 @@ class dbConn extends dbPrepared {
 				\base64_decode($this->pass),
 				$options
 			);
+			$this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		} catch (\PDOException $e) {
 			$this->connection = null;
 			$dbName = $this->dbName;
