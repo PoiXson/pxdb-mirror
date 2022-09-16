@@ -16,6 +16,9 @@ use pxn\phpUtils\utils\SanUtils;
 class dbConn extends dbPrepared {
 
 	protected ?string $dbName   = null;
+	protected ?string $driver   = null;
+	protected ?string $host     = null;
+	protected  int    $port     = 0;
 	protected ?string $user     = null;
 	protected ?string $pass     = null;
 	protected ?string $database = null;
@@ -39,9 +42,24 @@ class dbConn extends dbPrepared {
 	) {
 		parent::__construct();
 		$this->dbName = SanUtils::alpha_num_simple( (string) $dbName );
-		if (empty($this->dbName))
-			throw new \RuntimeException('Database name is missing or invalid');
-		$this->user     = (empty($user) ? 'root' : $user);
+		if (empty($this->dbName)) throw new \RuntimeException('Database name is missing or invalid');
+		if (empty($driver))       throw new \RuntimeException('Database driver is missing or invalid');
+		switch ($driver) {
+			case 'sqlite':
+				break;
+			case 'mysql':
+				if (empty($host) || $host == '127.0.0.1')
+					$host = 'localhost';
+				if ($port <= 0)   $port = 3306;
+				if (empty($user)) $user = 'root';
+				break;
+			default:
+				break;
+		}
+		$this->driver   = \str_to_lower(\trim($driver));
+		$this->host     = $host;
+		$this->port     = $port;
+		$this->user     = $user;
 		$this->pass     = $pass;
 		$this->database = $database;
 		$this->prefix   = $prefix;
@@ -74,26 +92,23 @@ class dbConn extends dbPrepared {
 		string $database,
 		string $host, int $port
 	) {
-		$dsn = \strtolower($driver).':';
-		// sqlite
-		if ($dsn == 'sqlite:') {
-			return $dsn.$database;
-		} else
-		// mysql
-		if ($dsn == 'mysql:') {
-			// unix socket
-			if (\str_starts_with($host, '/')) {
-				$dsn .= "unix_socket={$host}";
-			// normal tcp
-			} else {
-				$dsn .= "host={$host}";
-				if ($port != NULL && $port > 0 && $port != 3306) {
-					$dsn .= ";port={$port}";
+		switch ($driver) {
+			case 'sqlite':
+				return "$driver:$database";
+			case 'mysql':
+				$dsn = $driver.':';
+				// unix socket
+				if (\str_starts_with($host, '/')) {
+					$dsn .= "$driver:unix_socket={$host}";
+				// tcp
+				} else {
+					$dsn .= "$driver:host={$host}";
+					if ($port > 0 && $port != 3306)
+						$dsn .= ";port={$port}";
 				}
-			}
-			return "{$dsn};dbname={$database};charset=utf8mb4";
-		} else {
-			throw new \RuntimeException('Unknown database type: '.$driver);
+				return "{$dsn};dbname={$database};charset=utf8mb4";
+			default:
+				throw new \RuntimeException("Unknown database type: $driver");
 		}
 	}
 
@@ -150,6 +165,12 @@ class dbConn extends dbPrepared {
 	public function release() {
 		$this->clean();
 		$this->locked = false;
+	}
+
+
+
+	public function getDriver(): string {
+		return $this->driver;
 	}
 
 
