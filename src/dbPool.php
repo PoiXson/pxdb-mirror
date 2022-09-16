@@ -43,26 +43,6 @@ class dbPool {
 		$pass     = (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''    );
 		$database = (isset($cfg['database']) ? $cfg['database'] : ''    );
 		$prefix   = (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : ''    );
-		return self::configure(
-			dbName:   $dbName,
-			driver:   $driver,
-			host:     $host,
-			port: (int) $port,
-			user:     $user,
-			pass:     $pass,
-			database: $database,
-			prefix:   $prefix
-		);
-	}
-	public static function configure(
-		string $dbName='main',
-		string $driver='sqlite',
-		string $host='',
-		int    $port=0,
-		string $user='',
-		string $pass='',
-		string $database='',
-		string $prefix='') {
 		$conn = new dbConn(
 			dbName:   $dbName,
 			driver:   $driver,
