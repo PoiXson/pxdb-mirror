@@ -1,6 +1,13 @@
 pxdb - PHP Database Utilities Library
 
 
+2022-09-17 pxdb 0.3.4
+=====================
+* finished prepared() and exec() functions
+* finished auto-create and update for tables
+* more cleanup and fixes
+
+
 2022-09-16 pxdb 0.3.3
 =====================
 * added new dbSchema class
