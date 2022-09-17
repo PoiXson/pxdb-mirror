@@ -18,4 +18,8 @@ abstract class dbSchema {
 
 
 
+	public abstract function getSchema(): array;
+
+
+
 }
