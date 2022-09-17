@@ -176,7 +176,7 @@ class dbPool {
 		$found = [];
 		switch ($this->driver) {
 			case dbDriver::sqLite:
-				$sql = "SELECT `tbl_name`,`sql` FROM `sqlite_master` WHERE `type`='table' ORDER BY name;";
+				$sql = "SELECT `tbl_name`,`sql` FROM `sqlite_master` WHERE `type`='table' ORDER BY `tbl_name`;";
 				break;
 			case dbDriver::MySQL:
 				$sql = 'SHOW TABLES;';
