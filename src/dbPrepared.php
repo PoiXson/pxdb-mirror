@@ -115,7 +115,8 @@ abstract class dbPrepared {
 		// get insert id
 		if ($cmd == 'INSERT') {
 			$connection = $this->getRealConnection();
-			$this->insert_id = $connection->lastInsertId();
+			$id = $connection->lastInsertId();
+			$this->insert_id = ($id === false ? -1 : (int) $id);
 		// get row count
 		} else {
 			$this->row_count = $this->st->rowCount();
@@ -130,7 +131,7 @@ abstract class dbPrepared {
 		return ($this->row !== false);
 	}
 
-	public function getIntertID(): int {
+	public function getInsertID(): int {
 		return $this->insert_id;
 	}
 	public function getRowCount(): int {
