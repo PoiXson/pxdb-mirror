@@ -16,7 +16,7 @@ use pxn\phpUtils\utils\SanUtils;
 class dbConn extends dbPrepared {
 
 	protected ?string $dbName   = null;
-	protected ?string $driver   = null;
+	protected ?dbDriver $driver = null;
 	protected ?string $host     = null;
 	protected  int    $port     = 0;
 	protected ?string $user     = null;
@@ -44,19 +44,18 @@ class dbConn extends dbPrepared {
 		$this->dbName = SanUtils::alpha_num_simple( (string) $dbName );
 		if (empty($this->dbName)) throw new \RuntimeException('Database name is missing or invalid');
 		if (empty($driver))       throw new \RuntimeException('Database driver is missing or invalid');
-		switch ($driver) {
-			case 'sqlite':
-				break;
-			case 'mysql':
+		$drv = dbDriver::FromString($driver);
+		switch ($drv) {
+			case dbDriver::sqLite: break;
+			case dbDriver::MySQL:
 				if (empty($host) || $host == '127.0.0.1')
 					$host = 'localhost';
 				if ($port <= 0)   $port = 3306;
 				if (empty($user)) $user = 'root';
 				break;
-			default:
-				break;
+			default: throw new \RuntimeException('Unknown database driver type: '.$driver);
 		}
-		$this->driver   = \strtolower(\trim($driver));
+		$this->driver   = $drv;
 		$this->host     = $host;
 		$this->port     = $port;
 		$this->user     = $user;
@@ -65,7 +64,7 @@ class dbConn extends dbPrepared {
 		$this->prefix   = $prefix;
 		// build data source name
 		$this->dsn = self::BuildDSN(
-			$driver,
+			\mb_strtolower($drv->toString()),
 			$database,
 			$host,
 			$port
@@ -77,7 +76,7 @@ class dbConn extends dbPrepared {
 	public function clone_conn(): self {
 		return new self(
 			$this->dbName,
-			$this->dsn,
+			$this->driver->toString(),
 			$this->user,
 			$this->pass,
 			$this->database,
@@ -147,9 +146,13 @@ class dbConn extends dbPrepared {
 
 
 
-	public function getDriver(): string {
+	public function getDriverString(): string {
+		return $this->driver->toString();
+	}
+	public function getDriverType(): dbDriver {
 		return $this->driver;
 	}
+
 	public function getDatabaseName(): string {
 		return $this->database;
 	}
