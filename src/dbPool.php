@@ -8,11 +8,6 @@
  */
 namespace pxn\pxdb;
 
-//use pxn\phpUtils\Strings;
-//use pxn\phpUtils\San;
-//use pxn\phpUtils\System;
-//use pxn\phpUtils\Defines;
-
 
 class dbPool {
 
@@ -21,17 +16,16 @@ class dbPool {
 	// max connections per pool
 	const MAX_CONNECTIONS = 5;
 
-	// pools[name]
 	protected static array $pools = [];
+
+	protected ?array $conns = null;
+	protected int $maxConns = \PHP_INT_MIN;
 
 	protected ?string   $dbName = null;
 	protected ?dbDriver $driver = null;
 
-	protected array $conns = [];
-	protected int $maxConns = \PHP_INT_MIN;
-
-	protected  array $schemas = [];
-	protected ?array $existing_tables = null;
+	public  array $schemas = [];
+	public ?array $existing_tables = null;
 
 
 
@@ -68,7 +62,7 @@ class dbPool {
 			return self::$pools[$dbName];
 		return null;
 	}
-	public static function GetDB(string|self $pool='main'): dbConn {
+	public static function GetDB(string|dbConn|dbPool $pool='main'): dbConn {
 		// already proper type
 		if ($pool instanceof dbPool)
 			return $pool->get();
@@ -144,13 +138,12 @@ class dbPool {
 
 
 
-	public function getTables(): array {
-		$this->loadTables();
+	public function getRealTables(): array {
+		$this->loadRealTables();
 		return $this->existing_tables;
 	}
-	public function hasTable(string $tableName): bool {
-		// load existing tables
-		$this->loadTables();
+	public function hasRealTable(string $tableName): bool {
+		$this->loadRealTables();
 		if ($this->existing_tables == null)
 			throw new \RuntimeException('Failed to load existing tables from database');
 		return isset($this->existing_tables[$tableName]);
@@ -159,7 +152,23 @@ class dbPool {
 		return isset($this->schemas[$tableName]);
 	}
 
-	protected function loadTables(): void {
+	public function getRealTableSchema(string $tableName): ?array {
+		$this->loadRealTables();
+		if (isset($this->existing_tables[$tableName]))
+			return $this->existing_tables[$tableName];
+		return null;
+	}
+	public function getTableSchema(string $tableName): ?array {
+		$this->loadRealTables();
+		if (isset($this->schemas[$tableName]))
+			return $this->schemas[$tableName];
+		$this->loadRealTableFields($tableName);
+		if (isset($this->schemas[$tableName]))
+			return $this->schemas[$tableName];
+		return null;
+	}
+
+	protected function loadRealTables(): void {
 		if (\is_array($this->existing_tables))
 			return;
 		$db = $this->get();
@@ -167,22 +176,64 @@ class dbPool {
 		$found = [];
 		switch ($this->driver) {
 			case dbDriver::sqLite:
-				$sql = "SELECT `name` FROM `sqlite_master` WHERE `type`='table' ORDER BY name;";
+				$sql = "SELECT `tbl_name`,`sql` FROM `sqlite_master` WHERE `type`='table' ORDER BY name;";
 				break;
 			case dbDriver::MySQL:
 				$sql = 'SHOW TABLES;';
 				break;
-			default: throw new \RuntimeException('Unknown database driver type');
+			default:
+				$db->release();
+				throw new \RuntimeException('Unknown database driver type');
 		}
 		$db->exec($sql);
 		$database = $db->getDatabaseName();
 		while ($db->hasNext()) {
 //TODO: for mysql
-//			$table = $db->getString('Tables_in_'.$database);
-			$table = $db->getString('name');
-			if (\str_starts_with($table, '_'))
+//			$table_name = $db->getString('Tables_in_'.$database);
+			$table_name = $db->getString('tbl_name');
+			if (\str_starts_with($table_name, '_'))
 				continue;
-			$found[$table] = null;
+			$fields = $db->getString('sql');
+			$found[$table_name] = [];
+			{
+				$pos = \mb_strpos($fields, '(');
+				if ($pos <= 0) throw new \RuntimeException('Failed to find table fields for: '.$table_name);
+				$tmp = \mb_substr($fields, $pos+1);
+				$pos = \mb_strpos($tmp, ')');
+				if ($pos <= 0) throw new \RuntimeException('Failed to parse table fields for: '.$table_name);
+				$tmp = \mb_substr($tmp, 0, $pos);
+				$arr = \explode(',', $tmp);
+				foreach ($arr as $part) {
+					$part = \trim($part);
+					$parts = \explode(' ', $part);
+					$field_name = \trim(\array_shift($parts));
+					if (\str_starts_with($field_name, '`')
+					&&    \str_ends_with($field_name, '`'))
+						$field_name = \mb_substr($field_name, 1, -1);
+					$type = null;
+					$primary = false;
+					$autoinc = false;
+					foreach ($parts as $p) {
+						switch (\mb_strtolower($p)) {
+							case 'integer':  $type = 'INTEGER';  break;
+							case 'text':     $type = 'TEXT';     break;
+							case 'datetime': $type = 'DATETIME'; break;
+							case 'primary':       $primary = true; break;
+							case 'autoincrement': $autoinc = true; break;
+							default: break;
+						}
+					}
+					if ($type == null)
+						throw new \RuntimeException("Unknown field type in table: $table_name - $part");
+					$found[$table_name][$field_name] = [
+						'type' => $type,
+					];
+					if ($primary)
+						$found[$table_name][$field_name]['primary'] = true;
+					if ($autoinc)
+						$found[$table_name][$field_name]['autoinc'] = true;
+				}
+			}
 		}
 		$this->existing_tables = $found;
 		$db->release();
@@ -199,82 +250,3 @@ class dbPool {
 
 
 }
-/*
-	// $schema argument can be path string to class or a class instance object
-	public function addSchemaTable($tableName, $schema) {
-		$tableName = dbTable::ValidateTableName($tableName);
-		$schema    = dbTable::ValidateSchemaClass($schema);
-		// table schema already exists
-		if (\array_key_exists($tableName, $this->schemas)) {
-			$poolName = $this->getName();
-			fail("Table already added to pool: {$poolName}:{$tableName}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$this->schemas[$tableName] = $schema;
-		return TRUE;
-	}
-	public function addSchemaTables(array $schemas) {
-		if (\count($schemas) == 0) {
-			return FALSE;
-		}
-		$count = 0;
-		foreach ($schemas as $entryName => $entry) {
-			$result = self::addSchemaTable($entryName, $entry);
-			if ($result !== FALSE) {
-				$count++;
-			}
-		}
-		return $count;
-	}
-	public function getSchemaTable($table) {
-		if ($table instanceof \pxn\pxdb\dbTable) {
-			return $table;
-		}
-		$tableName = dbTable::ValidateTableName(
-			(string) $table
-		);
-		if (\array_key_exists($tableName, $this->schemas)) {
-			$schema = $this->schemas[$tableName];
-			$clss = dbTable::GetSchemaClass(
-				$schema,
-				$this,
-				$tableName
-			);
-			return $clss;
-		}
-		return NULL;
-	}
-	public function getSchemaTables() {
-		return $this->schemas;
-	}
-
-
-
-	public function getExistingTable($table) {
-		if ($table instanceof \pxn\pxdb\dbTable) {
-			return $table;
-		}
-		$this->LoadExistingTables();
-		$tableName = dbTable::ValidateTableName(
-			(string) $table
-		);
-		if (\array_key_exists($tableName, $this->existing)) {
-			$existing = $this->existing[$tableName];
-			// load table object
-			if ($existing === NULL) {
-				$existing = new dbTableExisting($this, $tableName);
-				$this->existing[$tableName] = $existing;
-			}
-			return $existing;
-		}
-        return NULL;
-	}
-	public function getExistingTables() {
-		$this->LoadExistingTables();
-		return $this->existing;
-	}
-
-
-
-}
-*/
