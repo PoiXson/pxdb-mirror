@@ -1,6 +1,12 @@
 pxdb - PHP Database Utilities Library
 
 
+2022-09-17 pxdb 0.3.5
+=====================
+* fixed getInsertID() and loadRealTables() functions
+* fixed handling of primary/autoinc/null attributes
+
+
 2022-09-17 pxdb 0.3.4
 =====================
 * finished prepared() and exec() functions
