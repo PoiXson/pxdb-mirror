@@ -36,8 +36,10 @@ class dbPool {
 
 
 	public static function Load(array $cfg): self {
-		$dbName   = (isset($cfg['name'    ]) ? $cfg['name'    ] : 'main');
+		$dbName = (isset($cfg['name']) ? $cfg['name'] : 'main');
+		$pool = new self($dbName);
 		$conn = new dbConn(
+			pool:     $pool,
 			dbName:   $dbName,
 			driver:   (isset($cfg['driver'  ]) ? $cfg['driver'  ] : ''),
 			host:     (isset($cfg['host'    ]) ? $cfg['host'    ] : ''),
@@ -48,7 +50,7 @@ class dbPool {
 			prefix:   (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : '')
 		);
 		unset($cfg);
-		$pool = new self($dbName, $conn);
+		$pool->setFirstConnection($conn);
 		self::$pools[$dbName] = $pool;
 		return $pool;
 	}
@@ -101,8 +103,12 @@ class dbPool {
 
 
 
-	public function __construct(string $dbName, dbConn $conn) {
+	public function __construct(string $dbName) {
 		$this->dbName = $dbName;
+	}
+	public function setFirstConnection(dbConn $conn): void {
+		if ($this->conns !== null)
+			throw new \RuntimeException('Database connections already initialised?');
 		$this->conns  = [ $conn ];
 		$this->driver = $conn->getDriverType();
 	}

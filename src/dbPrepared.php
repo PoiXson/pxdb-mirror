@@ -14,6 +14,8 @@ namespace pxn\pxdb;
 
 abstract class dbPrepared {
 
+	protected ?dbPool $pool = null;
+
 	protected ?\PDOStatement $st = null;
 //TODO: type of $rs
 	protected ?string $rs   = null;
@@ -29,7 +31,8 @@ abstract class dbPrepared {
 
 
 
-	public function __construct() {
+	public function __construct(dbPool $pool) {
+		$this->pool = $pool;
 		$this->clean();
 	}
 

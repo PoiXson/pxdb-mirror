@@ -33,6 +33,7 @@ class dbConn extends dbPrepared {
 
 	// new connection
 	public function __construct(
+		dbPool $pool,
 		string $dbName,
 		string $driver,
 		string $host, int    $port,
@@ -40,7 +41,7 @@ class dbConn extends dbPrepared {
 		string $database,
 		string $prefix
 	) {
-		parent::__construct();
+		parent::__construct($pool);
 		$this->dbName = SanUtils::alpha_num_simple( (string) $dbName );
 		if (empty($this->dbName)) throw new \RuntimeException('Database name is missing or invalid');
 		if (empty($driver))       throw new \RuntimeException('Database driver is missing or invalid');
@@ -75,6 +76,7 @@ class dbConn extends dbPrepared {
 	}
 	public function clone_conn(): self {
 		return new self(
+			$this->pool,
 			$this->dbName,
 			$this->driver->toString(),
 			$this->host, $this->port,
