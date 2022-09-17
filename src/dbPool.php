@@ -22,19 +22,20 @@ class dbPool {
 	const MAX_CONNECTIONS = 5;
 
 	// pools[name]
-	protected static $pools = [];
+	protected static array $pools = [];
 
-	protected $dbName = null;
+	protected ?string   $dbName = null;
+	protected ?dbDriver $driver = null;
 
-	// conns[index]
-	protected $conns = [];
+	protected array $conns = [];
 	protected int $maxConns = \PHP_INT_MIN;
 
-	protected $schemas = [];
+	protected  array $schemas = [];
+	protected ?array $existing_tables = null;
 
 
 
-	public static function Load(array $cfg): dbPool {
+	public static function Load(array $cfg): self {
 		$dbName   = (isset($cfg['name'    ]) ? $cfg['name'    ] : 'main');
 		$conn = new dbConn(
 			dbName:   $dbName,
@@ -47,10 +48,7 @@ class dbPool {
 			prefix:   (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : '')
 		);
 		unset($cfg);
-		$pool = new self(
-			$dbName,
-			$conn
-		);
+		$pool = new self($dbName, $conn);
 		self::$pools[$dbName] = $pool;
 		return $pool;
 	}
@@ -60,7 +58,7 @@ class dbPool {
 	public static function getPools(): array {
 		return self::$pools;
 	}
-	public static function GetPool(?string $dbName=null): ?dbPool {
+	public static function GetPool(?string $dbName=null): ?self {
 		// default main db
 		if (empty($dbName))
 			$dbName = self::DEFAULT_DB_NAME;
@@ -68,7 +66,7 @@ class dbPool {
 			return self::$pools[$dbName];
 		return null;
 	}
-	public static function Get(string|dbPool $pool='main'): dbConn {
+	public static function Get(string|self $pool='main'): dbConn {
 		// already proper type
 		if ($pool instanceof dbPool)
 			return $pool->getDB();
@@ -94,7 +92,7 @@ class dbPool {
 			if (\count($this->conns) >= $this->getMaxConnections())
 				throw new \RuntimeException('Max connections reached for database: '.$this->dbName);
 			$conn = \reset($this->conns);
-			$found = $conn->cloneConn();
+			$found = $conn->clone_conn();
 		}
 		$found->lock();
 		$found->clean();
@@ -103,9 +101,10 @@ class dbPool {
 
 
 
-	public function __construct($dbName, $conn) {
+	public function __construct(string $dbName, dbConn $conn) {
 		$this->dbName = $dbName;
-		$this->conns[] = $conn;
+		$this->conns  = [ $conn ];
+		$this->driver = $conn->getDriverType();
 	}
 
 
@@ -139,41 +138,62 @@ class dbPool {
 
 
 
+	public function getTables(): array {
+		$this->loadTables();
+		return $this->existing_tables;
+	}
+	public function hasTable(string $tableName): bool {
+		// load existing tables
+		$this->loadTables();
+		if ($this->existing_tables == null)
+			throw new \RuntimeException('Failed to load existing tables from database');
+		return isset($this->existing_tables[$tableName]);
+	}
+	public function hasTableSchema(string $tableName): bool {
+		return isset($this->schemas[$tableName]);
+	}
+
+	protected function loadTables(): void {
+		if (\is_array($this->existing_tables))
+			return;
+		$db = $this->getDB();
+		// get list of existing tables
+		$found = [];
+		switch ($this->driver) {
+			case dbDriver::sqLite:
+				$sql = "SELECT `name` FROM `sqlite_master` WHERE `type`='table' ORDER BY name;";
+				break;
+			case dbDriver::MySQL:
+				$sql = 'SHOW TABLES;';
+				break;
+			default: throw new \RuntimeException('Unknown database driver type');
+		}
+		$db->exec($sql);
+		$database = $db->getDatabaseName();
+		while ($db->hasNext()) {
+//TODO: for mysql
+//			$table = $db->getString('Tables_in_'.$database);
+			$table = $db->getString('name');
+			if (\str_starts_with($table, '_'))
+				continue;
+			$found[$table] = null;
+		}
+		$this->existing_tables = $found;
+		$db->release();
+	}
+	public function clearTableCache(): int {
+		$count = (
+			$this->existing_tables == null
+			? -1 : \count($this->existing_tables)
+		);
+		$this->existing_tables = null;
+		return $count;
+	}
+
+
+
 }
 /*
-	public function ReloadExistingTableCache() {
-		$this->existing = NULL;
-		$this->LoadExistingTables();
-	}
-	protected function LoadExistingTables() {
-		if (\is_array($this->existing)) {
-			return TRUE;
-		}
-		// get list of existing tables
-		$this->existing = [];
-		$db = $this->getDB();
-		if ($db == NULL) {
-			fail('Failed to get db connection for tables list!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$db->Execute(
-			"SHOW TABLES",
-			'LoadPoolTables()'
-		);
-		$databaseName = $db->getDatabaseName();
-		while ($db->hasNext()) {
-			$tableName = $db->getString("Tables_in_{$databaseName}");
-			if (Strings::StartsWith($tableName, '_')) {
-				continue;
-			}
-			$this->existing[$tableName] = NULL;
-		}
-		$db->release();
-		return FALSE;
-	}
-
-
-
 	// $schema argument can be path string to class or a class instance object
 	public function addSchemaTable($tableName, $schema) {
 		$tableName = dbTable::ValidateTableName($tableName);
@@ -220,18 +240,6 @@ class dbPool {
 	}
 	public function getSchemaTables() {
 		return $this->schemas;
-	}
-
-
-
-	public function hasExistingTable($tableName) {
-		$this->LoadExistingTables();
-		$tableName = dbTable::ValidateTableName($tableName);
-		return \array_key_exists($tableName, $this->existing);
-	}
-	public function hasSchemaTable($tableName) {
-		$tableName = dbTable::ValidateTableName($tableName);
-		return \array_key_exists($tableName, $this->schemas);
 	}
 
 

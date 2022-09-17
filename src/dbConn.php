@@ -77,8 +77,8 @@ class dbConn extends dbPrepared {
 		return new self(
 			$this->dbName,
 			$this->driver->toString(),
-			$this->user,
-			$this->pass,
+			$this->host, $this->port,
+			$this->user, $this->pass,
 			$this->database,
 			$this->prefix
 		);
@@ -139,7 +139,7 @@ class dbConn extends dbPrepared {
 		return true;
 	}
 
-	public function getConn() {
+	public function getRealConnection() {
 		$this->doConnect();
 		return $this->connection;
 	}

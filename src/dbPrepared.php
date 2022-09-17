@@ -14,16 +14,18 @@ namespace pxn\pxdb;
 
 abstract class dbPrepared {
 
-	protected ?string $st   = null;
+	protected ?\PDOStatement $st = null;
+//TODO: type of $rs
 	protected ?string $rs   = null;
 	protected ?string $sql  = null;
 	protected ?string $desc = null;
+
 	protected bool $dry = false;
 
 	protected $row = null;
 	protected array $args = [];
-	protected int $row_count = -1;
 	protected int $insert_id = -1;
+	protected int $row_count = -1;
 
 
 
@@ -36,9 +38,11 @@ abstract class dbPrepared {
 	public abstract function clone_conn(): self;
 
 	protected abstract function doConnect(): bool;
-	public abstract function getConn();
+	public abstract function getRealConnection();
 
-	public abstract function getDriver(): string;
+	public abstract function getDriverString(): string;
+	public abstract function getDriverType(): dbDriver;
+
 	public abstract function getDatabaseName(): string;
 	public abstract function getTablePrefix(): string;
 
@@ -54,163 +58,129 @@ abstract class dbPrepared {
 		$this->desc = null;
 		$this->row  = null;
 		$this->args = [];
-		$this->rowCount = -1;
-		$this->insertId = -1;
+		$this->insert_id = -1;
+		$this->row_count = -1;
 	}
+
+
+
+	public function prepare(string $sql): self {
+		$this->clean();
+		$sql = \str_replace('__TABLE__', $this->getTablePrefix(), $sql);
+		if (empty($sql)) throw new \RuntimeException('sql argument is required');
+		$this->sql = $sql;
+		// prepared statement
+		$connection = $this->getRealConnection();
+		try {
+			$this->st = $connection->prepare($this->sql);
+		} catch (\PDOException $e) {
+			$sql = $this->sql;
+			echo "\n[SQL-Error: $sql]\n";
+			throw $e;
+		}
+		return $this;
+	}
+
+
+	public function exec(string $sql=''): self {
+		if (!empty($sql)) {
+			$this->prepare($sql);
+			unset($sql);
+		}
+		if (empty($this->sql)) throw new \RuntimeException('No sql query provided');
+		if ($this->st == null) throw new \RuntimeException('Statement not prepared');
+		$this->sql = \trim($this->sql);
+		$pos = \mb_strpos($this->sql, ' ');
+		$cmd = (
+			$pos > 0
+			? \mb_substr($this->sql, 0, $pos)
+			: $this->sql
+		);
+		$cmd = \mb_strtoupper($cmd);
+		// run query
+		if (!$this->st->execute())
+			throw new \RuntimeException('Query failed');
+		// get insert id
+		if ($cmd == 'INSERT') {
+			$connection = $this->getRealConnection();
+			$this->insert_id = $connection->lastInsertId();
+		// get row count
+		} else {
+			$this->row_count = $this->st->rowCount();
+		}
+		return $this;
+	}
+
+
+
+	public function hasNext(): bool {
+		$this->row = $this->st->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_NEXT);
+		return ($this->row !== false);
+	}
+
+	public function getIntertID(): int {
+		return $this->insert_id;
+	}
+	public function getRowCount(): int {
+		return $this->row_count;
+	}
+
+
+
+	public function getRow(): array {
+		return $this->row;
+	}
+
+
+
+	public function getString(int|string $index): ?string {
+		if (isset($this->row[$index]))
+			return (string) $this->row[$index];
+		return null;
+	}
+	public function getInt(int|string $index): ?int {
+		if (isset($this->row[$index]))
+			return (int) $this->row[$index];
+		return null;
+	}
+	public function getFloat(int|string $index): ?float {
+		if (isset($this->row[$index]))
+			return (float) $this->row[$index];
+		return null;
+	}
+	public function getLong(int|string $index): ?long {
+		if (isset($this->row[$index]))
+			return $this->row[$index];
+		return null;
+	}
+	public function getBool(int|string $index): ?bool {
+//TODO: is this right?
+		if (isset($this->row[$index]))
+			return ($this->row[$index] == true);
+		return null;
+	}
+//TODO
+//	public function getDate(int|string $index): string {
+//	}
+//TODO: old
+//	public function getDate($index, $format=NULL) {
+//		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
+//			return FALSE;
+//		}
+//		$value = General::castType($this->row[$index], 'int');
+//		if ($value === FALSE || $value === NULL) {
+//			return FALSE;
+//		}
+//		if (empty($format)) {
+//			$format = 'Y-m-d H:i:s';
+//		}
+//		return \date($format, $value);
+//	}
 
 
 
 }
 /*
-//	const ARG_PRE   = '[';
-//	const ARG_DELIM = '|';
-//	const ARG_POST  = ']';
-
-
-	public abstract function getConn();
-	public abstract function getTablePrefix();
-
-
-
-	public function Prepare($sql, $desc=NULL) {
-		$this->clean(TRUE);
-		if (!empty($desc)) {
-			$this->desc($desc);
-		}
-		if (empty($sql)) {
-			$this->setError('sql argument is required!');
-			return NULL;
-		}
-		try {
-			$this->sql = \str_replace(
-					'__TABLE__',
-					$this->getTablePrefix(),
-					$sql
-			);
-			// prepared statement
-			$this->st = $this->getConn()
-					->prepare($this->sql);
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
-		return $this;
-	}
-
-
-
-	public function Execute($sql=NULL, $desc=NULL) {
-		if ($this->hasError()) {
-			return NULL;
-		}
-		if (!empty($sql)) {
-			$this->Prepare($sql, $desc);
-		}
-		if (empty($this->sql)) {
-			$this->setError('No sql provided!');
-			return NULL;
-		}
-		if ($this->st == NULL) {
-			$this->setError('Statement not ready!');
-			return NULL;
-		}
-		if ($this->hasError()) {
-			$this->setError();
-			return NULL;
-		}
-		try {
-			$pos = \mb_strpos($this->sql, ' ');
-			$firstPart = \mb_strtoupper(
-				$pos === FALSE
-				? $this->sql
-				: \mb_substr($this->sql, 0, $pos)
-			);
-			if (debug()) {
-				$msg = " [SQL] $this->sql";
-				if (!Strings::EndsWith($this->sql, ';')) {
-					$msg .= ' ;';
-				}
-				if (!empty($desc)) {
-					$msg .= "  / * $desc * /";
-				}
-				echo "$msg\n";
-			}
-			if ($this->notDry()) {
-				// run query
-				if (!$this->st->execute()) {
-					$this->setError();
-					return NULL;
-				}
-				// get insert id
-				if ($firstPart == 'INSERT') {
-					$this->insertId = $this->conn->lastInsertId();
-				// get row count
-				} else {
-					$this->rowCount = $this->st->rowCount();
-				}
-			}
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
-		return $this;
-	}
-
-
-
-	public function hasNext() {
-		if ($this->hasError() || $this->st == NULL) {
-			return FALSE;
-		}
-		try {
-			$this->row = $this->st
-				->fetch(
-					\PDO::FETCH_ASSOC,
-					\PDO::FETCH_ORI_NEXT
-				);
-			// finished
-			if ($this->row === FALSE) {
-				return FALSE;
-			}
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return FALSE;
-		}
-		return TRUE;
-	}
-
-
-
-	public function getRowCount() {
-		if ($this->hasError() || $this->st == NULL || $this->rowCount < 0) {
-			return -1;
-		}
-		return $this->rowCount;
-	}
-	public function getInsertId() {
-		if ($this->hasError() || $this->st == NULL || $this->insertId < 0) {
-			return -1;
-		}
-		return $this->insertId;
-	}
-
-
-
-	public function desc($desc=NULL) {
-		if ($desc != NULL) {
-			$this->desc = $desc;
-		}
-		return $this->desc;
-	}
-
-
-
 	public function isDry() {
 		// default
 		if ($this->dry === NULL) {
@@ -229,63 +199,6 @@ abstract class dbPrepared {
 	public function setDry($dry=TRUE) {
 		$this->dry = ($dry !== FALSE);
 	}
-
-
-
-	public function setError($msg=NULL, $e=NULL) {
-		if (empty($msg)) {
-			$msg = '';
-		}
-		if ($e != NULL) {
-			if (!empty($msg)) {
-				$msg .= ' - ';
-			}
-			$msg .= $e->getMessage();
-		}
-		if (empty($this->hasError)) {
-			$this->hasError =
-				empty($msg)
-				? TRUE
-				: $msg;
-		} else
-		if (!empty($msg)) {
-			$this->hasError = $msg;
-		}
-		// exception mode
-		if ($this->errorMode == dbConn::ERROR_MODE_EXCEPTION) {
-			throw new \PDOException(
-				$msg.' - args: '.\implode(', ', $this->args)
-			);
-		}
-	}
-	public function getError() {
-		if ($this->hasError === FALSE) {
-			return NULL;
-		}
-		return (
-			($this->hasError === TRUE)
-			? 'Unknown error'
-			: $this->hasError
-		).' - args: '.\implode(', ', $this->args);
-	}
-	public function hasError() {
-		return ($this->hasError != FALSE);
-	}
-
-
-
-	public function setErrorMode($errorMode) {
-		if ($errorMode === NULL) {
-			$errorMode = dbConn::ERROR_MODE_EXCEPTION;
-		}
-		$this->errorMode = ($errorMode != FALSE);
-	}
-	public function getErrorMode() {
-		return $this->errorMode;
-	}
-
-
-
 
 
 
@@ -390,67 +303,4 @@ abstract class dbPrepared {
 //		}
 //		return $this;
 //	}
-
-
-
-	// --------------------------------------------------
-	// get results
-
-
-
-	public function getRow() {
-		if ($this->hasError() || $this->row == NULL) {
-			return FALSE;
-		}
-		return $this->row;
-	}
-	public function getString($index) {
-		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-			return FALSE;
-		}
-		return General::castType($this->row[$index], 'str');
-	}
-	public function getInt($index) {
-		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-			return FALSE;
-		}
-		return General::castType($this->row[$index], 'int');
-	}
-	public function getDouble($index) {
-		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-			return FALSE;
-		}
-		return General::castType($this->row[$index], 'dbl');
-	}
-	public function getLong($index) {
-		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-			return FALSE;
-		}
-		return General::castType($this->row[$index], 'lng');
-	}
-	public function getBool($index) {
-		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-			return FALSE;
-		}
-		return General::castType($this->row[$index], 'bool');
-	}
-	public function getDate($index, $format=NULL) {
-		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-			return FALSE;
-		}
-		$value = General::castType($this->row[$index], 'int');
-		if ($value === FALSE || $value === NULL) {
-			return FALSE;
-		}
-		if (empty($format)) {
-			$format = 'Y-m-d H:i:s';
-		}
-		return \date($format, $value);
-		
-		return General::castType($this->row[$index], 'str');
-	}
-
-
-
-}
 */
