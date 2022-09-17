@@ -55,10 +55,23 @@ final class dbTools {
 				$first_field = $fields[$first_name];
 				$first_type  = \mb_strtoupper($first_field['type']);
 				$sql = "CREATE TABLE `$table_name` (`$first_name` $first_type";
-				if ($first_field['primary'] === true)
+				$primary  = false;
+				$nullable = false;
+				$autoinc  = false;
+				if (isset($first_field['primary'])
+				&& $first_field['primary'] === true) {
+					$primary = true;
 					$sql .= ' PRIMARY KEY';
-				if (!isset($first_field['null'])
-				||  $first_field['null'] !== true)
+				}
+				if (isset($first_field['autoinc'])
+				&& $first_field['autoinc'] === true) {
+					$sql .= ' AUTOINCREMENT';
+					$autoinc = true;
+				}
+				if (isset($first_field['null'])
+				&& $first_field['null'] === true)
+					$nullable = true;
+				if (!$nullable)
 					$sql .= ' NOT NULL';
 				$sql .= ');';
 				$db->prepare($sql);
@@ -68,8 +81,9 @@ final class dbTools {
 						'type' => $first_type,
 					],
 				];
-				if ($first_field['primary'] === true)
-					$pool->existing_tables[$table_name][$first_name]['primary'] = true;
+				if ($primary)  $pool->existing_tables[$table_name][$first_name]['primary'] = true;
+				if ($autoinc)  $pool->existing_tables[$table_name][$first_name]['autoinc'] = true;
+				if ($nullable) $pool->existing_tables[$table_name][$first_name]['null']    = true;
 				$tab = $pool->getRealTableSchema($table_name);
 				$did_something = true;
 			} // end create new table
