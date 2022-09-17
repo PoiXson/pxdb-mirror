@@ -19,318 +19,78 @@ final class dbTools {
 
 
 
-	public static function LoadSchema(dbConn $db, string $file, string $clss): bool {
+	public static function LoadSchema(string|dbConn|dbPool $db, string $file, string $clss): bool {
 		if (!\str_starts_with($file, '/'))
 			$file = __DIR__.'schemas/'.$file;
 		require($file);
 		$sch = new $clss();
 		$schema = $sch->getSchema();
-		return self::CreateUpdateSchema($db, $schema);
+		$pool = dbPool::getPool();
+		$did_changes = false;
+		for ($i=0; $i<99; $i++) {
+			if (!self::CreateUpdateSchema($db, $schema))
+				break;
+			$pool->clearTableCache();
+			$did_changes = true;
+		}
+		return $did_changes;
 	}
 
-
-
-	public static function CreateUpdateSchema(string|dbConn $db='main', array $schema=[]): bool {
-		if (\is_string($db)) {
-			$db = dbPool::GetDB( (string)$db );
+	public static function CreateUpdateSchema(string|dbConn|dbPool $db, array $schema): bool {
+		if (\is_string($db) || $db instanceof dbPool) {
+			$db = dbPool::GetDB($db);
 			$result = CreateUpdateSchema($db, $schema);
 			$db->release();
 			return $result;
 		}
+		$did_something = false;
+		$pool = $db->getPool();
+		// create new tables
+		foreach ($schema as $table_name => $fields) {
+			$tab = $pool->getRealTableSchema($table_name);
+			// create new table
+			if ($tab == null) {
+//TODO: san
+				$first_name  = \array_key_first($fields);
+				$first_field = $fields[$first_name];
+				$first_type  = \mb_strtoupper($first_field['type']);
+				$sql = "CREATE TABLE `$table_name` (`$first_name` $first_type";
+				if ($first_field['primary'] === true)
+					$sql .= ' PRIMARY KEY';
+				if (!isset($first_field['null'])
+				||  $first_field['null'] !== true)
+					$sql .= ' NOT NULL';
+				$sql .= ');';
+				$db->prepare($sql);
+				$db->exec();
+				$pool->existing_tables[$table_name] = [
+					$first_name => [
+						'type' => $first_type,
+					],
+				];
+				if ($first_field['primary'] === true)
+					$pool->existing_tables[$table_name][$first_name]['primary'] = true;
+				$tab = $pool->getRealTableSchema($table_name);
+				$did_something = true;
+			} // end create new table
+			// check table fields
+			foreach ($fields as $key => $field) {
+				// add field
+				if (!isset($tab[$key])) {
+					$type = $field['type'];
+					$sql = "ALTER TABLE `$table_name` ADD COLUMN `$key` $type;";
+					$db->prepare($sql);
+					$db->exec();
+					$did_something = true;
+				}
 
+//TODO: modify existing fields
 
-//TODO
-return false;
+			} // end fields loop
+		} // end tables loop
+		return $did_something;
 	}
 
 
 
 }
-/*
-		$dry = ($dry !== FALSE);
-		$dryStr = ($dry ? '{color=orange}[DRY]{reset} ' : '');
-		// validate pool
-		$pool = dbPool::getPool($pool);
-		if ($pool == NULL) {
-			fail('Invalid or missing pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$poolName = $pool->getName();
-		// validate table
-		$table = $pool->getSchemaTable($table);
-		if ($table == NULL) {
-			fail('Table is invalid or unknown!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$tableName = $table->getName();
-		if ($pool->hasExistingTable($tableName)) {
-			fail("Cannot create table, already exists: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		echo ShellTools::FormatString(
-			"{$dryStr}Creating New Table: {color=green}{$poolName}:{$tableName}{reset}\n"
-		);
-		echo ShellTools::FormatString(
-			"{$dryStr}Note: (size|nullable|default)\n"
-		);
-		// get first field
-		$fields = $table->getFields();
-		$firstField = \reset($fields);
-		$firstField = $firstField->duplicate();
-		$firstField->ValidateKeys();
-		$firstField->FillKeysSchema();
-		$firstFieldName = $firstField->getName();
-		// generate sql
-		$dbEngine = 'InnoDB';
-		$fieldSQL = $firstField->getSQL();
-		// primary key
-		if ($firstField->isPrimaryKey() || $firstField->isAutoIncrement()) {
-			$fieldSQL .= " , PRIMARY KEY ( `{$firstFieldName}` )";
-		}
-		// unique
-		if ($firstField->isUnique()) {
-			$fieldSQL .= " , UNIQUE ( `{$fieldName}` )";
-		}
-		$sql = "CREATE TABLE `__TABLE__{$tableName}` ( $fieldSQL ) ENGINE={$dbEngine} DEFAULT CHARSET=latin1";
-		// create new table
-		$db = $pool->get();
-		$db->setDry($dry);
-		$result = $db->Execute(
-			$sql,
-			"CreateTable({$tableName})"
-		);
-		if ($result->hasError()) {
-			fail("Failed to create table: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		unset($sql);
-		$db->release();
-		// force cache reload
-		$pool->ReloadExistingTableCache();
-		// add rest of the fields
-		foreach ($fields as $fieldName => $entry) {
-			$field = $entry->duplicate();
-			$field->ValidateKeys();
-			$field->FillKeysSchema();
-			// add field to table
-			if ($fieldName != $firstFieldName) {
-				self::AddChangeTableField(
-					$pool,
-					$table,
-					$field,
-					NULL,
-					$dry
-				);
-			}
-		}
-		// force cache reload
-		$pool->ReloadExistingTableCache();
-		return TRUE;
-	}
-
-
-
-	// set $afterFieldName to "__FIRST__" to insert at front of table
-	public static function AddChangeTableField($pool, $table, dbField $field, $afterFieldName=NULL, $dry=TRUE) {
-		$dry = ($dry !== FALSE);
-		$dryStr = ($dry ? '{color=orange}[DRY]{reset} ' : '');
-		// validate pool
-		$pool = dbPool::getPool($pool);
-		if ($pool == NULL) {
-			fail('Invalid or missing pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$poolName = $pool->getName();
-		$fieldName = $field->getName();
-		// validate table
-		$table = $pool->getSchemaTable($table);
-		if ($table == NULL) {
-			fail('Table is invalid or unknown!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$tableName = $table->getName();
-		$existTable = NULL;
-		$exists     = NULL;
-		if (!$dry) {
-			$existTable = $pool->getExistingTable($tableName);
-			$exists = $existTable->hasField($fieldName);
-
-		}
-		$desc = $field->getDesc();
-		if ($exists === TRUE) {
-			$existField = $existTable->getField($fieldName);
-			$existDesc = $existField->getDesc();
-			echo ShellTools::FormatString(
-				"{$dryStr}{color=green}*{reset} Changing field:  {color=green}{$fieldName}{reset}\n",
-				"{$dryStr}    from: {$existDesc}\n",
-				"{$dryStr}      to: {$desc}\n"
-			);
-			unset($existField, $existDesc);
-		} else {
-			echo ShellTools::FormatString(
-				"{$dryStr}{color=green}*{reset} Adding field:  {color=green}{$fieldName}{reset}  $desc\n"
-			);
-		}
-		// generate sql
-		$sql = "ALTER TABLE `__TABLE__{$tableName}` ";
-		$sql .= (
-			$exists
-			? "CHANGE `{$fieldName}` "
-			: 'ADD '
-		);
-		$sql .= $field->getSQL();
-		// insert after field (or front of table)
-		if ($exists !== TRUE && !empty($afterFieldName)) {
-			if ($afterFieldName === '__FIRST__') {
-				$sql .= ' FIRST';
-			} else {
-				$afterFieldName = San::AlphaNumUnderscore(
-					(string) $afterFieldName
-				);
-				$sql .= " AFTER `{$afterFieldName}`";
-			}
-		}
-		// primary key
-		if ($field->isPrimaryKey() || $field->isAutoIncrement()) {
-			$sql .= ", ADD PRIMARY KEY ( `{$fieldName}` )";
-		}
-		// unique
-		if ($field->isUnique()) {
-			$sql .= ", ADD UNIQUE ( `{$fieldName}` )";
-		}
-		// alter table
-		$db = $pool->get();
-		$db->setDry($dry);
-		$result = $db->Execute(
-			$sql,
-			"AddChangeTableField({$tableName}::{$fieldName})"
-		);
-		if ($result->hasError()) {
-			fail("Failed to add/modify table field: {$tableName}:: $desc",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		// finished
-		unset($sql);
-		$db->release();
-	}
-
-
-
-	public static function CheckFieldNeedsChanges(dbField $existingField, dbField $schemaField) {
-		// prepare copies of field objects
-		$exist = $existingField->duplicate();
-		$schem = $schemaField->duplicate();
-		$exist->ValidateKeys();
-		$schem->ValidateKeys();
-		$exist->FillKeysExisting();
-		$schem->FillKeysSchema();
-		// check for needed changes
-		$changes = [];
-
-		// auto-increment
-		if ($exist->isAutoIncrement() !== $schem->isAutoIncrement()) {
-			$changes[] = 'increment';
-		}
-		// primary key
-		if ($exist->isPrimaryKey() !== $schem->isPrimaryKey()) {
-			$changes[] = 'primary';
-		}
-
-		// check field type
-		if ($exist->getType() !== $schem->getType()) {
-			$existDesc = $exist->getDesc();
-			$schemDesc = $schem->getDesc();
-			$changes[] = "type: {$existDesc} -> {$schemDesc}";
-			return $changes;
-		}
-
-		// check properties based on field type
-		switch ($schem->getType()) {
-		// length size
-		case 'int':       case 'tinyint': case 'smallint':
-		case 'mediumint': case 'bigint':
-		case 'decimal':   case 'double':  case 'float':
-		case 'bit':       case 'char':
-		case 'boolean':   case 'bool':
-		case 'varchar':
-		// string values
-		case 'enum': case 'set':
-			$existSize = $exist->getSize();
-			$schemSize = $schem->getSize();
-			if ($existSize != $schemSize) {
-				$size = $exist->getSize();
-				if ($size === NULL) {
-					$msg .= 'NULL';
-				} else {
-					$msg = "size(";
-					if (Numbers::isNumber($size)) {
-						$msg .= (int) $size;
-					} else {
-						$msg .= "'{$size}'";
-					}
-				}
-				$msg .= '->';
-				$size = $schem->getSize();
-				if ($size === NULL) {
-					$msg .= 'NULL';
-				} else
-				if (Numbers::isNumber($size)) {
-					$msg .= (int) $size;
-				} else {
-					$msg .= "'{$size}'";
-				}
-				$msg .= ')';
-				$changes[] = $msg;
-				unset($msg);
-			}
-			break;
-		// no size
-		case 'text': case 'longtext': case 'blob':
-		case 'date': case 'time':     case 'datetime':
-			break;
-		default:
-			$fieldName = $schem->getName();
-			$fieldType = $schem->getType();
-			fail("Unsupported field type: [{$fieldType}] $fieldName",
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
-
-		// check nullable
-		$existNullable = $exist->getNullable();
-		$schemNullable = $schem->getNullable();
-		if ($schemNullable !== NULL) {
-			if ($existNullable === NULL) {
-				if ($schemNullable === TRUE) {
-					$changes[] = 'nullable(NOT -> NUL)';
-				}
-			} else
-			if ($existNullable !== $schemNullable) {
-				$msg = 'nullable(';
-				$msg .= ($existNullable === TRUE ? 'NULL' : 'NOT').' -> ';
-				$msg .= ($schemNullable === TRUE ? 'NULL' : 'NOT').')';
-				$changes[] = $msg;
-				unset($msg);
-			}
-		}
-
-		// check default value
-		$existDefault = (string) $exist->getDefault();
-		$schemDefault = (string) $schem->getDefault();
-		if ($existDefault !== $schemDefault) {
-			$msg = 'default(';
-			$msg .= ($existDefault === NULL ? 'NULL' : "'{$existDefault}'").' -> ';
-			$msg .= ($schemDefault === NULL ? 'NULL' : "'{$schemDefault}'").')';
-			$changes[] = $msg;
-			unset($msg);
-		}
-
-		if (\count($changes) == 0) {
-			return FALSE;
-		}
-		return $changes;
-	}
-
-
-
-}
-*/
