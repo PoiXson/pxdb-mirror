@@ -66,19 +66,19 @@ class dbPool {
 			return self::$pools[$dbName];
 		return null;
 	}
-	public static function Get(string|self $pool='main'): dbConn {
+	public static function GetDB(string|self $pool='main'): dbConn {
 		// already proper type
 		if ($pool instanceof dbPool)
-			return $pool->getDB();
+			return $pool->get();
 		// by db pool name
 		$dbName = (string)$pool;
 		$p = self::GetPool($dbName);
 		// db pool doesn't exist
 		if ($p == null)
 			throw new \RuntimeException('Unknown database pool: '.$dbName);
-		return $p->getDB();
+		return $p->get();
 	}
-	public function getDB(): dbConn {
+	public function get(): dbConn {
 		// find available
 		$found = null;
 		foreach ($this->conns as $conn) {
@@ -156,7 +156,7 @@ class dbPool {
 	protected function loadTables(): void {
 		if (\is_array($this->existing_tables))
 			return;
-		$db = $this->getDB();
+		$db = $this->get();
 		// get list of existing tables
 		$found = [];
 		switch ($this->driver) {

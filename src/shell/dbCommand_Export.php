@@ -56,7 +56,7 @@ $filepath = "{$path}{$filename}";
 				Defines::EXIT_CODE_USAGE_ERROR);
 		}
 		$sql = "SELECT * FROM `__TABLE__{$tableName}`";
-		$db = $pool->getDB();
+		$db = $pool->get();
 		$db->setDry($this->dry);
 		$result = $db->Execute(
 			$sql,

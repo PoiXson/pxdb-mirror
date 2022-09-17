@@ -26,7 +26,7 @@ class dbTableExisting extends dbTable {
 				Defines::EXIT_CODE_INTERNAL_ERROR);
 		}
 		// load fields in table
-		$db = $this->pool->getDB();
+		$db = $this->pool->get();
 		$db->Execute(
 			"DESCRIBE `__TABLE__{$tableName}`;",
 			'LoadTableFields()'

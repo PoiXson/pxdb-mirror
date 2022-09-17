@@ -93,7 +93,7 @@ return false;
 		}
 		$sql = "CREATE TABLE `__TABLE__{$tableName}` ( $fieldSQL ) ENGINE={$dbEngine} DEFAULT CHARSET=latin1";
 		// create new table
-		$db = $pool->getDB();
+		$db = $pool->get();
 		$db->setDry($dry);
 		$result = $db->Execute(
 			$sql,
@@ -199,7 +199,7 @@ return false;
 			$sql .= ", ADD UNIQUE ( `{$fieldName}` )";
 		}
 		// alter table
-		$db = $pool->getDB();
+		$db = $pool->get();
 		$db->setDry($dry);
 		$result = $db->Execute(
 			$sql,
