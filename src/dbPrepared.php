@@ -8,9 +8,6 @@
  */
 namespace pxn\pxdb;
 
-//use pxn\phpUtils\General;
-//use pxn\phpUtils\Strings;
-
 
 abstract class dbPrepared {
 
@@ -25,7 +22,6 @@ abstract class dbPrepared {
 	protected bool $dry = false;
 
 	protected $row = null;
-	protected array $args = [];
 	protected int $insert_id = -1;
 	protected int $row_count = -1;
 
@@ -60,9 +56,22 @@ abstract class dbPrepared {
 		$this->sql  = null;
 		$this->desc = null;
 		$this->row  = null;
-		$this->args = [];
 		$this->insert_id = -1;
 		$this->row_count = -1;
+	}
+
+
+
+	public function dry(?bool $dry=null): bool {
+		if ($dry !== null) {
+			$previous = $this->dry;
+			$this->dry = ($dry !== false);
+			return $previous;
+		}
+		return $this->dry;
+	}
+	public function setDry(bool $dry): self {
+		$this->dry = ($dry !== false);
 	}
 
 
@@ -130,6 +139,9 @@ abstract class dbPrepared {
 
 
 
+	public function getPool(): dbPool {
+		return $this->pool;
+	}
 	public function getRow(): array {
 		return $this->row;
 	}
@@ -182,114 +194,32 @@ abstract class dbPrepared {
 
 
 
-}
-/*
-	public function isDry() {
-		// default
-		if ($this->dry === NULL) {
-			return FALSE;
-		}
-		// not dry
-		if ($this->dry === FALSE) {
-			return FALSE;
-		}
-		// is dry
-		return TRUE;
-	}
-	public function notDry() {
-		return !$this->isDry();
-	}
-	public function setDry($dry=TRUE) {
-		$this->dry = ($dry !== FALSE);
-	}
-
-
-
-	// --------------------------------------------------
-	// query parameters
-
-
-
-	public function setString($index, $value) {
-		if ($this->hasError() || $this->st == NULL) {
-			return NULL;
-		}
-		try {
-			$value = General::castType($value, 'str');
-			$this->st->bindParam($index, $value);
-			$this->args[] = "String: $value";
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
+	public function setString(int|string $index, string $value): self {
+		$this->st->bindParam($index, $value);
 		return $this;
 	}
-	public function setInt($index, $value) {
-		if ($this->hasError() || $this->st == NULL) {
-			return NULL;
-		}
-		try {
-			$value = General::castType($value, 'int');
-			$this->st->bindParam($index, $value);
-			$this->args[] = "Int: $value";
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
+	public function setInt(int|string $index, int $value): self {
+		$this->st->bindParam($index, $value);
 		return $this;
 	}
-	public function setDouble($index, $value) {
-		if ($this->hasError() || $this->st == NULL) {
-			return NULL;
-		}
-		try {
-			$value = General::castType($value, 'dbl');
-			$this->st->bindParam($index, $value);
-			$this->args[] = "Dbl: $value";
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
+	public function setFloat(int|string $index, float $value): self {
+		$this->st->bindParam($index, $value);
 		return $this;
 	}
-	public function setLong($index, $value) {
-		if ($this->hasError() || $this->st == NULL) {
-			return NULL;
-		}
-		try {
-			$value = General::castType($value, 'lng');
-			$this->st->bindParam($index, $value);
-			$this->args[] = "Lng: $value";
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
+	public function setLong(int|string $index, long $value): self {
+		$this->st->bindParam($index, $value);
 		return $this;
 	}
-	public function setBool($index, $value) {
-		if ($this->hasError() || $this->st == NULL) {
-			return NULL;
-		}
-		try {
-			$value = General::castType($value, 'bool');
-			$this->st->bindParam($index, $value);
-			$this->args[] = "Bool: $value";
-		} catch (\PDOException $e) {
-			$sql  = $this->sql;
-			$desc = $this->desc;
-			$this->setError("Query failed: $sql - $desc", $e);
-			return NULL;
-		}
+	public function setBool(int|string $index, bool $value): self {
+		$this->st->bindParam($index, $value);
 		return $this;
 	}
+//TODO
+//	public function setDateTime(int|string $index, string $value): self {
+//		$this->st->bindParam($index, $value);
+//		return $this;
+//	}
+//TODO: old
 //	public function setDate($index, $value) {
 //		if ($this->hasError() || $this->st == NULL) {
 //			return NULL;
@@ -306,4 +236,7 @@ abstract class dbPrepared {
 //		}
 //		return $this;
 //	}
-*/
+
+
+
+}
