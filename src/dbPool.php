@@ -193,6 +193,8 @@ class dbPool {
 			$table_name = $db->getString('tbl_name');
 			if (\str_starts_with($table_name, '_'))
 				continue;
+			if (\str_starts_with($table_name, 'sqlite_'))
+				continue;
 			$fields = $db->getString('sql');
 			$found[$table_name] = [];
 			{
