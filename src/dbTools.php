@@ -88,7 +88,7 @@ final class dbTools {
 		$attribs = [
 			'type' => \mb_strtoupper($field['type']),
 			'primary'  => false,
-			'nullable' => true,
+			'nullable' => false,
 			'autoinc'  => false,
 		];
 		# type
@@ -107,11 +107,10 @@ final class dbTools {
 		}
 		// null/not-null
 		if (isset($field['null'])
-		&& $field['null'] === false) {
-			$attribs['nullable'] = false;
-		} else {
+		&& $field['null'] === true)
+			$attribs['nullable'] = true;
+		if ($attribs['nullable'] === false)
 			$sql .= ' NOT NULL';
-		}
 		// default value
 		if (isset($field['default'])) {
 			if ($field['default'] == 'null'
@@ -121,8 +120,17 @@ final class dbTools {
 				$sql .= " DEFAULT '".$field['default']."'";
 			}
 		} else
-		if ($attribs['nullable']) {
+		if ($attribs['nullable'] === true) {
 			$sql .= ' DEFAULT NULL';
+		} else {
+			switch (\mb_strtoupper($field['type'])) {
+				case 'INTEGER':
+					if ($attribs['autoinc'] === false)
+						$sql .= ' DEFAULT 0';
+					break;
+				case 'TEXT': $sql .= " DEFAULT ''"; break;
+				default: throw new \RuntimeException('Unknown field type: '.$field['type']);
+			}
 		}
 		return $attribs;
 	}
