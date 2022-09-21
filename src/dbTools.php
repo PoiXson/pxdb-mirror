@@ -53,37 +53,15 @@ final class dbTools {
 //TODO: san
 				$first_name  = \array_key_first($fields);
 				$first_field = $fields[$first_name];
-				$first_type  = \mb_strtoupper($first_field['type']);
-				$sql = "CREATE TABLE `$table_name` (`$first_name` $first_type";
-				$primary  = false;
-				$nullable = false;
-				$autoinc  = false;
-				if (isset($first_field['primary'])
-				&& $first_field['primary'] === true) {
-					$primary = true;
-					$sql .= ' PRIMARY KEY';
-				}
-				if (isset($first_field['autoinc'])
-				&& $first_field['autoinc'] === true) {
-					$sql .= ' AUTOINCREMENT';
-					$autoinc = true;
-				}
-				if (isset($first_field['null'])
-				&& $first_field['null'] === true)
-					$nullable = true;
-				if (!$nullable)
-					$sql .= ' NOT NULL';
+				$sql = "CREATE TABLE `$table_name` (`$first_name`";
+				$attribs = self::BuildFieldType($sql, $first_field);
 				$sql .= ');';
 				$db->prepare($sql);
 				$db->exec();
+				// update cache
 				$pool->existing_tables[$table_name] = [
-					$first_name => [
-						'type' => $first_type,
-					],
+					$first_name => [ $attribs ],
 				];
-				if ($primary)  $pool->existing_tables[$table_name][$first_name]['primary'] = true;
-				if ($autoinc)  $pool->existing_tables[$table_name][$first_name]['autoinc'] = true;
-				if ($nullable) $pool->existing_tables[$table_name][$first_name]['null']    = true;
 				$tab = $pool->getRealTableSchema($table_name);
 				$did_something = true;
 			} // end create new table
@@ -91,8 +69,9 @@ final class dbTools {
 			foreach ($fields as $key => $field) {
 				// add field
 				if (!isset($tab[$key])) {
-					$type = $field['type'];
-					$sql = "ALTER TABLE `$table_name` ADD COLUMN `$key` $type;";
+					$sql = "ALTER TABLE `$table_name` ADD COLUMN `$key`";
+					$attribs = self::BuildFieldType($sql, $field);
+					$sql .= ';';
 					$db->prepare($sql);
 					$db->exec();
 					$did_something = true;
@@ -103,6 +82,49 @@ final class dbTools {
 			} // end fields loop
 		} // end tables loop
 		return $did_something;
+	}
+
+	protected static function BuildFieldType(string &$sql, array $field): array {
+		$attribs = [
+			'type' => \mb_strtoupper($field['type']),
+			'primary'  => false,
+			'nullable' => true,
+			'autoinc'  => false,
+		];
+		# type
+		$sql .= ' '.$attribs['type'];
+		# primary key
+		if (isset($field['primary'])
+		&& $field['primary'] === true) {
+			$sql .= ' PRIMARY KEY';
+			$attribs['primary'] = true;
+		}
+		# auto increment
+		if (isset($field['autoinc'])
+		&& $field['autoinc'] === true) {
+			$sql .= ' AUTOINCREMENT';
+			$attribs['autoinc'] = true;
+		}
+		// null/not-null
+		if (isset($field['null'])
+		&& $field['null'] === false) {
+			$attribs['nullable'] = false;
+		} else {
+			$sql .= ' NOT NULL';
+		}
+		// default value
+		if (isset($field['default'])) {
+			if ($field['default'] == 'null'
+			||  $field['default'] == 'NULL') {
+				$sql .= ' DEFAULT NULL';
+			} else {
+				$sql .= " DEFAULT '".$field['default']."'";
+			}
+		} else
+		if ($attribs['nullable']) {
+			$sql .= ' DEFAULT NULL';
+		}
+		return $attribs;
 	}
 
 
