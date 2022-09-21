@@ -1,6 +1,12 @@
 pxdb - PHP Database Utilities Library
 
 
+2022-09-21 pxdb 0.3.6
+=====================
+* added BuildFieldType() function to fix some bugs
+* more cleanup and fixes
+
+
 2022-09-17 pxdb 0.3.5
 =====================
 * fixed getInsertID() and loadRealTables() functions
