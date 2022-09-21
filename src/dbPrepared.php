@@ -114,7 +114,11 @@ abstract class dbPrepared {
 		);
 		// run query
 		if (Debug::debug()) {
-			echo ' [QUERY] '.$this->sql."\n";
+			$sql_clean = $this->sql;
+			while (\mb_strpos($sql_clean, '  ') !== false) {
+				$sql_clean = \str_replace('  ', ' ', $sql_clean);
+			}
+			echo ' [QUERY] '.$sql_clean."\n";
 			$str = '';
 			foreach ($this->args as $index=>$arg) {
 				echo "   #$index: $arg\n";
