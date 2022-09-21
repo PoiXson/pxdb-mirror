@@ -8,6 +8,8 @@
  */
 namespace pxn\pxdb;
 
+use \pxn\phpUtils\Debug;
+
 
 abstract class dbPrepared {
 
@@ -21,7 +23,9 @@ abstract class dbPrepared {
 
 	protected bool $dry = false;
 
+	protected $args = [];
 	protected $row = null;
+
 	protected int $insert_id = -1;
 	protected int $row_count = -1;
 
@@ -103,13 +107,19 @@ abstract class dbPrepared {
 		if ($this->st == null) throw new \RuntimeException('Statement not prepared');
 		$this->sql = \trim($this->sql);
 		$pos = \mb_strpos($this->sql, ' ');
-		$cmd = (
+		$cmd = \mb_strtoupper(
 			$pos > 0
 			? \mb_substr($this->sql, 0, $pos)
 			: $this->sql
 		);
-		$cmd = \mb_strtoupper($cmd);
 		// run query
+		if (Debug::debug()) {
+			echo ' [QUERY] '.$this->sql."\n";
+			$str = '';
+			foreach ($this->args as $index=>$arg) {
+				echo "   #$index: $arg\n";
+			}
+		}
 		if (!$this->st->execute())
 			throw new \RuntimeException('Query failed');
 		// get insert id
@@ -117,7 +127,7 @@ abstract class dbPrepared {
 			$connection = $this->getRealConnection();
 			$id = $connection->lastInsertId();
 			$this->insert_id = ($id === false ? -1 : (int) $id);
-		// get row count
+		// get row count (not available in sqlite)
 		} else {
 			$this->row_count = $this->st->rowCount();
 		}
@@ -196,23 +206,28 @@ abstract class dbPrepared {
 
 
 	public function setString(int|string $index, string $value): self {
-		$this->st->bindParam($index, $value);
+		$this->st->bindParam($index, $value, \PDO::PARAM_STR);
+		$this->args[$index] = $value;
 		return $this;
 	}
 	public function setInt(int|string $index, int $value): self {
-		$this->st->bindParam($index, $value);
+		$this->st->bindParam($index, $value, \PDO::PARAM_INT);
+		$this->args[$index] = $value;
 		return $this;
 	}
 	public function setFloat(int|string $index, float $value): self {
-		$this->st->bindParam($index, $value);
+		$this->st->bindParam($index, $value, \PDO::PARAM_FLOAT);
+		$this->args[$index] = $value;
 		return $this;
 	}
 	public function setLong(int|string $index, long $value): self {
-		$this->st->bindParam($index, $value);
+		$this->st->bindParam($index, $value, \PDO::PARAM_LONG);
+		$this->args[$index] = $value;
 		return $this;
 	}
 	public function setBool(int|string $index, bool $value): self {
-		$this->st->bindParam($index, $value);
+		$this->st->bindParam($index, $value, \PDO::PARAM_BOOL);
+		$this->args[$index] = $value;
 		return $this;
 	}
 //TODO
