@@ -1,6 +1,11 @@
 pxdb - PHP Database Utilities Library
 
 
+2022-09-23 pxdb 0.3.7
+=====================
+* fixed handling of null/not-null fields
+
+
 2022-09-21 pxdb 0.3.6
 =====================
 * added BuildFieldType() function to fix some bugs
