@@ -3,13 +3,13 @@
 	"description": "PHP Database Utilities Library",
 	"type":        "library",
 	"homepage":    "https://poixson.com/",
-	"license":     "GPL-3.0",
+	"license":     "AGPL-3.0",
 	"keywords": [
 		"framework", "utilities", "database", "mysql", "sqlite"
 	],
 	"support": {
-		"source": "https://git.poixson.com/summary/pxn!pxdb.git",
-		"issues": "https://git.poixson.com/tickets/pxn!pxdb.git",
+		"source":  "https://git.poixson.com/summary/pxn!pxdb.git",
+		"issues":  "https://git.poixson.com/tickets/pxn!pxdb.git",
 		"discord": "https://discord.gg/jHgP2a3kDx"
 	},
 	"authors": [{
