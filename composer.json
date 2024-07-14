@@ -13,8 +13,8 @@
 		"discord": "https://discord.gg/jHgP2a3kDx"
 	},
 	"authors": [{
-		"name":  "lorenzop",
-		"role":  "Developer"
+		"name": "lorenzop",
+		"role": "Developer"
 	}],
 	"autoload": {
 		"psr-4": {
@@ -37,6 +37,8 @@
 		"ext-pdo_sqlite": "*"
 	},
 	"require-dev": {
+		"filp/whoops": "*",
+		"kint-php/kint": "*",
 		"phpunit/phpunit": "*"
 	},
 	"config": {
