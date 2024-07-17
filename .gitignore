@@ -106,3 +106,5 @@ auth.json
 *.swp
 .*.swp
 *~
+
+!tests/.htdb_testdb

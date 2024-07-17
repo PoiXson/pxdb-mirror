@@ -1,0 +1,7 @@
+<?php
+
+return [
+	'name'     => 'testdb',
+	'driver'   => 'sqlite',
+	'database' => '_test.db',
+];
