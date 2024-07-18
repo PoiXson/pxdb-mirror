@@ -9,7 +9,7 @@
 namespace pxn\pxdb\shell;
 
 use pxn\phpUtils\utils\SanUtils;
-use pxn\phpUtils\utils\ShellTools;
+use pxn\phpUtils\utils\ShellUtils;
 use pxn\phpUtils\utils\StringUtils;
 use pxn\phpUtils\utils\SystemUtils;
 use pxn\phpUtils\pxnDefines as xDef;
@@ -26,7 +26,7 @@ final class dbCommands {
 		SystemUtils::RequireShell();
 
 		// get command argument
-		$cmd = ShellTools::getArg(1);
+		$cmd = ShellUtils::getArg(1);
 		$cmd = \mb_strtolower($cmd);
 		if (empty($cmd)) {
 			self::DisplayHelp();
@@ -34,7 +34,7 @@ final class dbCommands {
 		}
 
 		// -h or --help
-		if (ShellTools::isHelp()) {
+		if (ShellUtils::isHelp()) {
 			self::DisplayHelp($cmd);
 			ExitNow(xDef::EXIT_CODE_GENERAL);
 		}
@@ -42,7 +42,7 @@ final class dbCommands {
 
 		// is dry run?
 		{
-			$dry = ShellTools::getFlagBool('-D', '--dry');
+			$dry = ShellUtils::getFlagBool('-D', '--dry');
 			// default dry run
 			if ($dry === null) {
 				// commands which modify
@@ -51,7 +51,7 @@ final class dbCommands {
 				else                 $dry = false;
 			}
 			// confirmed, not dry run
-			$confirm = ShellTools::getFlagBool('--confirm');
+			$confirm = ShellUtils::getFlagBool('--confirm');
 			if ($confirm != false)
 				$dry = false;
 		}
@@ -60,8 +60,8 @@ final class dbCommands {
 
 		// --pool/--table flags
 		{
-			$poolFlag  = ShellTools::getFlag('-p', '--pool');
-			$tableFlag = ShellTools::getFlag('-t', '--table');
+			$poolFlag  = ShellUtils::getFlag('-p', '--pool');
+			$tableFlag = ShellUtils::getFlag('-t', '--table');
 			if (!empty($poolFlag) || !empty($tableFlag)) {
 				$poolFlag  = self::ValidatePoolTableArg($poolFlag);
 				$tableFlag = self::ValidatePoolTableArg($tableFlag);
@@ -82,7 +82,7 @@ final class dbCommands {
 
 		// pool:table arguments
 		{
-			$args = ShellTools::getArgs();
+			$args = ShellUtils::getArgs();
 			\array_shift($args);
 			\array_shift($args);
 			if (\count($args) == 0) {
@@ -130,11 +130,11 @@ final class dbCommands {
 	}
 	private static function _doRunCommand(string $cmd, dbPool $pool, string $table, bool $dry=true): bool {
 		$dry = ($dry !== false);
-		if ($dry) echo ShellTools::FormatString(" {color=orange}[Dry Mode]{reset} \n");
+		if ($dry) echo ShellUtils::FormatString(" {color=orange}[Dry Mode]{reset} \n");
 
 		// all pools and tables
 		if ($pool == '*' && $table == '*') {
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}-all-{reset}  Table: {color=green}-all-{reset}\n\n"
 			);
 			$pools = dbPool::getPools();
@@ -152,11 +152,11 @@ final class dbCommands {
 					);
 					if ($result === false) {
 						$plural = ($count == 1 ? '' : 's');
-						echo ShellTools::FormatString(
+						echo ShellUtils::FormatString(
 							" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
 						);
 						if ($dry) {
-							echo ShellTools::FormatString(
+							echo ShellUtils::FormatString(
 								" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 							);
 						}
@@ -166,11 +166,11 @@ final class dbCommands {
 				}
 			}
 			$plural = ($count == 1 ? '' : 's');
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
 			);
 			if ($dry) {
-				echo ShellTools::FormatString(
+				echo ShellUtils::FormatString(
 					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 				);
 			}
@@ -179,7 +179,7 @@ final class dbCommands {
 
 		// all pools
 		if ($pool == '*') {
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}-all-{reset}  Table: {color=green}$table{reset}\n\n"
 			);
 			$pools = dbPool::getPools();
@@ -197,11 +197,11 @@ final class dbCommands {
 				);
 				if ($result === false) {
 					$plural = ($count == 1 ? '' : 's');
-					echo ShellTools::FormatString(
+					echo ShellUtils::FormatString(
 						" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
 					);
 					if ($dry) {
-						echo ShellTools::FormatString(
+						echo ShellUtils::FormatString(
 							" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 						);
 					}
@@ -211,11 +211,11 @@ final class dbCommands {
 			}
 			if ($count == 0) throw new \Exception('Table not found: '.$pool.':'.$table);
 			$plural = ($count == 1 ? '' : 's');
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
 			);
 			if ($dry) {
-				echo ShellTools::FormatString(
+				echo ShellUtils::FormatString(
 					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 				);
 			}
@@ -225,7 +225,7 @@ final class dbCommands {
 		// all tables
 		if ($table == '*') {
 			$poolName = dbPool::castPoolName($pool);
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}$poolName{reset}  Table: {color=green}-all-{reset}\n\n"
 			);
 			$poolEntry = dbPool::getPool($pool);
@@ -241,11 +241,11 @@ final class dbCommands {
 				);
 				if ($result === false) {
 					$plural = ($count == 1 ? '' : 's');
-					echo ShellTools::FormatString(
+					echo ShellUtils::FormatString(
 						" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
 					);
 					if ($dry) {
-						echo ShellTools::FormatString(
+						echo ShellUtils::FormatString(
 							"{color=orange} [ Dry Mode - No changes made ]{reset}\n"
 						);
 					}
@@ -254,11 +254,11 @@ final class dbCommands {
 				$count++;
 			}
 			$plural = ($count == 1 ? '' : 's');
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
 			);
 			if ($dry) {
-				echo ShellTools::FormatString(
+				echo ShellUtils::FormatString(
 					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 				);
 			}
@@ -267,7 +267,7 @@ final class dbCommands {
 
 		// one pool/table
 		$poolName = dbPool::castPoolName($pool);
-		echo ShellTools::FormatString(
+		echo ShellUtils::FormatString(
 			" Cmd: {color=green}$cmd{reset}  Pool: {color=green}$poolName{reset}  Table: {color=green}$table{reset}\n\n"
 		);
 		return self::_doRunCommandOnce(
@@ -289,7 +289,7 @@ final class dbCommands {
 		// list pools/tables
 		case 'list':
 			$cmdObj = new dbCommand_List($dry);
-			if (ShellTools::getFlagBool('-f', '--show-fields'))
+			if (ShellUtils::getFlagBool('-f', '--show-fields'))
 				$cmdObj->flagShowFields = true;
 			else $cmdObj->flagShowFields = false;
 			$cmdObj->flagCheckFields = false;
@@ -297,7 +297,7 @@ final class dbCommands {
 		// check for needed updates
 		case 'check':
 			$cmdObj = new dbCommand_Check($dry);
-			if (ShellTools::getFlagBool('-F', '--no-fields'))
+			if (ShellUtils::getFlagBool('-F', '--no-fields'))
 				$cmdObj->flagShowFields = false;
 			else $cmdObj->flagShowFields = true;
 			$cmdObj->flagCheckFields = true;
