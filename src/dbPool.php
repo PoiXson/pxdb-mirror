@@ -31,6 +31,22 @@ class dbPool {
 
 
 
+	public static function LoadAll(?string $path=null): int {
+		if (empty($path))
+			$path = xPaths::common();
+		$count = 0;
+		foreach (\scandir($path) as $entry) {
+			$file_path = $path.'/'.$entry;
+			if (\is_file($file_path)) {
+				if (\str_starts_with(haystack: $entry, needle: '.htdb')) {
+					$pool = self::Load(require($file_path));
+					if ($pool != null)
+						$count++;
+				}
+			}
+		}
+		return $count;
+	}
 	public static function Load(array $cfg): self {
 		$dbName = (isset($cfg['name']) ? $cfg['name'] : 'main');
 		$pool = new self($dbName);
