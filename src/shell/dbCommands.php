@@ -22,7 +22,7 @@ final class dbCommands {
 
 
 
-	public static function RunShellCommand() {
+	public static function RunShellCommand(): void {
 		System::RequireShell();
 
 		// get command argument
@@ -137,7 +137,7 @@ final class dbCommands {
 		self::DisplayHelp($cmd, $helpMsg);
 		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 	}
-	private static function _doRunCommand($cmd, $pool, $table, $dry=TRUE) {
+	private static function _doRunCommand(string $cmd, dbPool $pool, string $table, bool $dry=true): bool {
 		$dry = ($dry !== FALSE);
 		if ($dry) {
 			echo ShellTools::FormatString(
@@ -303,7 +303,7 @@ final class dbCommands {
 
 		return $result;
 	}
-	private static function _doRunCommandOnce($cmd, $pool, $table, $dry=TRUE) {
+	private static function _doRunCommandOnce(string $cmd, dbPool $pool, string $table, bool $dry=true): bool {
 		$dry = ($dry !== FALSE);
 		$poolName = dbPool::castPoolName($pool);
 		$pool = dbPool::getPool($pool);
@@ -364,7 +364,7 @@ final class dbCommands {
 
 
 
-	private static function ValidatePoolTableArg($arg) {
+	private static function ValidatePoolTableArg(string $arg): string {
 		if (empty($arg)) {
 			return '';
 		}
@@ -373,7 +373,7 @@ final class dbCommands {
 		}
 		return San::AlphaNumUnderscore($arg);
 	}
-	private static function SplitPoolTable(array $args) {
+	private static function SplitPoolTable(array $args): array {
 		$entries = [];
 		foreach ($args as $arg) {
 			$poolName  = NULL;
@@ -417,7 +417,7 @@ final class dbCommands {
 
 
 
-	public static function DisplayHelp($cmd=NULL, $helpMsg=[]) {
+	public static function DisplayHelp(?string $cmd=null, array $helpMsg=[]): void {
 		$help = (new \pxn\phpUtils\ShellHelp())
 			->setSelfName('pxntools db')
 			->setCommand($cmd)

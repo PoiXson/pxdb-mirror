@@ -17,14 +17,14 @@ class dbCommand_Import extends dbCommand {
 
 
 
-	public function __construct($dry=TRUE) {
+	public function __construct(bool $dry=true) {
 		parent::__construct($dry);
 	}
 
 
 
 	// returns true if successful
-	public function execute($pool, $tableName) {
+	public function execute(dbPool $pool, string $tableName): void {
 		$dryStr = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
 		$pool = dbPool::getPool($pool);
 		$poolName = $pool->getName();

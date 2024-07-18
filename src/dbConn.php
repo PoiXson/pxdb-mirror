@@ -24,7 +24,7 @@ class dbConn extends dbPrepared {
 
 	protected ?string $dsn = null;
 
-	protected $connection = null;
+	protected ?\PDO $connection = null;
 	protected bool $locked = false;
 
 
@@ -90,7 +90,7 @@ class dbConn extends dbPrepared {
 		string $driver,
 		string $database,
 		string $host, int $port
-	) {
+	): string {
 		switch ($driver) {
 			case 'sqlite':
 				return "$driver:$database";
@@ -139,7 +139,7 @@ class dbConn extends dbPrepared {
 		return true;
 	}
 
-	public function getRealConnection() {
+	public function getRealConnection(): \PDO {
 		$this->doConnect();
 		return $this->connection;
 	}
@@ -162,17 +162,19 @@ class dbConn extends dbPrepared {
 
 
 
-	public function isLocked() {
+	public function isLocked(): bool {
 		return $this->locked;
 	}
-	public function lock() {
+	public function lock(): self {
 		if ($this->locked == true)
 			throw new \RuntimeException('Database already locked: '.$this->dbName);
 		$this->locked = true;
+		return $this;
 	}
-	public function release() {
+	public function release(): self {
 		$this->clean();
 		$this->locked = false;
+		return $this;
 	}
 
 

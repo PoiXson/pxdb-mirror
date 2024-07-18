@@ -20,25 +20,25 @@ abstract class dbCommand_Common extends dbCommand {
 	const CMD_LIST_FIELDS = 1;
 	const CMD_CHECK       = 2;
 
-	protected $cmdFlags = 0;
+	protected int $cmdFlags = 0;
 
 
 
-	public function __construct($dry=TRUE, $cmdFlags) {
+	public function __construct(bool $dry=true, int $cmdFlags) {
 		parent::__construct($dry);
 		$this->cmdFlags = $cmdFlags;
 	}
 
 
 
-	public function isCMD($isFlag) {
+	public function isCMD(bool $isFlag): bool {
 		return ($isFlag & $this->cmdFlags);
 	}
 
 
 
 	// returns true if successful
-	public function execute($pool, $tableName) {
+	public function execute(dbPool $pool, string $tableName): string {
 		$pool     = dbPool::getPool($pool);
 		$poolName = $pool->getName();
 		// missing table

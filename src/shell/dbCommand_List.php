@@ -13,7 +13,7 @@ class dbCommand_List extends dbCommand_Common {
 
 
 
-	public function __construct($dry=TRUE) {
+	public function __construct(bool $dry=true) {
 		parent::__construct($dry, self::CMD_LIST_FIELDS);
 	}
 

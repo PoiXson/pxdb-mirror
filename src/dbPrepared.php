@@ -54,7 +54,7 @@ abstract class dbPrepared {
 
 
 
-	public function clean() {
+	public function clean(): void {
 		$this->st   = null;
 		$this->rs   = null;
 		$this->sql  = null;
@@ -193,7 +193,7 @@ abstract class dbPrepared {
 //	public function getDate(int|string $index): string {
 //	}
 //TODO: old
-//	public function getDate($index, $format=NULL) {
+//	public function getDate(int $index, ?string $format=null): string {
 //		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
 //			return FALSE;
 //		}
@@ -240,7 +240,7 @@ abstract class dbPrepared {
 //		return $this;
 //	}
 //TODO: old
-//	public function setDate($index, $value) {
+//	public function setDate(int $index, $value): self {
 //		if ($this->hasError() || $this->st == NULL) {
 //			return NULL;
 //		}

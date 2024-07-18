@@ -16,7 +16,7 @@ class dbTableExisting extends dbTable {
 
 
 
-	public function initFields() {
+	public function initFields(): int {
 		$this->inited = TRUE;
 		$tableName = $this->tableName;
 		if (Strings::StartsWith($this->tableName, '_')) {

@@ -13,28 +13,28 @@ use pxn\phpUtils\System;
 
 abstract class dbCommand {
 
-	protected $dry = NULL;
+	protected ?bool $dry = null;
 
 
 
-	public function __construct($dry=TRUE) {
+	public function __construct(bool $dry=true) {
 		System::RequireShell();
 		$this->dry = ($dry !== FALSE);
 	}
 
 
 
-	public abstract function execute($pool, $table);
+	public abstract function execute(dbPool $pool, string $table): string;
 
 
 
-	public function isDry($defaultDry=TRUE) {
+	public function isDry(bool $defaultDry=true): bool {
 		if ($this->dry === NULL) {
 			return ($defaultDry !== FALSE);
 		}
 		return ($this->dry === TRUE);
 	}
-	public function notDry($defaultDry=TRUE) {
+	public function notDry(bool $defaultDry=true): bool {
 		if ($this->dry === NULL) {
 			return ($defaultDry === FALSE);
 		}
