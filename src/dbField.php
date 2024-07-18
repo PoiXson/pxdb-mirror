@@ -5,7 +5,7 @@
  * @license AGPL-3
  * @author lorenzo at poixson.com
  * @link https://poixson.com/
- * /
+ */
 namespace pxn\pxdb;
 
 use pxn\phpUtils\Numbers;
@@ -423,4 +423,3 @@ class dbField {
 
 
 }
-*/
