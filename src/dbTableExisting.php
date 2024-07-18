@@ -8,7 +8,7 @@
  * /
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
+use pxn\phpUtils\utils\StringUtils;
 use pxn\phpUtils\Defines;
 
 
@@ -19,7 +19,7 @@ class dbTableExisting extends dbTable {
 	public function initFields(): int {
 		$this->inited = true;
 		$tableName = $this->tableName;
-		if (Strings::StartsWith($this->tableName, '_'))
+		if (StringUtils::StartsWith($this->tableName, '_'))
 			throw new \Exception('Table name cannot start with _ underscore: '.$this->pool->getPoolName().':'.$this->tableName);
 		// load fields in table
 		$db = $this->pool->get();
@@ -32,7 +32,7 @@ class dbTableExisting extends dbTable {
 			$row = $db->getRow();
 			// field name
 			$fieldName = $db->getString('Field');
-			if (Strings::StartsWith($fieldName, '_'))
+			if (StringUtils::StartsWith($fieldName, '_'))
 				continue;
 			// type
 			$fieldType = $db->getString('Type');
@@ -40,7 +40,7 @@ class dbTableExisting extends dbTable {
 			$fieldSize = null;
 			$pos = \mb_strpos($fieldType, '(');
 			if ($pos !== false) {
-				$fieldSize = Strings::Trim(\mb_substr($fieldType, $pos), '(', ')');
+				$fieldSize = StringUtils::Trim(\mb_substr($fieldType, $pos), '(', ')');
 				$fieldType = \mb_substr($fieldType, 0, $pos);
 			}
 			// new field object

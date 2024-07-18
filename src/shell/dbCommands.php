@@ -8,11 +8,11 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\San;
-use pxn\phpUtils\ShellTools;
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\System;
-use pxn\phpUtils\Defines;
+use pxn\phpUtils\utils\SanUtils;
+use pxn\phpUtils\utils\ShellTools;
+use pxn\phpUtils\utils\StringUtils;
+use pxn\phpUtils\utils\SystemUtils;
+use pxn\phpUtils\pxnDefines as xDef;
 
 use pxn\pxdb\dbPool;
 
@@ -23,20 +23,20 @@ final class dbCommands {
 
 
 	public static function RunShellCommand(): void {
-		System::RequireShell();
+		SystemUtils::RequireShell();
 
 		// get command argument
 		$cmd = ShellTools::getArg(1);
 		$cmd = \mb_strtolower($cmd);
 		if (empty($cmd)) {
 			self::DisplayHelp();
-			ExitNow(Defines::EXIT_CODE_GENERAL);
+			ExitNow(xDef::EXIT_CODE_GENERAL);
 		}
 
 		// -h or --help
 		if (ShellTools::isHelp()) {
 			self::DisplayHelp($cmd);
-			ExitNow(Defines::EXIT_CODE_GENERAL);
+			ExitNow(xDef::EXIT_CODE_GENERAL);
 		}
 		$helpMsg = [];
 
@@ -126,7 +126,7 @@ final class dbCommands {
 
 		// command not handled
 		self::DisplayHelp($cmd, $helpMsg);
-		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
+		ExitNow(xDef::EXIT_CODE_INVALID_COMMAND);
 	}
 	private static function _doRunCommand(string $cmd, dbPool $pool, string $table, bool $dry=true): bool {
 		$dry = ($dry !== false);
@@ -282,7 +282,7 @@ final class dbCommands {
 		$poolName = dbPool::castPoolName($pool);
 		$pool = dbPool::getPool($pool);
 		if ($pool == null) throw new \Exception('Failed to find db pool: '.$poolName);
-		if (Strings::StartsWith($table, '_'))
+		if (StringUtils::StartsWith($table, '_'))
 			throw new \Exception('Table cannot start with _ underscore: '.$poolName.':'.$table);
 		$cmdObj = null;
 		switch ($cmd) {
@@ -318,7 +318,7 @@ final class dbCommands {
 			break;
 		default:
 			self::DisplayHelp();
-			ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
+			ExitNow(xDef::EXIT_CODE_INVALID_COMMAND);
 		}
 		$result = $cmdObj->execute($pool, $table);
 		return $result;
@@ -331,7 +331,7 @@ final class dbCommands {
 			return '';
 		if ($arg == '*' || \mb_strtolower($arg) == 'all')
 			return '*';
-		return San::AlphaNumUnderscore($arg);
+		return SanUtils::AlphaNumUnderscore($arg);
 	}
 	private static function SplitPoolTable(array $args): array {
 		$entries = [];
@@ -350,14 +350,14 @@ final class dbCommands {
 			if (empty($tableName) || $tableName == '*' || \mb_strtolower($tableName) == 'all') {
 				$tableName = '*';
 			} else {
-				$tableName = San::AlphaNumUnderscore($tableName);
+				$tableName = SanUtils::AlphaNumUnderscore($tableName);
 				if (empty($tableName)) throw new \Exception('Invalid table name provided!');
 			}
 			// parse pool name
 			if (empty($poolName) || $poolName == '*' || \mb_strtolower($poolName) == 'all') {
 				$poolName = '*';
 			} else {
-				$poolName = San::AlphaNumUnderscore($poolName);
+				$poolName = SanUtils::AlphaNumUnderscore($poolName);
 				if (empty($poolName))
 					throw new \Exception('Invalid pool name provided!');
 			}

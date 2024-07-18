@@ -8,8 +8,8 @@
  * /
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\San;
+use pxn\phpUtils\utils\StringUtils;
+use pxn\phpUtils\utils\SanUtils;
 use pxn\phpUtils\Defines;
 
 
@@ -82,17 +82,17 @@ abstract class dbTable {
 	}
 	public static function ValidateTableName(string $tableName): string {
 		if (empty($tableName)) throw new \Exception('Invalid or unknown table name!');
-		$tableName = San::AlphaNumUnderscore($tableName);
+		$tableName = SanUtils::AlphaNumUnderscore($tableName);
 		if (empty($tableName)) throw new \Exception('Invalid or unknown table name!');
-		if (Strings::StartsWith($tableName, '_'))
+		if (StringUtils::StartsWith($tableName, '_'))
 			throw new \Exception('Table name cannot start with _ underscore: '.$tableName);
 		return $tableName;
 	}
 	public static function ValidateFieldName(string $fieldName): string {
 		if (empty($fieldName)) throw new \Exception('Invalid or unknown field name!');
-		$fieldName = San::AlphaNumUnderscore($fieldName);
+		$fieldName = SanUtils::AlphaNumUnderscore($fieldName);
 		if (empty($fieldName)) throw new \Exception('Invalid or unknown field name!');
-		if (Strings::StartsWith($fieldName, '_'))
+		if (StringUtils::StartsWith($fieldName, '_'))
 			throw new \Exception('Field name cannot start with _ underscore: '.$fieldName);
 		return $fieldName;
 	}
@@ -106,7 +106,7 @@ abstract class dbTable {
 			return null;
 		if (\is_string($schema)) {
 			$classPath = (string) $schema;
-			$classPath = Strings::ForceStartsWith($classPath, '\\');
+			$classPath = StringUtils::ForceStartsWith($classPath, '\\');
 			if (!\class_exists($classPath))
 				throw new \Exception('Schema class not found: '.$classPath);
 			return $classPath;
@@ -121,7 +121,7 @@ abstract class dbTable {
 	public static function GetSchemaClass(string|dbSchema $schema, ?dbPool $pool=null, ?string $tableName=null): string|dbSchema|null {
 		// path to class
 		if (\is_string($schema)) {
-			$classPath = Strings::ForceStartsWith( (string)$schema, '\\' );
+			$classPath = StringUtils::ForceStartsWith( (string)$schema, '\\' );
 			if (!\class_exists($classPath))
 				throw new \Exception('Schema class not found: '.$classPath);
 			$pool      = self::ValidatePool($pool);

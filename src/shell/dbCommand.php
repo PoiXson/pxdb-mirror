@@ -8,7 +8,7 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\System;
+use pxn\phpUtils\utils\SystemUtils;
 
 
 abstract class dbCommand {
@@ -18,7 +18,7 @@ abstract class dbCommand {
 
 
 	public function __construct(bool $dry=true) {
-		System::RequireShell();
+		SystemUtils::RequireShell();
 		$this->dry = ($dry !== false);
 	}
 

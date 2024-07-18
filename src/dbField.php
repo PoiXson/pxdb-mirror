@@ -8,10 +8,10 @@
  * /
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\San;
 use pxn\phpUtils\Numbers;
 use pxn\phpUtils\Defines;
+use pxn\phpUtils\utils\StringUtils;
+use pxn\phpUtils\utils\SanUtils;
 
 
 class dbField {
@@ -34,9 +34,9 @@ class dbField {
 
 
 	public function __construct(string $name, string $type, ?int $size=null) {
-		$name = San::AlphaNumUnderscore($name);
-		if (empty($name))                    throw new \Exception('Invalid or missing db field name!');
-		if (Strings::StartsWith($name, '_')) throw new \Exception('Field name cannot start with _ underscore: '.$name);
+		$name = SanUtils::AlphaNumUnderscore($name);
+		if (empty($name))                        throw new \Exception('Invalid or missing db field name!');
+		if (StringUtils::StartsWith($name, '_')) throw new \Exception('Field name cannot start with _ underscore: '.$name);
 		$this->name = $name;
 		$this->setType($type);
 		$this->setSize($size);
@@ -92,7 +92,7 @@ class dbField {
 	public function getSQL(): string {
 		$sql = [];
 		$fieldName = $this->getName();
-		$fieldType = \mb_strtolower(San::AlphaNumUnderscore($this->getType()));
+		$fieldType = \mb_strtolower(SanUtils::AlphaNumUnderscore($this->getType()));
 		$fieldSize = $this->getSize();
 		// name
 		$sql[] = "`{$fieldName}`";
@@ -107,7 +107,7 @@ class dbField {
 			case 'varchar': case 'char':
 			case 'text':    case 'longtext':
 			case 'enum':    case 'set':
-				$fieldSize = San::AlphaNumUnderscore($fieldSize);
+				$fieldSize = SanUtils::AlphaNumUnderscore($fieldSize);
 			default:
 				break;
 			}
@@ -174,7 +174,7 @@ class dbField {
 	// field type
 	public function setType($type): self {
 		$this->ValidUnlocked();
-		$type = San::AlphaNumUnderscore(\mb_strtolower($type));
+		$type = SanUtils::AlphaNumUnderscore(\mb_strtolower($type));
 		if (empty($type)) throw new \Exception('Invalid or missing db field type!');
 		switch ($type) {
 		case 'increment':
@@ -280,17 +280,17 @@ class dbField {
 	public function ValidateKeys(): void {
 		$this->ValidUnlocked();
 		// field name
-		if (!San::isAlphaNumUnderscore($this->name))
+		if (!SanUtils::isAlphaNumUnderscore($this->name))
 			throw new \Exception('Invalid field name: '.$this->name);
-		$this->name = San::AlphaNumUnderscore( (string)$this->name );
+		$this->name = SanUtils::AlphaNumUnderscore( (string)$this->name );
 		if (empty($this->name))
 			throw new \Exception('Invalid or missing field name!');
-		if (Strings::StartsWith($this->name, '_'))
+		if (StringUtils::StartsWith($this->name, '_'))
 			throw new \Exception('Field name cannot start with _ underscore: '.$this->name);
 		// field type
 		if (empty($this->type))
 			throw new \Exception('Missing field type for field: '.$this->name);
-		$this->type = San::AlphaNumUnderscore(\mb_strtolower( (string) $this->type ));
+		$this->type = SanUtils::AlphaNumUnderscore(\mb_strtolower( (string) $this->type ));
 		if (empty($this->type))
 			throw new \Exception('Invalid field type for field: '.$this->name);
 		// size

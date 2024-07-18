@@ -8,9 +8,9 @@
  * /
 namespace pxn\pxdb\shell;
 
+use pxn\phpUtils\utils\ShellUtils;
 use pxn\pxdb\dbPool;
 
-use pxn\phpUtils\ShellTools;
 
 
 class dbCommand_Import extends dbCommand {
@@ -33,7 +33,7 @@ class dbCommand_Import extends dbCommand {
 $path = '/run/media/lop/usb16/wwww/gc-website/';
 $filename = 'testfile.txt';
 $filepath = "{$path}{$filename}";
-		echo ShellTools::FormatString(
+		echo ShellUtils::FormatString(
 			"{$dryStr}Importing Table: {color=green}{$poolName}:{$tableName}{reset}\n".
 			"{$dryStr}From file: {$filepath}\n"
 		);

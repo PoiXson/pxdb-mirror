@@ -8,9 +8,9 @@
  * /
 namespace pxn\pxdb\shell;
 
+use pxn\phpUtils\utils\ShellUtils;
 use pxn\pxdb\dbPool;
 
-use pxn\phpUtils\ShellTools;
 use pxn\phpUtils\Defines;
 
 
@@ -37,7 +37,7 @@ class dbCommand_Export extends dbCommand {
 $path = '/run/media/lop/usb16/wwww/gc-website/';
 $filename = 'testfile.txt';
 $filepath = "{$path}{$filename}";
-		echo ShellTools::FormatString(
+		echo ShellUtils::FormatString(
 			"{$dryStr}Exporting Table: {color=green}{$poolName}:{$tableName}{reset}\n"
 		);
 		// prepare file for writing
@@ -51,7 +51,7 @@ $filepath = "{$path}{$filename}";
 		unset($sql);
 		$recordCount = $result->getRowCount();
 		if ($recordCount < 1) {
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				"{$dryStr}{color=red}No records found to export!{reset}"
 			);
 			return;
@@ -62,7 +62,7 @@ $filepath = "{$path}{$filename}";
 			if (!$handle) throw new \Exception('Failed to open file for writing: '.$filepath);
 		}
 		// export data
-		echo ShellTools::FormatString(
+		echo ShellUtils::FormatString(
 			"{$dryStr}Exporting {color=green}$recordCount{reset} records..\n".
 			"{$dryStr}To file: {$filepath}\n"
 		);
@@ -83,7 +83,7 @@ $filepath = "{$path}{$filename}";
 				// open new file
 				$fileCount++;
 //TODO: fix file name here
-				echo ShellTools::FormatString(
+				echo ShellUtils::FormatString(
 					"{$dryStr}Writing to file: {$filepath}-{$fileCount} .."
 				);
 				if ($this->notDry()) {
@@ -112,7 +112,7 @@ $filepath = "{$path}{$filename}";
 		// finished
 		$recordPlural = ($recordCount == 1 ? '' : 's');
 		$filePlural   = ($fileCount   == 1 ? '' : 's');
-		echo ShellTools::FormatString(
+		echo ShellUtils::FormatString(
 			"Successfully exported {color=green}{$totalCount}{reset} record{$recordPlural} to {color=green}{$fileCount}{reset} file{$filePlural}!\n"
 		);
 		echo "\n";

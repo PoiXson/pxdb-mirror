@@ -8,11 +8,11 @@
  * /
 namespace pxn\pxdb\shell;
 
+use pxn\phpUtils\utils\StringUtils;
+use pxn\phpUtils\utils\ShellUtils;
+
 use pxn\pxdb\dbPool;
 use pxn\pxdb\dbTools;
-
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\ShellTools;
 
 
 abstract class dbCommand_Common extends dbCommand {
@@ -43,7 +43,7 @@ abstract class dbCommand_Common extends dbCommand {
 		$poolName = $pool->getName();
 		// missing table
 		if (!$pool->hasExistingTable($tableName)) {
-			echo ShellTools::FormatString(
+			echo ShellUtils::FormatString(
 				"{color=red}<MISSING>{reset} {$poolName}:{$tableName}"
 			);
 			return 'MISSING-TABLE';
@@ -72,7 +72,7 @@ abstract class dbCommand_Common extends dbCommand {
 							$existField = $existTable->getField($fieldName);
 							$result = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 							if (\is_array($result)) {
-								if (ShellTools::isAnsiColorEnabled()) {
+								if (ShellUtils::isAnsiColorEnabled()) {
 									foreach ($result as $index => &$value)
 										$value = "{color=orange}$value{reset}";
 								}
@@ -101,9 +101,9 @@ abstract class dbCommand_Common extends dbCommand {
 					$strings[1][] = '================';
 				}
 				$strings = \array_merge($strings, $changesArray);
-				$msg .= \implode(Strings::PadColumns($strings, 8, 8), "\n");
+				$msg .= \implode(StringUtils::PadColumns($strings, 8, 8), "\n");
 				unset ($strings);
-				echo ShellTools::FormatString("$msg\n\n");
+				echo ShellUtils::FormatString("$msg\n\n");
 				return $changesArray;
 			}
 		}
