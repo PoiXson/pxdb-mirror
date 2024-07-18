@@ -8,6 +8,8 @@
  */
 namespace pxn\pxdb;
 
+use \pxn\phpUtils\xPaths;
+
 
 class dbPool {
 

@@ -10,7 +10,6 @@ namespace pxn\pxdb;
 
 use pxn\phpUtils\utils\StringUtils;
 use pxn\phpUtils\utils\SanUtils;
-use pxn\phpUtils\Defines;
 
 
 abstract class dbTable {

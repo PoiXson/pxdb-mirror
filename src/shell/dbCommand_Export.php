@@ -9,9 +9,8 @@
 namespace pxn\pxdb\shell;
 
 use pxn\phpUtils\utils\ShellUtils;
-use pxn\pxdb\dbPool;
 
-use pxn\phpUtils\Defines;
+use pxn\pxdb\dbPool;
 
 
 class dbCommand_Export extends dbCommand {

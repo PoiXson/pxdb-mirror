@@ -8,11 +8,6 @@
  */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Strings;
-use pxn\phpUtils\San;
-use pxn\phpUtils\Numbers;
-use pxn\phpUtils\ShellTools;
-
 
 final class dbTools {
 	private function __construct() {}

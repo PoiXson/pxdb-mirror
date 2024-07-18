@@ -8,8 +8,6 @@
  */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\Numbers;
-use pxn\phpUtils\Defines;
 use pxn\phpUtils\utils\StringUtils;
 use pxn\phpUtils\utils\SanUtils;
 
