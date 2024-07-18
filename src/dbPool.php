@@ -69,7 +69,7 @@ class dbPool {
 
 
 
-	public static function getPools(): array {
+	public static function GetPools(): array {
 		return self::$pools;
 	}
 	public static function GetPool(?string $dbName=null): ?self {
@@ -136,7 +136,7 @@ class dbPool {
 		$this->maxConns = $max;
 	}
 
-	public function getConnCount(): int {
+	public function getConnectionCount(): int {
 		return \count($this->conns);
 	}
 
