@@ -73,9 +73,8 @@ abstract class dbCommand_Common extends dbCommand {
 							$result = dbTools::CheckFieldNeedsChanges($existField, $schemField);
 							if (\is_array($result)) {
 								if (ShellTools::isAnsiColorEnabled()) {
-									foreach ($result as $index => &$value) {
+									foreach ($result as $index => &$value)
 										$value = "{color=orange}$value{reset}";
-									}
 								}
 								$changesNeeded[$fieldName] = $result;
 							}
@@ -87,11 +86,7 @@ abstract class dbCommand_Common extends dbCommand {
 					// build display string
 					$fieldType = $schemField->getType();
 					$fieldSize = $schemField->getSize();
-					$fieldTypeStr = (
-						!empty($fieldSize)
-						? "{$fieldType}({$fieldSize})"
-						: $fieldType
-					);
+					$fieldTypeStr = (empty($fieldSize) ? $fieldType : "{$fieldType}({$fieldSize})");
 					$changesArray[$fieldName] = [
 						'type' => "  $fieldTypeStr",
 						'name' => $fieldName,
@@ -105,19 +100,14 @@ abstract class dbCommand_Common extends dbCommand {
 					$strings[0][] = ' Changes Needed ';
 					$strings[1][] = '================';
 				}
-				$strings = \array_merge(
-					$strings,
-					$changesArray
-				);
+				$strings = \array_merge($strings, $changesArray);
 				$msg .= \implode(Strings::PadColumns($strings, 8, 8), "\n");
 				unset ($strings);
-				echo ShellTools::FormatString(
-					"$msg\n\n"
-				);
+				echo ShellTools::FormatString("$msg\n\n");
 				return $changesArray;
 			}
 		}
-		return TRUE;
+		return true;
 	}
 
 

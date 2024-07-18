@@ -25,9 +25,9 @@ class dbCommand_Import extends dbCommand {
 
 	// returns true if successful
 	public function execute(dbPool $pool, string $tableName): void {
-		$dryStr = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
-		$pool = dbPool::getPool($pool);
-		$poolName = $pool->getName();
+		$dryStr     = ($this->dry ? '{color=orange}[DRY]{reset} ' : '');
+		$pool       = dbPool::getPool($pool);
+		$poolName   = $pool->getName();
 		$existTable = $pool->getExistingTable($tableName);
 //TODO: fix file name here
 $path = '/run/media/lop/usb16/wwww/gc-website/';

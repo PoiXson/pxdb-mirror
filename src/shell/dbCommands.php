@@ -44,19 +44,16 @@ final class dbCommands {
 		{
 			$dry = ShellTools::getFlagBool('-D', '--dry');
 			// default dry run
-			if ($dry === NULL) {
+			if ($dry === null) {
 				// commands which modify
-				if ($cmd == 'update' || $cmd == 'import') {
-					$dry = TRUE;
-				} else {
-					$dry = FALSE;
-				}
+				if ($cmd == 'update'
+				|| $cmd == 'import') $dry = true;
+				else                 $dry = false;
 			}
 			// confirmed, not dry run
 			$confirm = ShellTools::getFlagBool('--confirm');
-			if ($confirm != FALSE) {
-				$dry = FALSE;
-			}
+			if ($confirm != false)
+				$dry = false;
 		}
 
 		// commands: list, check, update, import, export
@@ -68,14 +65,8 @@ final class dbCommands {
 			if (!empty($poolFlag) || !empty($tableFlag)) {
 				$poolFlag  = self::ValidatePoolTableArg($poolFlag);
 				$tableFlag = self::ValidatePoolTableArg($tableFlag);
-				if (empty($poolFlag)) {
-					fail('Invalid pool name provided!',
-						Defines::EXIT_CODE_INVALID_ARGUMENT);
-				}
-				if (empty($tableFlag)) {
-					fail('Invalid table name provided!',
-						Defines::EXIT_CODE_INVALID_ARGUMENT);
-				}
+				if (empty($poolFlag))  throw new \Exception('Invalid pool name provided!');
+				if (empty($tableFlag)) throw new \Exception('Invalid table name provided!');
 				// perform the command
 				$result = self::_doRunCommand(
 					$cmd,
@@ -84,7 +75,7 @@ final class dbCommands {
 					$dry
 				);
 				echo "\n";
-				return ($result !== FALSE);
+				return ($result !== false);
 			}
 			unset ($poolFlag, $tableFlag);
 		}
@@ -108,15 +99,15 @@ final class dbCommands {
 						$entry['table'],
 						$dry
 					);
-					if ($result === FALSE) {
+					if ($result === false) {
 						echo "\n";
-						return FALSE;
+						return false;
 					}
 					$count++;
 				}
 				if ($count > 0) {
 					echo "\n";
-					return TRUE;
+					return true;
 				}
 			}
 		}
@@ -130,7 +121,7 @@ final class dbCommands {
 				$dry
 			);
 			echo "\n";
-			return ($result !== FALSE);
+			return ($result !== false);
 		}
 
 		// command not handled
@@ -138,12 +129,8 @@ final class dbCommands {
 		ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 	}
 	private static function _doRunCommand(string $cmd, dbPool $pool, string $table, bool $dry=true): bool {
-		$dry = ($dry !== FALSE);
-		if ($dry) {
-			echo ShellTools::FormatString(
-				" {color=orange}[Dry Mode]{reset} \n"
-			);
-		}
+		$dry = ($dry !== false);
+		if ($dry) echo ShellTools::FormatString(" {color=orange}[Dry Mode]{reset} \n");
 
 		// all pools and tables
 		if ($pool == '*' && $table == '*') {
@@ -151,10 +138,8 @@ final class dbCommands {
 				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}-all-{reset}  Table: {color=green}-all-{reset}\n\n"
 			);
 			$pools = dbPool::getPools();
-			if ($pools === NULL || count($pools) == 0) {
-				fail('No database pools configured!',
-					Defines::EXIT_CODE_CONFIG_ERROR);
-			}
+			if ($pools === null || count($pools) == 0)
+				throw new \Exception('No database pools configured!');
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
 				$tables = $poolEntry->getSchemaTables();
@@ -165,7 +150,7 @@ final class dbCommands {
 						$tableEntryName,
 						$dry
 					);
-					if ($result === FALSE) {
+					if ($result === false) {
 						$plural = ($count == 1 ? '' : 's');
 						echo ShellTools::FormatString(
 							" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
@@ -175,7 +160,7 @@ final class dbCommands {
 								" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 							);
 						}
-						return FALSE;
+						return false;
 					}
 					$count++;
 				}
@@ -189,7 +174,7 @@ final class dbCommands {
 					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 				);
 			}
-			return TRUE;
+			return true;
 		}
 
 		// all pools
@@ -198,22 +183,19 @@ final class dbCommands {
 				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}-all-{reset}  Table: {color=green}$table{reset}\n\n"
 			);
 			$pools = dbPool::getPools();
-			if ($pools === NULL || count($pools) == 0) {
-				fail('No database pools configured!',
-					Defines::EXIT_CODE_CONFIG_ERROR);
-			}
+			if ($pools === null || count($pools) == 0)
+				throw new \Exception('No database pools configured!');
 			$count = 0;
 			foreach ($pools as $poolEntryName => $poolEntry) {
-				if (!$poolEntry->hasExistingTable($table)) {
+				if (!$poolEntry->hasExistingTable($table))
 					continue;
-				}
 				$result = self::_doRunCommandOnce(
 					$cmd,
 					$poolEntry,
 					$table,
 					$dry
 				);
-				if ($result === FALSE) {
+				if ($result === false) {
 					$plural = ($count == 1 ? '' : 's');
 					echo ShellTools::FormatString(
 						" {color=red}Ran $cmd on {color=green}$count{color=red} table{$plural}, then failed!{reset}\n"
@@ -223,14 +205,11 @@ final class dbCommands {
 							" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 						);
 					}
-					return FALSE;
+					return false;
 				}
 				$count++;
 			}
-			if ($count == 0) {
-				fail("Table not found: {$pool}:{$table}",
-					Defines::EXIT_CODE_USAGE_ERROR);
-			}
+			if ($count == 0) throw new \Exception('Table not found: '.$pool.':'.$table);
 			$plural = ($count == 1 ? '' : 's');
 			echo ShellTools::FormatString(
 				" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
@@ -240,7 +219,7 @@ final class dbCommands {
 					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 				);
 			}
-			return TRUE;
+			return true;
 		}
 
 		// all tables
@@ -250,10 +229,7 @@ final class dbCommands {
 				" Cmd: {color=green}$cmd{reset}  Pool: {color=green}$poolName{reset}  Table: {color=green}-all-{reset}\n\n"
 			);
 			$poolEntry = dbPool::getPool($pool);
-			if ($poolEntry == NULL) {
-				fail('Invalid pool!',
-					Defines::EXIT_CODE_INVALID_ARGUMENT);
-			}
+			if ($poolEntry == null) throw new \Exception('Invalid pool!');
 			$tables = $poolEntry->getSchemaTables();
 			$count = 0;
 			foreach ($tables as $tableEntryName => $tableEntry) {
@@ -263,7 +239,7 @@ final class dbCommands {
 					$tableEntryName,
 					$dry
 				);
-				if ($result === FALSE) {
+				if ($result === false) {
 					$plural = ($count == 1 ? '' : 's');
 					echo ShellTools::FormatString(
 						" Ran {color=green}$cmd{reset} on {color=green}$count{reset} table{$plural}\n"
@@ -273,7 +249,7 @@ final class dbCommands {
 							"{color=orange} [ Dry Mode - No changes made ]{reset}\n"
 						);
 					}
-					return FALSE;
+					return false;
 				}
 				$count++;
 			}
@@ -286,7 +262,7 @@ final class dbCommands {
 					" {color=orange}[ Dry Mode - No changes made ]{reset}\n"
 				);
 			}
-			return TRUE;
+			return true;
 		}
 
 		// one pool/table
@@ -294,48 +270,37 @@ final class dbCommands {
 		echo ShellTools::FormatString(
 			" Cmd: {color=green}$cmd{reset}  Pool: {color=green}$poolName{reset}  Table: {color=green}$table{reset}\n\n"
 		);
-		$result = self::_doRunCommandOnce(
+		return self::_doRunCommandOnce(
 			$cmd,
 			$pool,
 			$table,
 			$dry
 		);
-
-		return $result;
 	}
 	private static function _doRunCommandOnce(string $cmd, dbPool $pool, string $table, bool $dry=true): bool {
-		$dry = ($dry !== FALSE);
+		$dry = ($dry !== false);
 		$poolName = dbPool::castPoolName($pool);
 		$pool = dbPool::getPool($pool);
-		if ($pool == NULL) {
-			fail("Failed to find db pool: $poolName",
-				Defines::EXIT_CODE_INVALID_ARGUMENT);
-		}
-		if (Strings::StartsWith($table, '_')) {
-			fail("Table cannot start with _ underscore: {$poolName}:{$table}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$cmdObj = NULL;
+		if ($pool == null) throw new \Exception('Failed to find db pool: '.$poolName);
+		if (Strings::StartsWith($table, '_'))
+			throw new \Exception('Table cannot start with _ underscore: '.$poolName.':'.$table);
+		$cmdObj = null;
 		switch ($cmd) {
 		// list pools/tables
 		case 'list':
 			$cmdObj = new dbCommand_List($dry);
-			if (ShellTools::getFlagBool('-f', '--show-fields')) {
-				$cmdObj->flagShowFields = TRUE;
-			} else {
-				$cmdObj->flagShowFields = FALSE;
-			}
-			$cmdObj->flagCheckFields = FALSE;
+			if (ShellTools::getFlagBool('-f', '--show-fields'))
+				$cmdObj->flagShowFields = true;
+			else $cmdObj->flagShowFields = false;
+			$cmdObj->flagCheckFields = false;
 			break;
 		// check for needed updates
 		case 'check':
 			$cmdObj = new dbCommand_Check($dry);
-			if (ShellTools::getFlagBool('-F', '--no-fields')) {
-				$cmdObj->flagShowFields = FALSE;
-			} else {
-				$cmdObj->flagShowFields = TRUE;
-			}
-			$cmdObj->flagCheckFields = TRUE;
+			if (ShellTools::getFlagBool('-F', '--no-fields'))
+				$cmdObj->flagShowFields = false;
+			else $cmdObj->flagShowFields = true;
+			$cmdObj->flagCheckFields = true;
 			break;
 		// update db schema
 		case 'update':
@@ -355,31 +320,26 @@ final class dbCommands {
 			self::DisplayHelp();
 			ExitNow(Defines::EXIT_CODE_INVALID_COMMAND);
 		}
-		$result = $cmdObj->execute(
-			$pool,
-			$table
-		);
+		$result = $cmdObj->execute($pool, $table);
 		return $result;
 	}
 
 
 
 	private static function ValidatePoolTableArg(string $arg): string {
-		if (empty($arg)) {
+		if (empty($arg))
 			return '';
-		}
-		if ($arg == '*' || \mb_strtolower($arg) == 'all') {
+		if ($arg == '*' || \mb_strtolower($arg) == 'all')
 			return '*';
-		}
 		return San::AlphaNumUnderscore($arg);
 	}
 	private static function SplitPoolTable(array $args): array {
 		$entries = [];
 		foreach ($args as $arg) {
-			$poolName  = NULL;
-			$tableName = NULL;
+			$poolName  = null;
+			$tableName = null;
 			// split pool:table
-			if (\strpos($arg, ':') === FALSE) {
+			if (\strpos($arg, ':') === false) {
 				$tableName = $arg;
 			} else {
 				$array = \explode(':', $arg, 2);
@@ -391,20 +351,15 @@ final class dbCommands {
 				$tableName = '*';
 			} else {
 				$tableName = San::AlphaNumUnderscore($tableName);
-				if (empty($tableName)) {
-					fail('Invalid table name provided!',
-						Defines::EXIT_CODE_INVALID_ARGUMENT);
-				}
+				if (empty($tableName)) throw new \Exception('Invalid table name provided!');
 			}
 			// parse pool name
 			if (empty($poolName) || $poolName == '*' || \mb_strtolower($poolName) == 'all') {
 				$poolName = '*';
 			} else {
 				$poolName = San::AlphaNumUnderscore($poolName);
-				if (empty($poolName)) {
-					fail('Invalid pool name provided!',
-						Defines::EXIT_CODE_INVALID_ARGUMENT);
-				}
+				if (empty($poolName))
+					throw new \Exception('Invalid pool name provided!');
 			}
 			// build entry
 			$entries["$poolName:$tableName"] = [

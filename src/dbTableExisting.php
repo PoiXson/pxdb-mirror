@@ -17,14 +17,10 @@ class dbTableExisting extends dbTable {
 
 
 	public function initFields(): int {
-		$this->inited = TRUE;
+		$this->inited = true;
 		$tableName = $this->tableName;
-		if (Strings::StartsWith($this->tableName, '_')) {
-			$poolName  = $this->pool->getPoolName();
-			$tableName = $this->tableName;
-			fail("Table name cannot start with _ underscore: {$poolName}:{$tableName}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (Strings::StartsWith($this->tableName, '_'))
+			throw new \Exception('Table name cannot start with _ underscore: '.$this->pool->getPoolName().':'.$this->tableName);
 		// load fields in table
 		$db = $this->pool->get();
 		$db->Execute(
@@ -36,50 +32,35 @@ class dbTableExisting extends dbTable {
 			$row = $db->getRow();
 			// field name
 			$fieldName = $db->getString('Field');
-			if (Strings::StartsWith($fieldName, '_')) {
+			if (Strings::StartsWith($fieldName, '_'))
 				continue;
-			}
 			// type
 			$fieldType = $db->getString('Type');
 			// size
-			$fieldSize = NULL;
+			$fieldSize = null;
 			$pos = \mb_strpos($fieldType, '(');
-			if ($pos !== FALSE) {
-				$fieldSize = Strings::Trim(
-					\mb_substr($fieldType, $pos),
-					'(', ')'
-				);
+			if ($pos !== false) {
+				$fieldSize = Strings::Trim(\mb_substr($fieldType, $pos), '(', ')');
 				$fieldType = \mb_substr($fieldType, 0, $pos);
 			}
 			// new field object
-			$field = new dbField(
-				$fieldName,
-				$fieldType,
-				$fieldSize
-			);
+			$field = new dbField($fieldName, $fieldType, $fieldSize);
 			// null / not null
 			$nullable = (\mb_strtoupper( $db->getString('Null') ) == 'YES');
-			if ($nullable) {
-				$field->setNullable(TRUE);
-			}
+			if ($nullable)
+				$field->setNullable(true);
 			// default value
 			if (\array_key_exists('Default', $row)) {
-				$default = (
-					$row['Default'] === NULL
-					? NULL
-					: $db->getString('Default')
-				);
+				$default = ($row['Default'] === null ? null : $db->getString('Default'));
 				$field->setDefault($default);
 			}
 			// primary key
-			if (\mb_strtoupper( $db->getString('Key') ) == 'PRI') {
-				$field->setPrimaryKey(TRUE);
-			}
+			if (\mb_strtoupper( $db->getString('Key') ) == 'PRI')
+				$field->setPrimaryKey(true);
 			// auto increment
 			$extra = $db->getString('Extra');
-			if (\mb_strpos(\mb_strtolower($extra), 'auto_increment') !== FALSE) {
-				$field->setAutoIncrement(TRUE);
-			}
+			if (\mb_strpos(\mb_strtolower($extra), 'auto_increment') !== false)
+				$field->setAutoIncrement(true);
 			$this->fields[$fieldName] = $field;
 		}
 		$db->release();

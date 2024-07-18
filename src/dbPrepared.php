@@ -41,7 +41,7 @@ abstract class dbPrepared {
 	public abstract function clone_conn(): self;
 
 	protected abstract function doConnect(): bool;
-	public abstract function getRealConnection();
+	public abstract function getRealConnection(): \PDO;
 
 	public abstract function getDriverString(): string;
 	public abstract function getDriverType(): dbDriver;
@@ -49,8 +49,8 @@ abstract class dbPrepared {
 	public abstract function getDatabaseName(): string;
 	public abstract function getTablePrefix(): string;
 
-	public abstract function lock();
-	public abstract function release();
+	public abstract function lock(): self;
+	public abstract function release(): self;
 
 
 
@@ -107,22 +107,16 @@ abstract class dbPrepared {
 		if ($this->st == null) throw new \RuntimeException('Statement not prepared');
 		$this->sql = \trim($this->sql);
 		$pos = \mb_strpos($this->sql, ' ');
-		$cmd = \mb_strtoupper(
-			$pos > 0
-			? \mb_substr($this->sql, 0, $pos)
-			: $this->sql
-		);
+		$cmd = \mb_strtoupper($pos > 0 ? \mb_substr($this->sql, 0, $pos) : $this->sql);
 		// run query
 		if (Debug::debug()) {
 			$sql_clean = $this->sql;
-			while (\mb_strpos($sql_clean, '  ') !== false) {
+			while (\mb_strpos($sql_clean, '  ') !== false)
 				$sql_clean = \str_replace('  ', ' ', $sql_clean);
-			}
 			echo ' [QUERY] '.$sql_clean."\n";
 			$str = '';
-			foreach ($this->args as $index=>$arg) {
+			foreach ($this->args as $index=>$arg)
 				echo "   #$index: $arg\n";
-			}
 		}
 		if (!$this->st->execute())
 			throw new \RuntimeException('Query failed');
@@ -194,16 +188,13 @@ abstract class dbPrepared {
 //	}
 //TODO: old
 //	public function getDate(int $index, ?string $format=null): string {
-//		if ($this->hasError() || $this->row == NULL || !isset($this->row[$index])) {
-//			return FALSE;
-//		}
+//		if ($this->hasError() || $this->row == null || !isset($this->row[$index]))
+//			return false;
 //		$value = General::castType($this->row[$index], 'int');
-//		if ($value === FALSE || $value === NULL) {
-//			return FALSE;
-//		}
-//		if (empty($format)) {
+//		if ($value === false || $value === null)
+//			return false;
+//		if (empty($format))
 //			$format = 'Y-m-d H:i:s';
-//		}
 //		return \date($format, $value);
 //	}
 
@@ -241,8 +232,8 @@ abstract class dbPrepared {
 //	}
 //TODO: old
 //	public function setDate(int $index, $value): self {
-//		if ($this->hasError() || $this->st == NULL) {
-//			return NULL;
+//		if ($this->hasError() || $this->st == null) {
+//			return null;
 //		}
 //		try {
 //			$value = General::castType($value, 'str');
@@ -252,7 +243,7 @@ abstract class dbPrepared {
 //			$sql  = $this->sql;
 //			$desc = $this->desc;
 //			$this->setError("Query failed: $sql - $desc", $e);
-//			return NULL;
+//			return null;
 //		}
 //		return $this;
 //	}

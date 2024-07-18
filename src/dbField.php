@@ -35,19 +35,13 @@ class dbField {
 
 	public function __construct(string $name, string $type, ?int $size=null) {
 		$name = San::AlphaNumUnderscore($name);
-		if (empty($name)) {
-			fail('Invalid or missing db field name!',
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
-		if (Strings::StartsWith($name, '_')) {
-			fail("Field name cannot start with _ underscore: $name",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($name))                    throw new \Exception('Invalid or missing db field name!');
+		if (Strings::StartsWith($name, '_')) throw new \Exception('Field name cannot start with _ underscore: '.$name);
 		$this->name = $name;
 		$this->setType($type);
 		$this->setSize($size);
 	}
-	public function duplicate() {
+	public function clone(): self {
 		$obj = new self(
 			$this->name,
 			$this->type,
@@ -64,17 +58,14 @@ class dbField {
 
 
 	public function lock(): void {
-		$this->locked = TRUE;
+		$this->locked = true;
 	}
 	public function isLocked(): bool {
-		return ($this->locked != FALSE);
+		return ($this->locked != false);
 	}
 	public function ValidUnlocked(): bool {
-		if ($this->isLocked()) {
-			fail("dbField object is locked: {$this->name}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		return TRUE;
+		if ($this->isLocked()) throw new \Exception('dbField object is locked: '.$this->name);
+		return true;
 	}
 
 
@@ -85,15 +76,12 @@ class dbField {
 			'('.$this->getSize();
 		$nullable = $this->getNullable();
 		$defValue = $this->getDefault();
-		if ($nullable === TRUE) {
-			$msg .= '|NUL|'.($defValue === NULL ? 'NULL' : "'{$defValue}'");
+		if ($nullable === true) {
+			$msg .= '|NUL|'.($defValue === null ? 'null' : "'{$defValue}'");
 		} else {
 			// no default value and not nullable
-			if ($defValue === NULL) {
-				$msg .= '|NOTNUL|NONE';
-			} else {
-				$msg .= "|NOTNUL|'{$defValue}'";
-			}
+			if ($defValue === null) $msg .= '|NOTNUL|NONE';
+			else                    $msg .= "|NOTNUL|'{$defValue}'";
 		}
 		$msg .= ')';
 		return $msg;
@@ -104,11 +92,7 @@ class dbField {
 	public function getSQL(): string {
 		$sql = [];
 		$fieldName = $this->getName();
-		$fieldType = \mb_strtolower(
-			San::AlphaNumUnderscore(
-				$this->getType()
-			)
-		);
+		$fieldType = \mb_strtolower(San::AlphaNumUnderscore($this->getType()));
 		$fieldSize = $this->getSize();
 		// name
 		$sql[] = "`{$fieldName}`";
@@ -140,18 +124,13 @@ class dbField {
 			break;
 		}
 		// null / not null
-		$nullable = ($this->getNullable() !== FALSE);
-		$sql[] = (
-			$nullable
-			? 'NULL'
-			: 'NOT NULL'
-		);
+		$nullable = ($this->getNullable() !== false);
+		$sql[] = ($nullable ? 'null' : 'NOT null');
 		// default
 		$defValue = $this->getDefault();
-		if ($defValue === NULL) {
-			if ($nullable) {
-				$sql[] = 'DEFAULT NULL';
-			}
+		if ($defValue === null) {
+			if ($nullable)
+				$sql[] = 'DEFAULT null';
 		} else {
 			switch ($fieldType) {
 			case 'int': case 'tinyint': case 'smallint':
@@ -177,9 +156,8 @@ class dbField {
 			}
 		}
 		// auto-increment
-		if ($this->isAutoIncrement()) {
+		if ($this->isAutoIncrement())
 			$sql[] = 'AUTO_INCREMENT';
-		}
 		// done
 		return \implode(' ', $sql);
 	}
@@ -197,14 +175,11 @@ class dbField {
 	public function setType($type): self {
 		$this->ValidUnlocked();
 		$type = San::AlphaNumUnderscore(\mb_strtolower($type));
-		if (empty($type)) {
-			fail('Invalid or missing db field type!',
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
+		if (empty($type)) throw new \Exception('Invalid or missing db field type!');
 		switch ($type) {
 		case 'increment':
-			$this->type = 'int';
-			$this->increment = TRUE;
+			$this->type      = 'int';
+			$this->increment = true;
 			break;
 		case 'int':       case 'tinyint':  case 'smallint':
 		case 'mediumint': case 'bigint':   case 'char':
@@ -216,8 +191,7 @@ class dbField {
 			$this->type = $type;
 			break;
 		default:
-			fail("Unsupported field type: [{$type}] $name",
-				Defines::EXIT_CODE_USAGE_ERROR);
+			throw new \Exception("Unsupported field type: [{$type}] $name");
 		}
 		return $this;
 	}
@@ -245,11 +219,8 @@ class dbField {
 	}
 	public function setNullable($nullable=true): self {
 		$this->ValidUnlocked();
-		if ($nullable === NULL) {
-			$this->nullable = NULL;
-		} else {
-			$this->nullable = ($nullable === TRUE);
-		}
+		if ($nullable === null) $this->nullable = null;
+		else                    $this->nullable = ($nullable === true);
 		return $this;
 	}
 
@@ -269,15 +240,12 @@ class dbField {
 
 	// auto-increment
 	public function isAutoIncrement(): bool {
-		return ($this->increment === TRUE);
+		return ($this->increment === true);
 	}
 	public function setAutoIncrement($increment=true): self {
 		$this->ValidUnlocked();
-		if ($increment === NULL) {
-			$this->increment = NULL;
-		} else {
-			$this->increment = ($increment === TRUE);
-		}
+		if ($increment === null) $this->increment = null;
+		else                     $this->increment = ($increment === true);
 		return $this;
 	}
 
@@ -285,15 +253,12 @@ class dbField {
 
 	// primary key
 	public function isPrimaryKey(): bool {
-		return ($this->primary === TRUE);
+		return ($this->primary === true);
 	}
 	public function setPrimaryKey($primary=true): self {
 		$this->ValidUnlocked();
-		if ($primary === NULL) {
-			$this->primary = NULL;
-		} else {
-			$this->primary = ($primary === TRUE);
-		}
+		if ($primary === null) $this->primary = null;
+		else                   $this->primary = ($primary === true);
 		return $this;
 	}
 
@@ -301,15 +266,12 @@ class dbField {
 
 	// unique
 	public function isUnique(): bool {
-		return ($this->unique === TRUE);
+		return ($this->unique === true);
 	}
 	public function setUnique($unique=true): self {
 		$this->ValidUnlocked();
-		if ($unique === NULL) {
-			$this->unique = NULL;
-		} else {
-			$this->unique = ($unique === TRUE);
-		}
+		if ($unique === null) $this->unique = null;
+		else                  $this->unique = ($unique === true);
 		return $this;
 	}
 
@@ -318,39 +280,21 @@ class dbField {
 	public function ValidateKeys(): void {
 		$this->ValidUnlocked();
 		// field name
-		if (!San::isAlphaNumUnderscore($this->name)) {
-			fail("Invalid field name: {$this->name}",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (!San::isAlphaNumUnderscore($this->name))
+			throw new \Exception('Invalid field name: '.$this->name);
 		$this->name = San::AlphaNumUnderscore( (string)$this->name );
-		if (empty($this->name)) {
-			fail('Invalid or missing field name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($this->name, '_')) {
-			$fieldName = $this->name;
-			fail("Field name cannot start with _ underscore: $fieldName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($this->name))
+			throw new \Exception('Invalid or missing field name!');
+		if (Strings::StartsWith($this->name, '_'))
+			throw new \Exception('Field name cannot start with _ underscore: '.$this->name);
 		// field type
-		if (empty($this->type)) {
-			$fieldName = $this->name;
-			fail("Missing field type for field: $fieldName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		$this->type =
-			San::AlphaNumUnderscore(
-				\mb_strtolower(
-					(string) $this->type
-				)
-			);
-		if (empty($this->type)) {
-			$fieldName = $this->name;
-			fail("Invalid field type for field: $fieldName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($this->type))
+			throw new \Exception('Missing field type for field: '.$this->name);
+		$this->type = San::AlphaNumUnderscore(\mb_strtolower( (string) $this->type ));
+		if (empty($this->type))
+			throw new \Exception('Invalid field type for field: '.$this->name);
 		// size
-		if ($this->size !== NULL) {
+		if ($this->size !== null) {
 			switch ($this->type) {
 			case 'increment':
 			case 'int':       case 'tinyint': case 'smallint':
@@ -366,32 +310,27 @@ class dbField {
 				$this->size = (string) $this->size;
 				break;
 			default:
-				$fieldName = $this->name;
-				$fieldType = $this->type;
-				fail("Unable to guess size for field: [{$fieldType}] $fieldName",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
+				throw new \Exception('Unable to guess size for field: ['.$this->type.'] '.$this->name);
 			}
 		}
 	}
 	public function FillKeysExisting(): void {
 		$this->ValidUnlocked();
-		if ($this->nullable === NULL) {
-			$this->nullable = FALSE;
-		}
+		if ($this->nullable === null)
+			$this->nullable = false;
 	}
 	public function FillKeysSchema(): void {
 		$this->ValidUnlocked();
 
 		// auto-increment
-		if ($this->type == 'increment') {
-			$this->setAutoIncrement(TRUE);
-		}
+		if ($this->type == 'increment')
+			$this->setAutoIncrement(true);
 		if ($this->isAutoIncrement()) {
-			$this->setPrimaryKey(TRUE);
+			$this->setPrimaryKey(true);
 			$this->setType('int');
 			$this->setSize(11);
-			$this->setNullable(FALSE);
-			$this->setDefault(NULL);
+			$this->setNullable(false);
+			$this->setDefault(null);
 			return;
 		}
 
@@ -433,62 +372,49 @@ class dbField {
 			case 'date': case 'time':     case 'datetime':
 				break;
 			default:
-				$fieldName = $this->getName();
-				$fieldType = $this->getType();
-				fail("Unable to guess size for field: [{$fieldType}] $fieldName",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
+				throw new \Exception('Unable to guess size for field: ['.$this->getType().'] '.$this->getName());
 			}
 		}
 
 		// null not allowed
-		if ($this->nullable === NULL) {
-			$this->nullable = FALSE;
+		if ($this->nullable === null) {
+			$this->nullable = false;
 			// guess based on type
 			switch ($this->type) {
 			case 'decimal': case 'float': case 'double':
-				if ($this->defValue === NULL) {
+				if ($this->defValue === null)
 					$this->defValue = 0.0;
-				}
 				break;
 			case 'int':       case 'tinyint':
 			case 'smallint':  case 'mediumint': case 'bigint':
 			case 'bit':       case 'boolean':   case 'bool':
-				if ($this->defValue === NULL) {
+				if ($this->defValue === null)
 					$this->defValue = 0;
-				}
 				break;
 			// default value
 				case 'date':
-					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 10) {
+					if ($this->defValue === null || \mb_strlen($this->defValue) != 10)
 						$this->defValue = '0000-00-00';
-					}
 					break;
 				case 'time':
-					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 8) {
+					if ($this->defValue === null || \mb_strlen($this->defValue) != 8)
 						$this->defValue = '00:00:00';
-					}
 					break;
 				case 'datetime':
-					if ($this->defValue === NULL || \mb_strlen($this->defValue) != 19) {
+					if ($this->defValue === null || \mb_strlen($this->defValue) != 19)
 						$this->defValue = '0000-00-00 00:00:00';
-					}
 					break;
 			case 'varchar': case 'char': case 'blob':
 			case 'text': case 'longtext':
-				if ($this->defValue === NULL) {
+				if ($this->defValue === null)
 					$this->defValue = '';
-				}
 				break;
 			case 'enum':    case 'set':
-				if ($this->defValue === NULL) {
-					$this->nullable = TRUE;
-				}
+				if ($this->defValue === null)
+					$this->nullable = true;
 				break;
 			default:
-				$fieldName = $this->getName();
-				$fieldType = $this->getType();
-				fail("Unsupported field type: [{$fieldType}] $fieldName",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
+				throw new \Exception('Unsupported field type: ['.$this->getType().'] '.$this->getName());
 			}
 		}
 

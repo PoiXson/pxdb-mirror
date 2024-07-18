@@ -23,9 +23,9 @@ final class dbTools {
 		if (!\str_starts_with($file, '/'))
 			$file = __DIR__.'schemas/'.$file;
 		require($file);
-		$sch = new $clss();
+		$sch    = new $clss();
 		$schema = $sch->getSchema();
-		$pool = dbPool::getPool();
+		$pool   = dbPool::getPool();
 		$did_changes = false;
 		for ($i=0; $i<99; $i++) {
 			if (!self::CreateUpdateSchema($db, $schema))

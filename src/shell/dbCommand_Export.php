@@ -26,19 +26,13 @@ class dbCommand_Export extends dbCommand {
 
 	// returns true if successful
 	public function execute(dbPool $pool, string $tableName): void {
-		$dryStr = ($this->isDry() ? '{color=orange}[DRY]{reset} ' : '');
-		$pool = dbPool::getPool($pool);
+		$dryStr   = ($this->isDry() ? '{color=orange}[DRY]{reset} ' : '');
+		$pool     = dbPool::getPool($pool);
 		$poolName = $pool->getName();
-		$exists = $pool->hasExistingTable($tableName);
-		if (!$exists) {
-			fail("Cannot export, table not found: $tableName",
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
+		$exists   = $pool->hasExistingTable($tableName);
+		if (!$exists) throw new \Exception('Cannot export, table not found: '.$tableName);
 		$existTable = $pool->getExistingTable($tableName);
-		if ($existTable === NULL) {
-			fail("Unknown table: {$poolName}:{$tableName}",
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
+		if ($existTable === null) throw new \Exception('Unknown table: '.$poolName.':'.$tableName);
 //TODO: fix file name here
 $path = '/run/media/lop/usb16/wwww/gc-website/';
 $filename = 'testfile.txt';
@@ -47,25 +41,13 @@ $filepath = "{$path}{$filename}";
 			"{$dryStr}Exporting Table: {color=green}{$poolName}:{$tableName}{reset}\n"
 		);
 		// prepare file for writing
-		if (\file_exists($filepath)) {
-			fail("File already exists: $filepath",
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
-		if (\is_writable($filepath)) {
-			fail("Cannot write to file: $filepath",
-				Defines::EXIT_CODE_USAGE_ERROR);
-		}
+		if (\file_exists($filepath)) throw new \Exception('File already exists: '.$filepath);
+		if (\is_writable($filepath)) throw new \Exception('Cannot write to file: '.$filepath);
 		$sql = "SELECT * FROM `__TABLE__{$tableName}`";
 		$db = $pool->get();
 		$db->setDry($this->dry);
-		$result = $db->Execute(
-			$sql,
-			"Export({$tableName})"
-		);
-		if ($result->hasError()) {
-			fail("Failed to export table: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		$result = $db->Execute($sql, "Export({$tableName})");
+		if ($result->hasError()) throw new \Exception('Failed to export table: '.tableName);
 		unset($sql);
 		$recordCount = $result->getRowCount();
 		if ($recordCount < 1) {
@@ -77,10 +59,7 @@ $filepath = "{$path}{$filename}";
 		// open file for writing
 		if ($this->notDry()) {
 			$handle = \fopen($filepath, 'w');
-			if (!$handle) {
-				fail("Failed to open file for writing: $filepath",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
+			if (!$handle) throw new \Exception('Failed to open file for writing: '.$filepath);
 		}
 		// export data
 		echo ShellTools::FormatString(
@@ -110,10 +89,7 @@ $filepath = "{$path}{$filename}";
 				if ($this->notDry()) {
 					\fclose($handle);
 					$handle = \fopen("{$filepath}-{$fileCount}", 'w');
-					if (!$handle) {
-						fail("Failed to open file for writing: $filepath",
-							Defines::EXIT_CODE_INTERNAL_ERROR);
-					}
+					if (!$handle) throw new \Exception('Failed to open file for writing: '.$filepath);
 				}
 			}
 			// export line

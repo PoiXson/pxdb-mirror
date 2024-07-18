@@ -26,9 +26,9 @@ class dbCommand_Update extends dbCommand {
 
 	// returns true if successful
 	public function execute(dbPool $pool, string $tableName): bool {
-		$dryStr = ($this->isDry() ? '{color=orange}[DRY]{reset} ' : '');
-		$pool = dbPool::getPool($pool);
-		$poolName = $pool->getName();
+		$dryStr     = ($this->isDry() ? '{color=orange}[DRY]{reset} ' : '');
+		$pool       = dbPool::getPool($pool);
+		$poolName   = $pool->getName();
 		$schemTable = $pool->getSchemaTable($tableName);
 		echo ShellTools::FormatString(
 			"\n{$dryStr}Checking Table: {color=green}{$poolName}:{$tableName}{reset}\n"
@@ -51,15 +51,15 @@ class dbCommand_Update extends dbCommand {
 					"{$dryStr}Created new table with {color=green}$countFields{reset} field{$plural}\n"
 				);
 			}
-			return TRUE;
+			return true;
 		}
 
 		// check fields
-		$countAdded = 0;
-		$countAlter = 0;
+		$countAdded     = 0;
+		$countAlter     = 0;
 		$countUnchanged = 0;
-		$schemFields = $schemTable->getFields();
-		$existTable = $pool->getExistingTable($tableName);
+		$schemFields   = $schemTable->getFields();
+		$existTable    = $pool->getExistingTable($tableName);
 		$lastFieldName = '__FIRST__';
 		foreach ($schemFields as $fieldName => $field) {
 			$schemField = $field->duplicate();
@@ -88,13 +88,13 @@ class dbCommand_Update extends dbCommand {
 			$existField->ValidateKeys();
 			$existField->FillKeysExisting();
 			$changes = dbTools::CheckFieldNeedsChanges($existField, $schemField);
-			if ($changes !== FALSE) {
+			if ($changes !== false) {
 				// modify existing field
 				dbTools::AddChangeTableField(
 					$pool,
 					$schemTable,
 					$schemField,
-					NULL,
+					null,
 					$this->dry
 				);
 				$countAlter++;
@@ -119,7 +119,7 @@ class dbCommand_Update extends dbCommand {
 			);
 		}
 		echo "\n";
-		return TRUE;
+		return true;
 	}
 
 

@@ -19,7 +19,7 @@ abstract class dbCommand {
 
 	public function __construct(bool $dry=true) {
 		System::RequireShell();
-		$this->dry = ($dry !== FALSE);
+		$this->dry = ($dry !== false);
 	}
 
 
@@ -29,16 +29,14 @@ abstract class dbCommand {
 
 
 	public function isDry(bool $defaultDry=true): bool {
-		if ($this->dry === NULL) {
-			return ($defaultDry !== FALSE);
-		}
-		return ($this->dry === TRUE);
+		if ($this->dry === null)
+			return ($defaultDry !== false);
+		return ($this->dry === true);
 	}
 	public function notDry(bool $defaultDry=true): bool {
-		if ($this->dry === NULL) {
-			return ($defaultDry === FALSE);
-		}
-		return ($this->dry === FALSE);
+		if ($this->dry === null)
+			return ($defaultDry === false);
+		return ($this->dry === false);
 	}
 
 

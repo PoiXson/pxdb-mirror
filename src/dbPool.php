@@ -67,7 +67,7 @@ class dbPool {
 		if ($pool instanceof dbPool)
 			return $pool->get();
 		// by db pool name
-		$dbName = (string)$pool;
+		$dbName = (string) $pool;
 		$p = self::GetPool($dbName);
 		// db pool doesn't exist
 		if ($p == null)
@@ -78,10 +78,10 @@ class dbPool {
 		// find available
 		$found = null;
 		foreach ($this->conns as $conn) {
-			if ($conn->isLocked())
-				continue;
-			$found = $conn;
-			break;
+			if (!$conn->isLocked()) {
+				$found = $conn;
+				break;
+			}
 		}
 		// all in use
 		if ($found == null) {

@@ -28,9 +28,8 @@ abstract class dbTable {
 		$this->tableName = self::ValidateTableName($tableName);
 	}
 	public function doInitFields(): bool {
-		if ($this->inited) {
-			return FALSE;
-		}
+		if ($this->inited)
+			return false;
 		$this->initFields();
 		// set key names
 		$fields = [];
@@ -42,11 +41,10 @@ abstract class dbTable {
 			$fields[$name] = $field;
 		}
 		$this->fields = $fields;
-		return TRUE;
+		return true;
 	}
 	public function initFields(): void {
-		fail('Must override initFields() function in a class extending dbTable!',
-			Defines::EXIT_CODE_INTERNAL_ERROR);
+		throw new \Exception('Must override initFields() function in a class extending dbTable!');
 	}
 
 
@@ -63,9 +61,8 @@ abstract class dbTable {
 	public function getField(string $fieldName): ?dbField {
 		$fieldName = self::ValidateFieldName($fieldName);
 		$this->doInitFields();
-		if (!\array_key_exists($fieldName, $this->fields)) {
-			return NULL;
-		}
+		if (!\array_key_exists($fieldName, $this->fields))
+			return null;
 		return $this->fields[$fieldName];
 	}
 
@@ -78,47 +75,25 @@ abstract class dbTable {
 
 
 	public static function ValidatePool(dbPool $pool): dbPool {
-		if ($pool == NULL) {
-			fail('Invalid or unknown pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if ($pool == null) throw new \Exception('Invalid or unknown pool!');
 		$pool = dbPool::getPool($pool);
-		if ($pool == NULL) {
-			fail('Invalid or unknown pool!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if ($pool == null) throw new \Exception('Invalid or unknown pool!');
 		return $pool;
 	}
 	public static function ValidateTableName(string $tableName): string {
-		if (empty($tableName)) {
-			fail('Invalid or unknown table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($tableName)) throw new \Exception('Invalid or unknown table name!');
 		$tableName = San::AlphaNumUnderscore($tableName);
-		if (empty($tableName)) {
-			fail('Invalid or unknown table name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($tableName, '_')) {
-			fail("Table name cannot start with _ underscore: $tableName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($tableName)) throw new \Exception('Invalid or unknown table name!');
+		if (Strings::StartsWith($tableName, '_'))
+			throw new \Exception('Table name cannot start with _ underscore: '.$tableName);
 		return $tableName;
 	}
 	public static function ValidateFieldName(string $fieldName): string {
-		if (empty($fieldName)) {
-			fail('Invalid or unknown field name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($fieldName)) throw new \Exception('Invalid or unknown field name!');
 		$fieldName = San::AlphaNumUnderscore($fieldName);
-		if (empty($fieldName)) {
-			fail('Invalid or unknown field name!',
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
-		if (Strings::StartsWith($fieldName, '_')) {
-			fail("Field name cannot start with _ underscore: $fieldName",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (empty($fieldName)) throw new \Exception('Invalid or unknown field name!');
+		if (Strings::StartsWith($fieldName, '_'))
+			throw new \Exception('Field name cannot start with _ underscore: '.$fieldName);
 		return $fieldName;
 	}
 
@@ -127,23 +102,18 @@ abstract class dbTable {
 	// $schema argument can be path string to class or a class instance object
 	// returns the same string or schema object passed to it
 	public static function ValidateSchemaClass(string|dbSchema $schema): string|dbSchema|null {
-		if (empty($schema)) {
-			return NULL;
-		}
+		if (empty($schema))
+			return null;
 		if (\is_string($schema)) {
 			$classPath = (string) $schema;
 			$classPath = Strings::ForceStartsWith($classPath, '\\');
-			if (!\class_exists($classPath)) {
-				fail("Schema class not found: $classPath",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
+			if (!\class_exists($classPath))
+				throw new \Exception('Schema class not found: '.$classPath);
 			return $classPath;
 		}
 		// invalid class type
-		if (! ($schema instanceof \pxn\pxdb\dbSchema) ) {
-			fail("Invalid db schema class for table: $classPath",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (! ($schema instanceof \pxn\pxdb\dbSchema) )
+			throw new \Exception('Invalid db schema class for table: '.$classPath);
 		return $schema;
 	}
 	// $schema argument can be path string to class or a class instance object
@@ -152,25 +122,18 @@ abstract class dbTable {
 		// path to class
 		if (\is_string($schema)) {
 			$classPath = Strings::ForceStartsWith( (string)$schema, '\\' );
-			if (!\class_exists($classPath)) {
-				fail("Schema class not found: $classPath",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
+			if (!\class_exists($classPath))
+				throw new \Exception('Schema class not found: '.$classPath);
 			$pool      = self::ValidatePool($pool);
 			$tableName = self::ValidateTableName($tableName);
 			// new instance of schema class
 			$clss = new $classPath($pool, $tableName);
-			if (!($clss instanceof \pxn\pxdb\dbTableSchema)) {
-				fail("Invalid schema class: $classPath",
-					Defines::EXIT_CODE_INTERNAL_ERROR);
-			}
+			if (!($clss instanceof \pxn\pxdb\dbTableSchema))
+				throw new \Exception('Invalid schema class: '.$classPath);
 			return $clss;
 		}
-		if (!($schema instanceof \pxn\pxdb\dbTableSchema)) {
-			$classPath = \get_class($schema);
-			fail("Invalid schema class: $classPath",
-				Defines::EXIT_CODE_INTERNAL_ERROR);
-		}
+		if (!($schema instanceof \pxn\pxdb\dbTableSchema))
+			throw new \Exception('Invalid schema class: '.\get_class($schema));
 		return $schema;
 	}
 
