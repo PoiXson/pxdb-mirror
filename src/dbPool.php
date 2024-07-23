@@ -38,8 +38,10 @@ class dbPool {
 		foreach (\scandir($path) as $entry) {
 			$file_path = $path.'/'.$entry;
 			if (\is_file($file_path)) {
-				if (\str_starts_with(haystack: $entry, needle: '.htdb')) {
-					$pool = self::Load(require($file_path));
+				if ($entry === '.htdb'
+				|| \str_starts_with(haystack: $entry, needle: '.htdb_')) {
+					$dbName = ($entry==='.htdb' ? null : \mb_substr($entry, 6));
+					$pool = self::Load($dbName, require($file_path));
 					if ($pool != null)
 						$count++;
 				}
@@ -47,8 +49,8 @@ class dbPool {
 		}
 		return $count;
 	}
-	public static function Load(array $cfg): self {
-		$dbName = (isset($cfg['name']) ? $cfg['name'] : 'main');
+	public static function Load(?string $dbName, array $cfg): self {
+		if (empty($dbName)) $dbName = self::DEFAULT_DB_NAME;
 		$pool = new self($dbName);
 		$conn = new dbConn(
 			pool:     $pool,
