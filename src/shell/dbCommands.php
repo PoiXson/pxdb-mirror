@@ -8,13 +8,13 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\utils\SanUtils;
-use pxn\phpUtils\utils\ShellUtils;
-use pxn\phpUtils\utils\StringUtils;
-use pxn\phpUtils\utils\SystemUtils;
-use pxn\phpUtils\pxnDefines as xDef;
+use \pxn\phpUtils\utils\SanUtils;
+use \pxn\phpUtils\utils\ShellUtils;
+use \pxn\phpUtils\utils\StringUtils;
+use \pxn\phpUtils\utils\SystemUtils;
+use \pxn\phpUtils\pxnDefines as xDef;
 
-use pxn\pxdb\dbPool;
+use \pxn\pxdb\dbPool;
 
 
 final class dbCommands {

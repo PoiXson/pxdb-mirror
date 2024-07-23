@@ -8,7 +8,7 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\utils\SystemUtils;
+use \pxn\phpUtils\utils\SystemUtils;
 
 
 abstract class dbCommand {

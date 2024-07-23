@@ -8,8 +8,8 @@
  */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\utils\StringUtils;
-use pxn\phpUtils\utils\SanUtils;
+use \pxn\phpUtils\utils\StringUtils;
+use \pxn\phpUtils\utils\SanUtils;
 
 
 class dbField {

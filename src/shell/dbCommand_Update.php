@@ -8,10 +8,10 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\utils\ShellUtils;
+use \pxn\phpUtils\utils\ShellUtils;
 
-use pxn\pxdb\dbPool;
-use pxn\pxdb\dbTools;
+use \pxn\pxdb\dbPool;
+use \pxn\pxdb\dbTools;
 
 
 class dbCommand_Update extends dbCommand {

@@ -8,7 +8,7 @@
  */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\utils\StringUtils;
+use \pxn\phpUtils\utils\StringUtils;
 
 
 class dbTableExisting extends dbTable {

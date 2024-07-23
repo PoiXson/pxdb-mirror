@@ -8,11 +8,11 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\utils\StringUtils;
-use pxn\phpUtils\utils\ShellUtils;
+use \pxn\phpUtils\utils\StringUtils;
+use \pxn\phpUtils\utils\ShellUtils;
 
-use pxn\pxdb\dbPool;
-use pxn\pxdb\dbTools;
+use \pxn\pxdb\dbPool;
+use \pxn\pxdb\dbTools;
 
 
 abstract class dbCommand_Common extends dbCommand {

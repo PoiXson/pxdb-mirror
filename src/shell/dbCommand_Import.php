@@ -8,9 +8,9 @@
  * /
 namespace pxn\pxdb\shell;
 
-use pxn\phpUtils\utils\ShellUtils;
+use \pxn\phpUtils\utils\ShellUtils;
 
-use pxn\pxdb\dbPool;
+use \pxn\pxdb\dbPool;
 
 
 class dbCommand_Import extends dbCommand {

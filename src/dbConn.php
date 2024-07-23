@@ -8,7 +8,7 @@
  */
 namespace pxn\pxdb;
 
-use pxn\phpUtils\utils\SanUtils;
+use \pxn\phpUtils\utils\SanUtils;
 
 
 class dbConn extends dbPrepared {
