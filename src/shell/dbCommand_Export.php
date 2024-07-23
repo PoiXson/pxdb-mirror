@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 /*
  * PoiXson pxdb - PHP Database Utilities Library
  * @copyright 2004-2024
