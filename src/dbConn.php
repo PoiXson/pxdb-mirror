@@ -146,6 +146,9 @@ class dbConn extends dbPrepared {
 
 
 
+	public function getName(): string {
+		return $this->dbName;
+	}
 	public function getDriverString(): string {
 		return $this->driver->toString();
 	}
