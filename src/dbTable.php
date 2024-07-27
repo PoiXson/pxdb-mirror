@@ -25,7 +25,9 @@ abstract class dbTable {
 
 	protected abstract function initFields(): void;
 
-	protected function addField(dbField $field): self {
+	protected function addField(dbField|dbFieldFactory $field): self {
+		if ($field instanceof dbFieldFactory)
+			return $this->addField($field->build());
 		$name = $field->getFieldName();
 		$this->fields[$name] = $field;
 		return $this;
