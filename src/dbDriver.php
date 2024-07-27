@@ -10,25 +10,29 @@ namespace pxn\pxdb;
 
 
 enum dbDriver {
+	case SQLite;
 	case MySQL;
-	case sqLite;
 
-	public static function FromString(string $driver): ?self {
-		$driver = \mb_strtolower(\trim($driver));
-		switch ($driver) {
-			case 'sqlite': return self::sqLite;
-			case 'mysql':  return self::MySQL;
-			default: break;
+	public static function FromString(string|dbDriver $driver): ?dbDriver {
+		if (\is_string($driver)) {
+			$drv = \mb_strtolower(\trim($driver));
+			return match ($drv) {
+				'sqlite' => dbDriver::SQLite,
+				'mysql'  => dbDriver::MySQL,
+				default => null
+			};
+		} else {
+			return $driver;
 		}
 		return null;
 	}
 
 	public function toString(): string {
-		switch ($this) {
-			case self::MySQL:  return 'MySQL';
-			case self::sqLite: return 'sqLite';
-			default: throw new \RuntimeException('Unknown database driver type');
-		}
+		return match ($this) {
+			dbDriver::SQLite => 'SQLite',
+			dbDriver::MySQL  => 'MySQL',
+			default => null
+		};
 	}
 
 }
