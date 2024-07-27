@@ -9,6 +9,7 @@
 namespace pxn\pxdb;
 
 use \pxn\phpUtils\Debug;
+use \pxn\phpUtils\utils\GeneralUtils;
 
 
 abstract class dbPrepared {
@@ -16,8 +17,6 @@ abstract class dbPrepared {
 	protected ?dbPool $pool = null;
 
 	protected ?\PDOStatement $st = null;
-//TODO: type of $rs
-	protected ?string $rs   = null;
 	protected ?string $sql  = null;
 	protected ?string $desc = null;
 
@@ -43,8 +42,8 @@ abstract class dbPrepared {
 	protected abstract function doConnect(): bool;
 	public abstract function getRealConnection(): \PDO;
 
-	public abstract function getDriverString(): string;
-	public abstract function getDriverType(): dbDriver;
+	public abstract function getPoolName(): string;
+	public abstract function getDriver(): dbDriver;
 
 	public abstract function getDatabaseName(): string;
 	public abstract function getTablePrefix(): string;
@@ -56,7 +55,6 @@ abstract class dbPrepared {
 
 	public function clean(): void {
 		$this->st   = null;
-		$this->rs   = null;
 		$this->sql  = null;
 		$this->desc = null;
 		$this->row  = null;
@@ -98,11 +96,8 @@ abstract class dbPrepared {
 	}
 
 
-	public function exec(string $sql=''): self {
-		if (!empty($sql)) {
-			$this->prepare($sql);
-			unset($sql);
-		}
+	public function exec(?string $sql=null): self {
+		if (!empty($sql)) { $this->prepare($sql); unset($sql); }
 		if (empty($this->sql)) throw new \RuntimeException('No sql query provided');
 		if ($this->st == null) throw new \RuntimeException('Statement not prepared');
 		$this->sql = \trim($this->sql);
@@ -158,30 +153,40 @@ abstract class dbPrepared {
 
 
 	public function getString(int|string $index): ?string {
-		if (isset($this->row[$index]))
-			return (string) $this->row[$index];
-		return null;
+		return (
+			isset($this->row[$index])
+			? GeneralUtils::CastType($this->row[$index], 's')
+			: null
+		);
 	}
 	public function getInt(int|string $index): ?int {
-		if (isset($this->row[$index]))
-			return (int) $this->row[$index];
-		return null;
+		return (
+			isset($this->row[$index])
+			? GeneralUtils::CastType($this->row[$index], 'i')
+			: null
+		);
 	}
 	public function getFloat(int|string $index): ?float {
-		if (isset($this->row[$index]))
-			return (float) $this->row[$index];
-		return null;
+		return (
+			isset($this->row[$index])
+			? GeneralUtils::CastType($this->row[$index], 'f')
+			: null
+		);
 	}
+//TODO: does this work?
 	public function getLong(int|string $index): ?long {
-		if (isset($this->row[$index]))
-			return $this->row[$index];
-		return null;
+		return (
+			isset($this->row[$index])
+			? GeneralUtils::CastType($this->row[$index], 'l')
+			: null
+		);
 	}
 	public function getBool(int|string $index): ?bool {
-//TODO: is this right?
-		if (isset($this->row[$index]))
-			return ($this->row[$index] == true);
-		return null;
+		return (
+			isset($this->row[$index])
+			? GeneralUtils::CastType($this->row[$index], 'b')
+			: null
+		);
 	}
 //TODO
 //	public function getDate(int|string $index): string {

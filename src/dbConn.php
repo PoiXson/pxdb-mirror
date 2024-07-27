@@ -13,18 +13,17 @@ use \pxn\phpUtils\utils\SanUtils;
 
 class dbConn extends dbPrepared {
 
-	protected ?string $dbName   = null;
-	protected ?dbDriver $driver = null;
-	protected ?string $host     = null;
-	protected  int    $port     = 0;
-	protected ?string $user     = null;
-	protected ?string $pass     = null;
-	protected ?string $database = null;
-	protected ?string $prefix   = null;
-
-	protected ?string $dsn = null;
+	protected ?string   $pool_name = null;
+	protected ?dbDriver $driver    = null;
+	protected ?string   $host      = null;
+	protected  int      $port      = 0;
+	protected ?string   $user      = null;
+	protected ?string   $pass      = null;
+	protected ?string   $database  = null;
+	protected ?string   $prefix    = null;
 
 	protected ?\PDO $connection = null;
+	protected ?string $dsn = null;
 	protected bool $locked = false;
 
 
@@ -32,29 +31,27 @@ class dbConn extends dbPrepared {
 	// new connection
 	public function __construct(
 		dbPool $pool,
-		string $dbName,
-		string $driver,
+		string $pool_name,
+		string|dbDriver $driver,
 		string $host, int    $port,
 		string $user, string $pass,
 		string $database,
 		string $prefix
 	) {
 		parent::__construct($pool);
-		$this->dbName = SanUtils::alpha_num_simple( (string) $dbName );
-		if (empty($this->dbName)) throw new \RuntimeException('Database name is missing or invalid');
-		if (empty($driver))       throw new \RuntimeException('Database driver is missing or invalid');
-		$drv = dbDriver::FromString($driver);
-		switch ($drv) {
-			case dbDriver::sqLite: break;
+		$this->pool_name = dbTools::ValidatePoolName($pool_name);
+		$this->driver = dbDriver::FromString($driver);
+		if ($this->driver == null) throw new \RuntimeException('Database driver is missing or invalid');
+		switch ($this->driver) {
+			case dbDriver::SQLite: break;
 			case dbDriver::MySQL:
 				if (empty($host) || $host == '127.0.0.1')
 					$host = 'localhost';
 				if ($port <= 0)   $port = 3306;
 				if (empty($user)) $user = 'root';
 				break;
-			default: throw new \RuntimeException('Unknown database driver type: '.$driver);
+			default: throw new \RuntimeException('Unknown database driver type for: '.$pool_name);
 		}
-		$this->driver   = $drv;
 		$this->host     = $host;
 		$this->port     = $port;
 		$this->user     = $user;
@@ -63,20 +60,20 @@ class dbConn extends dbPrepared {
 		$this->prefix   = $prefix;
 		// build data source name
 		$this->dsn = self::BuildDSN(
-			\mb_strtolower($drv->toString()),
+			$this->driver,
 			$database,
 			$host,
 			$port
 		);
 		if (empty($this->dsn))
-			throw new \RuntimeException('Failed to generate DSN for database: '.$dbName);
+			throw new \RuntimeException('Failed to generate DSN for database: '.$pool_name);
 		$this->doConnect();
 	}
 	public function clone_conn(): self {
 		return new self(
 			$this->pool,
-			$this->dbName,
-			$this->driver->toString(),
+			$this->pool_name,
+			$this->driver,
 			$this->host, $this->port,
 			$this->user, $this->pass,
 			$this->database,
@@ -86,28 +83,25 @@ class dbConn extends dbPrepared {
 
 
 
-	public static function BuildDSN(
-		string $driver,
-		string $database,
-		string $host, int $port
-	): string {
+	public static function BuildDSN(dbDriver $driver, string $database, string $host, int $port): string {
+		$drv = $driver->toString();
 		switch ($driver) {
-			case 'sqlite':
-				return "$driver:$database";
-			case 'mysql':
-				$dsn = $driver.':';
+			case dbDriver::SQLite:
+				return \mb_strtolower($drv).':'.$database;
+			case dbDriver::MySQL:
+				$dsn = \mb_strtolower($drv).':';
 				// unix socket
-				if (\str_starts_with($host, '/')) {
-					$dsn .= "$driver:unix_socket={$host}";
+				if (\str_starts_with(haystack: $host, needle: '/')) {
+					$dsn .= 'unix_socket='.$host;
 				// tcp
 				} else {
-					$dsn .= "$driver:host={$host}";
+					$dsn .= 'host='.$host;
 					if ($port > 0 && $port != 3306)
-						$dsn .= ";port={$port}";
+						$dsn .= ';port='.$port;
 				}
-				return "{$dsn};dbname={$database};charset=utf8mb4";
+				return $dsn.'dbname='.$database.';charset=utf8mb4';
 			default:
-				throw new \RuntimeException("Unknown database type: $driver");
+				throw new \RuntimeException('Unknown database type: '.$drv);
 		}
 	}
 
@@ -132,9 +126,9 @@ class dbConn extends dbPrepared {
 			$this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		} catch (\PDOException $e) {
 			$this->connection = null;
-			$dbName = $this->dbName;
-			$dsn    = $this->dsn;
-			throw new \RuntimeException("Failed to connect to database: $dbName - $dsn - ".$e->getMessage());
+			$pool_name = $this->pool_name;
+			$dsn       = $this->dsn;
+			throw new \RuntimeException("Failed to connect to database: $pool_name - $dsn - ".$e->getMessage());
 		}
 		return true;
 	}
@@ -146,13 +140,11 @@ class dbConn extends dbPrepared {
 
 
 
-	public function getName(): string {
-		return $this->dbName;
+	public function getPoolName(): string {
+		return $this->pool_name;
 	}
-	public function getDriverString(): string {
-		return $this->driver->toString();
-	}
-	public function getDriverType(): dbDriver {
+
+	public function getDriver(): dbDriver {
 		return $this->driver;
 	}
 
@@ -170,7 +162,7 @@ class dbConn extends dbPrepared {
 	}
 	public function lock(): self {
 		if ($this->locked == true)
-			throw new \RuntimeException('Database already locked: '.$this->dbName);
+			throw new \RuntimeException('Database already locked: '.$this->pool_name);
 		$this->locked = true;
 		return $this;
 	}

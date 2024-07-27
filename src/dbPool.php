@@ -13,7 +13,7 @@ use \pxn\phpUtils\xPaths;
 
 class dbPool {
 
-	const DEFAULT_DB_NAME = 'main';
+	const DEFAULT_POOL_NAME = 'main';
 
 	// max connections per pool
 	const MAX_CONNECTIONS = 5;
@@ -23,8 +23,8 @@ class dbPool {
 	protected ?array $conns = null;
 	protected int $maxConns = \PHP_INT_MIN;
 
-	protected ?string   $dbName = null;
-	protected ?dbDriver $driver = null;
+	protected ?string   $pool_name = null;
+	protected ?dbDriver $driver    = null;
 
 	public  array $schemas = [];
 	public ?array $existing_tables = null;
@@ -40,8 +40,8 @@ class dbPool {
 			if (\is_file($file_path)) {
 				if ($entry === '.htdb'
 				|| \str_starts_with(haystack: $entry, needle: '.htdb_')) {
-					$dbName = ($entry==='.htdb' ? null : \mb_substr($entry, 6));
-					$pool = self::Load($dbName, require($file_path));
+					$pool_name = ($entry==='.htdb' ? null : \mb_substr($entry, 6));
+					$pool = self::Load($pool_name, require($file_path));
 					if ($pool != null)
 						$count++;
 				}
@@ -49,23 +49,23 @@ class dbPool {
 		}
 		return $count;
 	}
-	public static function Load(?string $dbName, array $cfg): self {
-		if (empty($dbName)) $dbName = self::DEFAULT_DB_NAME;
-		$pool = new self($dbName);
+	public static function Load(?string $pool_name, array $cfg): self {
+		if (empty($pool_name)) $pool_name = self::DEFAULT_POOL_NAME;
+		$pool = new self($pool_name);
 		$conn = new dbConn(
-			pool:     $pool,
-			dbName:   $dbName,
-			driver:   (isset($cfg['driver'  ]) ? $cfg['driver'  ] : ''),
-			host:     (isset($cfg['host'    ]) ? $cfg['host'    ] : ''),
-			port:     (isset($cfg['port'    ]) ? $cfg['port'    ] : 0 ),
-			user:     (isset($cfg['user'    ]) ? $cfg['user'    ] : ''),
-			pass:     (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''),
-			database: (isset($cfg['database']) ? $cfg['database'] : ''),
-			prefix:   (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : '')
+			pool:      $pool,
+			pool_name: $pool_name,
+			driver:    (isset($cfg['driver'  ]) ? $cfg['driver'  ] : ''),
+			host:      (isset($cfg['host'    ]) ? $cfg['host'    ] : ''),
+			port:      (isset($cfg['port'    ]) ? $cfg['port'    ] : 0 ),
+			user:      (isset($cfg['user'    ]) ? $cfg['user'    ] : ''),
+			pass:      (isset($cfg['pass'    ]) ? $cfg['pass'    ] : ''),
+			database:  (isset($cfg['database']) ? $cfg['database'] : ''),
+			prefix:    (isset($cfg['prefix'  ]) ? $cfg['prefix'  ] : '')
 		);
 		unset($cfg);
 		$pool->setFirstConnection($conn);
-		self::$pools[$dbName] = $pool;
+		self::$pools[$pool_name] = $pool;
 		return $pool;
 	}
 
@@ -74,29 +74,22 @@ class dbPool {
 	public static function GetPools(): array {
 		return self::$pools;
 	}
-	public static function GetPool(?string $dbName=null): ?self {
-		// default main db
-		if (empty($dbName))
-			$dbName = self::DEFAULT_DB_NAME;
-		if (isset(self::$pools[$dbName]))
-			return self::$pools[$dbName];
+	public static function GetPool(string|dbConn|dbPool|null $pool=null): ?self {
+		if ($pool === null) $pool = self::DEFAULT_POOL_NAME;
+		if ($pool instanceof dbPool) return $pool;
+		if ($pool instanceof dbConn) return $pool->getPool();
+		if (isset(self::$pools[(string)$pool]))
+			return self::$pools[(string)$pool];
 		return null;
 	}
 	public static function GetDB(string|dbConn|dbPool|null $pool=null): dbConn {
-		if ($pool === null) $pool = self::DEFAULT_DB_NAME;
-		// already proper type
-		if ($pool instanceof dbPool)
+		if ($pool === null) $pool = self::DEFAULT_POOL_NAME;
+		if ($pool instanceof dbConn) return $pool;
+		if ($pool instanceof dbPool) return $pool->get();
+		$pool = self::GetPool($pool);
+		if ($pool !== null)
 			return $pool->get();
-		// conn of pool
-		if ($pool instanceof dbConn)
-			return $pool->getPool();
-		// by db pool name
-		$dbName = (string) $pool;
-		$p = self::GetPool($dbName);
-		// db pool doesn't exist
-		if ($p == null)
-			throw new \RuntimeException('Unknown database pool: '.$dbName);
-		return $p->get();
+		return null;
 	}
 	public function get(): dbConn {
 		// find available
@@ -110,9 +103,10 @@ class dbPool {
 		// all in use
 		if ($found == null) {
 			if (\count($this->conns) >= $this->getMaxConnections())
-				throw new \RuntimeException('Max connections reached for database: '.$this->dbName);
+				throw new \RuntimeException('Max connections reached for database: '.$this->pool_name);
 			$conn = \reset($this->conns);
 			$found = $conn->clone_conn();
+			$this->conns[] = $found;
 		}
 		$found->lock();
 		$found->clean();
@@ -121,22 +115,20 @@ class dbPool {
 
 
 
-	public function __construct(string $dbName) {
-		$this->dbName = $dbName;
+	public function __construct(string $pool_name) {
+		$this->pool_name = $pool_name;
 	}
 	public function setFirstConnection(dbConn $conn): void {
 		if ($this->conns !== null)
 			throw new \RuntimeException('Database connections already initialised?');
 		$this->conns  = [ $conn ];
-		$this->driver = $conn->getDriverType();
+		$this->driver = $conn->getDriver();
 	}
 
 
 
 	public function getMaxConnections(): int {
-		if ($this->maxConns >= 0)
-			return $this->maxConns;
-		return self::MAX_CONNECTIONS;
+		return ($this->maxConns>0 ? $this->maxConns : self::MAX_CONNECTIONS);
 	}
 	public function setMaxConnections(int $max): void {
 		$this->maxConns = $max;
@@ -148,129 +140,35 @@ class dbPool {
 
 
 
-	public function getName(): string {
-		return $this->dbName;
+	public function getPoolName(): string {
+		return $this->pool_name;
+	}
+	public function getDriver(): dbDriver {
+		return $this->driver;
 	}
 
 
 
-	public static function isDB(string $dbName): bool {
-		if (!isset(self::$pools[$dbName]))
-			return false;
-		return (self::$pools[$dbName] != null);
+	public static function isDB(string $pool_name): bool {
+		return (
+			!isset(self::$pools[$pool_name]) &&
+			self::$pools[$pool_name] != null
+		);
 	}
 
 
 
 	public function getRealTables(): array {
 		$this->loadRealTables();
+		if ($this->existing_tables == null)
+			throw new \RuntimeException('Failed to load existing tables from database');
 		return $this->existing_tables;
 	}
-	public function hasRealTable(string $tableName): bool {
+	public function hasRealTable(string $table_name): bool {
 		$this->loadRealTables();
 		if ($this->existing_tables == null)
 			throw new \RuntimeException('Failed to load existing tables from database');
-		return isset($this->existing_tables[$tableName]);
-	}
-	public function hasTableSchema(string $tableName): bool {
-		return isset($this->schemas[$tableName]);
-	}
-
-	public function getRealTableSchema(string $tableName): ?array {
-		$this->loadRealTables();
-		if (isset($this->existing_tables[$tableName]))
-			return $this->existing_tables[$tableName];
-		return null;
-	}
-	public function getTableSchema(string $tableName): ?array {
-		$this->loadRealTables();
-		if (isset($this->schemas[$tableName]))
-			return $this->schemas[$tableName];
-		$this->loadRealTableFields($tableName);
-		if (isset($this->schemas[$tableName]))
-			return $this->schemas[$tableName];
-		return null;
-	}
-
-	protected function loadRealTables(): void {
-		if (\is_array($this->existing_tables))
-			return;
-		$db = $this->get();
-		// get list of existing tables
-		$found = [];
-		switch ($this->driver) {
-			case dbDriver::sqLite:
-				$sql = "SELECT `tbl_name`,`sql` FROM `sqlite_master` WHERE `type`='table' ORDER BY `tbl_name`;";
-				break;
-			case dbDriver::MySQL:
-				$sql = 'SHOW TABLES;';
-				break;
-			default:
-				$db->release();
-				throw new \RuntimeException('Unknown database driver type');
-		}
-		$db->exec($sql);
-		$database = $db->getDatabaseName();
-		while ($db->hasNext()) {
-//TODO: for mysql
-//			$table_name = $db->getString('Tables_in_'.$database);
-			$table_name = $db->getString('tbl_name');
-			if (\str_starts_with($table_name, '_'))
-				continue;
-			if (\str_starts_with($table_name, 'sqlite_'))
-				continue;
-			$fields = $db->getString('sql');
-			$found[$table_name] = [];
-			{
-				$pos = \mb_strpos($fields, '(');
-				if ($pos <= 0) throw new \RuntimeException('Failed to find table fields for: '.$table_name);
-				$tmp = \mb_substr($fields, $pos+1);
-				$pos = \mb_strpos($tmp, ')');
-				if ($pos <= 0) throw new \RuntimeException('Failed to parse table fields for: '.$table_name);
-				$tmp = \mb_substr($tmp, 0, $pos);
-				$arr = \explode(',', $tmp);
-				foreach ($arr as $part) {
-					$part = \trim($part);
-					$parts = \explode(' ', $part);
-					$field_name = \trim(\array_shift($parts));
-					if (\str_starts_with($field_name, '`')
-					&&    \str_ends_with($field_name, '`'))
-						$field_name = \mb_substr($field_name, 1, -1);
-					$type = null;
-					$primary = false;
-					$autoinc = false;
-					foreach ($parts as $p) {
-						switch (\mb_strtolower($p)) {
-							case 'integer':  $type = 'INTEGER';  break;
-							case 'text':     $type = 'TEXT';     break;
-							case 'datetime': $type = 'DATETIME'; break;
-							case 'primary':       $primary = true; break;
-							case 'autoincrement': $autoinc = true; break;
-							default: break;
-						}
-					}
-					if ($type == null)
-						throw new \RuntimeException("Unknown field type in table: $table_name - $part");
-					$found[$table_name][$field_name] = [
-						'type' => $type,
-					];
-					if ($primary)
-						$found[$table_name][$field_name]['primary'] = true;
-					if ($autoinc)
-						$found[$table_name][$field_name]['autoinc'] = true;
-				}
-			}
-		}
-		$this->existing_tables = $found;
-		$db->release();
-	}
-	public function clearTableCache(): int {
-		$count = (
-			$this->existing_tables == null
-			? -1 : \count($this->existing_tables)
-		);
-		$this->existing_tables = null;
-		return $count;
+		return isset($this->existing_tables[$table_name]);
 	}
 
 
