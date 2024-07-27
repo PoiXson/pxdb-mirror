@@ -46,9 +46,10 @@ final class dbTools {
 	public static function CreateTable(dbPool $pool, dbTable $table): void {
 		$db = dbPool::GetDB($pool);
 		try {
+			$driver = $pool->getDriver();
 			$table_name = self::ValidateTableName($table->getTableName());
 			$field = $table->getFirstField();
-			$sql_field = $field->buildFieldSQL();
+			$sql_field = $field->buildFieldSQL($driver);
 			$sql = "CREATE TABLE $table_name ( $sql_field )";
 			$db->exec($sql);
 		} finally {
@@ -58,11 +59,12 @@ final class dbTools {
 
 	public static function UpdateTableFields(dbPool $pool, dbTable $table): int {
 		$db = dbPool::GetDB($pool);
+		$driver = $pool->getDriver();
 		$count = 0;
 		try {
 			// find existing fields
 			$table_name = self::ValidateTableName($table->getTableName());
-			$sql = match ($pool->getDriver()) {
+			$sql = match ($driver) {
 				dbDriver::SQLite => "PRAGMA TABLE_INFO (`$table_name`)",
 				dbDriver::MySQL  => "SHOW COLUMNS IN `$table_name`",
 				default => null
@@ -82,7 +84,7 @@ final class dbTools {
 				// add field
 				if (!isset($existing[$name])) {
 					$sql = "ALTER TABLE `$table_name` ADD ";
-					$sql .= $field->buildFieldSQL();
+					$sql .= $field->buildFieldSQL($driver);
 					$db->exec($sql);
 					$count++;
 				// modify field

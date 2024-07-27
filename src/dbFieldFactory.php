@@ -64,6 +64,14 @@ class dbFieldFactory {
 	}
 	public function increment(bool $increment=true): self {
 		$this->increment = $increment;
+		if ($increment) {
+			$this->type     = dbFieldType::TYPE_INT;
+			$this->size     = 11;
+			$this->nullable = false;
+			$this->defval   = null;
+			$this->primary  = true;
+			$this->unique   = false;
+		}
 		return $this;
 	}
 	public function primary(bool $primary=true): self {

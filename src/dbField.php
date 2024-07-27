@@ -44,21 +44,26 @@ class dbField {
 
 
 
-	public function buildFieldSQL(): string {
+	public function buildFieldSQL(dbDriver $driver): string {
 		$name = dbTools::ValidateFieldName($this->name);
-		$type = match ($this->type) {
-			dbFieldType::TYPE_BOOL => 'BOOL',
-			dbFieldType::TYPE_INT  => "INT({$this->size})",
-			dbFieldType::TYPE_STR  => "VARCHAR({$this->size})",
-			dbFieldType::TYPE_TEXT => 'TEXT',
-			default => null
-		};
+		$type = null;
+		if ($this->increment && $driver == dbDriver::SQLite) {
+			return "`$name` INTEGER PRIMARY KEY AUTOINCREMENT";
+		} else {
+			$type = match ($this->type) {
+				dbFieldType::TYPE_BOOL => 'BOOL',
+				dbFieldType::TYPE_INT  => "INT({$this->size})",
+				dbFieldType::TYPE_STR  => "VARCHAR({$this->size})",
+				dbFieldType::TYPE_TEXT => 'TEXT',
+				default => null
+			};
+		}
 		if (empty($type)) throw new \RuntimeException('Unknown field type: '.$this->type);
 		$sql = "`$name` $type";
 		if (!$this->nullable) $sql .= ' NOT NULL';
-		if ($this->increment) $sql .= ' AUTOINCREMENT';
 		if ($this->primary)   $sql .= ' PRIMARY KEY';
 		if ($this->unique)    $sql .= ' UNIQUE';
+		if ($this->increment) $sql .= ' AUTOINCREMENT';
 		if ($this->defval === null) {
 			if ($this->nullable)
 				$sql .= ' DEFAULT NULL';
