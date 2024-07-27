@@ -8,126 +8,122 @@
  */
 namespace pxn\pxdb;
 
+use \pxn\phpUtils\utils\SanUtils;
+
 
 final class dbTools {
 	private function __construct() {}
 
 
 
-	public static function LoadSchema(string|dbConn|dbPool $db, string $file, string $clss): bool {
-		if (!\str_starts_with($file, '/'))
-			$file = __DIR__.'schemas/'.$file;
-		require($file);
-		$sch    = new $clss();
-		$schema = $sch->getSchema();
-		$pool   = dbPool::getPool();
-		$did_changes = false;
-		for ($i=0; $i<99; $i++) {
-			if (!self::CreateUpdateSchema($db, $schema))
-				break;
-			$pool->clearTableCache();
-			$did_changes = true;
-		}
-		return $did_changes;
-	}
-
-	public static function CreateUpdateSchema(string|dbConn|dbPool $db, array $schema): bool {
-		if (\is_string($db) || $db instanceof dbPool) {
-			$db = dbPool::GetDB($db);
-			$result = CreateUpdateSchema($db, $schema);
+	public static function GetTables(dbPool|dbConn $pool): array {
+		$db = dbPool::GetDB($pool);
+		$tables = [];
+		try {
+			$driver = $db->getDriver();
+			$sql = match ($driver) {
+				dbDriver::SQLite => $sql = 'SELECT `name` FROM `sqlite_master` WHERE `type`=\'table\'',
+				dbDriver::MySQL  => $sql = 'SHOW TABLES',
+				default => null,
+			};
+			if ($driver == null)
+				throw new \RuntimeException('Unknown database driver type: '.$driver->toString());
+			$db->exec($sql);
+			while ($db->hasNext()) {
+				$name = $db->getString('name');
+				if (\str_starts_with(haystack: $name, needle: '_'))
+					continue;
+				$tables[] = $name;
+			}
+		} finally {
 			$db->release();
-			return $result;
 		}
-		$did_something = false;
-		$pool = $db->getPool();
-		// create new tables
-		foreach ($schema as $table_name => $fields) {
-			$tab = $pool->getRealTableSchema($table_name);
-			// create new table
-			if ($tab == null) {
-//TODO: san
-				$first_name  = \array_key_first($fields);
-				$first_field = $fields[$first_name];
-				$sql = "CREATE TABLE `$table_name` (`$first_name`";
-				$attribs = self::BuildFieldType($sql, $first_field);
-				$sql .= ');';
-				$db->prepare($sql);
-				$db->exec();
-				// update cache
-				$pool->existing_tables[$table_name] = [
-					$first_name => [ $attribs ],
-				];
-				$tab = $pool->getRealTableSchema($table_name);
-				$did_something = true;
-			} // end create new table
-			// check table fields
-			foreach ($fields as $key => $field) {
-				// add field
-				if (!isset($tab[$key])) {
-					$sql = "ALTER TABLE `$table_name` ADD COLUMN `$key`";
-					$attribs = self::BuildFieldType($sql, $field);
-					$sql .= ';';
-					$db->prepare($sql);
-					$db->exec();
-					$did_something = true;
-				}
-
-//TODO: modify existing fields
-
-			} // end fields loop
-		} // end tables loop
-		return $did_something;
+		return $tables;
 	}
 
-	protected static function BuildFieldType(string &$sql, array $field): array {
-		$attribs = [
-			'type' => \mb_strtoupper($field['type']),
-			'primary'  => false,
-			'nullable' => false,
-			'autoinc'  => false,
-		];
-		# type
-		$sql .= ' '.$attribs['type'];
-		# primary key
-		if (isset($field['primary'])
-		&& $field['primary'] === true) {
-			$sql .= ' PRIMARY KEY';
-			$attribs['primary'] = true;
+
+
+	public static function CreateTable(dbPool $pool, dbTable $table): void {
+		$db = dbPool::GetDB($pool);
+		try {
+			$table_name = self::ValidateTableName($table->getTableName());
+			$field = $table->getFirstField();
+			$sql_field = $field->buildFieldSQL();
+			$sql = "CREATE TABLE $table_name ( $sql_field )";
+			$db->exec($sql);
+		} finally {
+			$db->release();
 		}
-		# auto increment
-		if (isset($field['autoinc'])
-		&& $field['autoinc'] === true) {
-			$sql .= ' AUTOINCREMENT';
-			$attribs['autoinc'] = true;
-		}
-		// null/not-null
-		if (isset($field['null'])
-		&& $field['null'] === true)
-			$attribs['nullable'] = true;
-		if ($attribs['nullable'] === false)
-			$sql .= ' NOT NULL';
-		// default value
-		if (isset($field['default'])) {
-			if ($field['default'] == 'null'
-			||  $field['default'] == 'NULL') {
-				$sql .= ' DEFAULT NULL';
-			} else {
-				$sql .= " DEFAULT '".$field['default']."'";
+	}
+
+	public static function UpdateTableFields(dbPool $pool, dbTable $table): int {
+		$db = dbPool::GetDB($pool);
+		$count = 0;
+		try {
+			// find existing fields
+			$table_name = self::ValidateTableName($table->getTableName());
+			$sql = match ($pool->getDriver()) {
+				dbDriver::SQLite => "PRAGMA TABLE_INFO (`$table_name`)",
+				dbDriver::MySQL  => "SHOW COLUMNS IN `$table_name`",
+				default => null
+			};
+			$db->exec($sql);
+			// cid, name, type, notnull, dflt_value, pk
+			$existing = [];
+			while ($db->hasNext()) {
+				$name = $db->getString('name');
+				if (\str_starts_with(haystack: $name, needle: '_'))
+					continue;
+				$existing[$name] = $db->getRow();
 			}
-		} else
-		if ($attribs['nullable'] === true) {
-			$sql .= ' DEFAULT NULL';
-		} else {
-			switch (\mb_strtoupper($field['type'])) {
-				case 'INTEGER':
-					if ($attribs['autoinc'] === false)
-						$sql .= ' DEFAULT 0';
-					break;
-				case 'TEXT': $sql .= " DEFAULT ''"; break;
-				default: throw new \RuntimeException('Unknown field type: '.$field['type']);
+			$fields = $table->getFields();
+			foreach ($fields as $field) {
+				$name = self::ValidateFieldName($field->getFieldName());
+				// add field
+				if (!isset($existing[$name])) {
+					$sql = "ALTER TABLE `$table_name` ADD ";
+					$sql .= $field->buildFieldSQL();
+					$db->exec($sql);
+					$count++;
+				// modify field
+				} else {
+//TODO: modify existing fields
+				}
 			}
+		} finally {
+			$db->release();
 		}
-		return $attribs;
+		return $count;
+	}
+
+
+
+	public static function ValidatePoolName(string $name): string {
+		if (!SanUtils::is_alpha_num_simple($name))
+			throw new \RuntimeException('Pool name is invalid: '.$name);
+		$name = SanUtils::alpha_num_simple($name);
+		if (empty($name)) throw new \RuntimeException('Invalid pool name empty');
+		if (\str_starts_with(haystack: $name, needle: '_'))
+			throw new \Exception('Pool name cannot start with _ underscore: '.$name);
+		return $name;
+	}
+	public static function ValidateTableName(string $name): string {
+		if (!SanUtils::is_alpha_num_simple($name))
+			throw new \RuntimeException('Table name is invalid: '.$name);
+		$name = SanUtils::alpha_num_simple($name);
+		if (empty($name)) throw new \RuntimeException('Invalid table name empty');
+		if (\str_starts_with(haystack: $name, needle: '_'))
+			throw new \Exception('Table name cannot start with _ underscore: '.$name);
+		return $name;
+	}
+	public static function ValidateFieldName(string $name): string {
+		if (!SanUtils::is_alpha_num_simple($name))
+			throw new \RuntimeException('Field name is invalid: '.$name);
+		$name = SanUtils::alpha_num_simple($name);
+		if (empty($name)) throw new \RuntimeException('Invalid field name empty');
+		if (\str_starts_with(haystack: $name, needle: '_'))
+			throw new \Exception('Field name cannot start with _ underscore: '.$name);
+		return $name;
 	}
 
 
