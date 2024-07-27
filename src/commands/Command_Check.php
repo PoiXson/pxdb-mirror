@@ -5,19 +5,19 @@
  * @license AGPL-3
  * @author lorenzo at poixson.com
  * @link https://poixson.com/
- * /
-namespace pxn\pxdb\shell;
+ */
+namespace pxn\pxdb\commands;
 
 
-class dbCommand_Check extends dbCommand_Common {
+class Command_Check extends \pxn\phpShell\Command {
 
 
 
-	public function __construct(bool $dry=true) {
-		parent::__construct($dry, self::CMD_CHECK);
+	public function run(): int {
+//TODO
+return 1;
 	}
 
 
 
 }
-*/
