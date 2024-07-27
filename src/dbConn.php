@@ -9,6 +9,7 @@
 namespace pxn\pxdb;
 
 use \pxn\phpUtils\utils\SanUtils;
+use \pxn\phpUtils\xPaths;
 
 
 class dbConn extends dbPrepared {
@@ -87,6 +88,8 @@ class dbConn extends dbPrepared {
 		$drv = $driver->toString();
 		switch ($driver) {
 			case dbDriver::SQLite:
+				if (!\str_starts_with(haystack: $database, needle: '/'))
+					$database = xPaths::common().'/'.$database;
 				return \mb_strtolower($drv).':'.$database;
 			case dbDriver::MySQL:
 				$dsn = \mb_strtolower($drv).':';
