@@ -16,7 +16,7 @@ final class dbTools {
 
 
 
-	public static function GetTables(dbPool|dbConn $pool): array {
+	public static function GetTables(dbPool $pool): array {
 		$db = dbPool::GetDB($pool);
 		$tables = [];
 		try {
