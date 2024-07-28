@@ -91,7 +91,7 @@ abstract class dbPrepared {
 			$this->st = $connection->prepare($this->sql);
 		} catch (\PDOException $e) {
 			$sql = $this->sql;
-			echo "\n[SQL-Error: $sql]\n";
+			\error_log("[SQL-Error: $sql]");
 			throw $e;
 		}
 		return $this;
@@ -110,10 +110,10 @@ abstract class dbPrepared {
 			$sql_clean = $this->sql;
 			while (\mb_strpos($sql_clean, '  ') !== false)
 				$sql_clean = \str_replace('  ', ' ', $sql_clean);
-			echo ' [QUERY] '.$sql_clean."\n";
-			$str = '';
-			foreach ($this->args as $index=>$arg)
-				echo "   #$index: $arg\n";
+			$params = '';
+			foreach ($this->args as $index=>$value)
+				$params .= "  #$index: $value";
+			\error_log('[QUERY] '.$sql_clean.$params);
 		}
 		if (!$this->st->execute())
 			throw new \RuntimeException('Query failed');
