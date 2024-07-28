@@ -50,8 +50,7 @@ final class dbTools {
 			$table_name = self::ValidateTableName($table->getTableName());
 			$field = $table->getFirstField();
 			$sql_field = $field->buildFieldSQL($driver);
-			$sql = "CREATE TABLE $table_name ( $sql_field )";
-			$db->exec($sql);
+			$db->exec("CREATE TABLE `__TABLE__$table_name` ( $sql_field )");
 		} finally {
 			$db->release();
 		}
@@ -65,8 +64,8 @@ final class dbTools {
 			// find existing fields
 			$table_name = self::ValidateTableName($table->getTableName());
 			$sql = match ($driver) {
-				dbDriver::SQLite => "PRAGMA TABLE_INFO (`$table_name`)",
-				dbDriver::MySQL  => "SHOW COLUMNS IN `$table_name`",
+				dbDriver::SQLite => "PRAGMA TABLE_INFO (`__TABLE__$table_name`)",
+				dbDriver::MySQL  => "SHOW COLUMNS IN `__TABLE__$table_name`",
 				default => null
 			};
 			$db->exec($sql);
@@ -84,7 +83,7 @@ final class dbTools {
 				// add field
 				if (!isset($existing[$name])) {
 					$db->clean(true);
-					$sql = "ALTER TABLE `$table_name` ADD ";
+					$sql = "ALTER TABLE `__TABLE__$table_name` ADD ";
 					$sql .= $field->buildFieldSQL($driver);
 					$db->exec($sql);
 					$count++;

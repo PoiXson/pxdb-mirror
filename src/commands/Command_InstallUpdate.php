@@ -20,6 +20,7 @@ class Command_InstallUpdate extends \pxn\phpShell\Command {
 			throw new \RuntimeException('function getDatabaseSchema() not found in class: '.\get_class($this->app));
 		$schema = \call_user_func([$this->app, 'getDatabaseSchema']);
 		$pool = $this->app->getUsersDB();
+		if ($pool == null) throw new \RuntimeException('Database not loaded');
 		$tables_found = dbTools::GetTables($pool);
 		$count_added_tables      = 0;
 		$count_add_change_fields = 0;
