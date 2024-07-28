@@ -109,7 +109,7 @@ class dbPool {
 			$this->conns[] = $found;
 		}
 		$found->lock();
-		$found->clean();
+		$found->clean(true);
 		return $found;
 	}
 

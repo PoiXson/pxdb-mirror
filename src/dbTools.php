@@ -83,6 +83,7 @@ final class dbTools {
 				$name = self::ValidateFieldName($field->getFieldName());
 				// add field
 				if (!isset($existing[$name])) {
+					$db->clean(true);
 					$sql = "ALTER TABLE `$table_name` ADD ";
 					$sql .= $field->buildFieldSQL($driver);
 					$db->exec($sql);

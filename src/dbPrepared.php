@@ -32,7 +32,7 @@ abstract class dbPrepared {
 
 	public function __construct(dbPool $pool) {
 		$this->pool = $pool;
-		$this->clean();
+		$this->clean(true);
 	}
 
 
@@ -53,13 +53,15 @@ abstract class dbPrepared {
 
 
 
-	public function clean(): void {
+	public function clean(bool $all=false): void {
 		$this->st   = null;
 		$this->sql  = null;
 		$this->desc = null;
 		$this->row  = null;
 		$this->insert_id = -1;
 		$this->row_count = -1;
+		if ($all)
+			$this->args = [];
 	}
 
 
@@ -78,8 +80,8 @@ abstract class dbPrepared {
 
 
 
-	public function prepare(string $sql): self {
-		$this->clean();
+	public function prepare(string $sql, bool $clean_all=true): self {
+		$this->clean($clean_all);
 		$sql = \str_replace('__TABLE__', $this->getTablePrefix(), $sql);
 		if (empty($sql)) throw new \RuntimeException('sql argument is required');
 		$this->sql = $sql;
@@ -97,7 +99,7 @@ abstract class dbPrepared {
 
 
 	public function exec(?string $sql=null): self {
-		if (!empty($sql)) { $this->prepare($sql); unset($sql); }
+		if (!empty($sql)) { $this->prepare($sql, false); unset($sql); }
 		if (empty($this->sql)) throw new \RuntimeException('No sql query provided');
 		if ($this->st == null) throw new \RuntimeException('Statement not prepared');
 		$this->sql = \trim($this->sql);

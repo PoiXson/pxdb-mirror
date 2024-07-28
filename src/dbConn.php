@@ -170,7 +170,7 @@ class dbConn extends dbPrepared {
 		return $this;
 	}
 	public function release(): self {
-		$this->clean();
+		$this->clean(true);
 		$this->locked = false;
 		return $this;
 	}
