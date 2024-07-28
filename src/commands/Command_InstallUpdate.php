@@ -33,10 +33,15 @@ class Command_InstallUpdate extends \pxn\phpShell\Command {
 			// add/update fields
 			$count_add_change_fields += dbTools::UpdateTableFields($pool, $table);
 		}
-		if ($count_added_tables > 0)
-			echo "Added [ $count_added_tables ] tables\n";
-		if ($count_add_change_fields > 0)
-			echo "Added/Updated [ $count_add_change_fields ] fields\n";
+		if ($count_added_tables      == 0
+		&&  $count_add_change_fields == 0) {
+			echo "No changes made; everything is up to date\n";
+		} else {
+			if ($count_added_tables > 0)
+				echo "Added [ $count_added_tables ] tables\n";
+			if ($count_add_change_fields > 0)
+				echo "Added/Updated [ $count_add_change_fields ] fields\n";
+		}
 		echo "Finished\n";
 		return 0;
 	}
