@@ -1,6 +1,18 @@
 pxdb - PHP Database Utilities Library
 
 
+2024-07-28 pxdb 0.4.25
+=====================
+* rewrite, cleanup, fixes, and improvements
+* Command_InstallUpdate class is finished
+* added dbFieldType and dbDriver enums
+* --help is unfinished
+* tested with sqlite only
+* added argument to dbPrepared->clean($all) function
+* log quaries to log file not stdout
+* updated dependencies
+
+
 2022-10-01 pxdb 0.3.8
 =====================
 * updated dependencies
