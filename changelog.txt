@@ -1,8 +1,13 @@
 pxdb - PHP Database Utilities Library
 
 
+2024-10-08 pxdb 0.4.27
+======================
+* updated dependencies
+
+
 2024-07-28 pxdb 0.4.25
-=====================
+======================
 * rewrite, cleanup, fixes, and improvements
 * Command_InstallUpdate class is finished
 * added dbFieldType and dbDriver enums
