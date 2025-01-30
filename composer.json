@@ -3,7 +3,7 @@
 	"description": "PHP Database Utilities Library",
 	"type":        "library",
 	"homepage":    "https://poixson.com/",
-	"license":     "AGPL-3.0",
+	"license":     "AGPLv3+ADD-PXN-V1",
 	"keywords": [
 		"framework", "utilities", "database", "mysql", "sqlite"
 	],
